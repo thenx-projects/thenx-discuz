@@ -1,0 +1,45 @@
+<?php
+/*
+ *
+ *  * Copyright 2012-2020 the original author or authors.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *      https://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
+/**
+ *      [Discuz!] (C)2001-2099 Comsenz Inc.
+ *      This is NOT a freeware, use is subject to license terms
+ *
+ *      $Id: seccodehtml.php 34428 2014-04-25 09:09:34Z nemohou $
+ */
+
+if(!defined('IN_MOBILE_API')) {
+	exit('Access Denied');
+}
+
+include_once 'misc.php';
+
+class mobile_api {
+
+	function common() {
+		global $_G;
+		echo '<img src="'.$_G['siteurl'].'api/mobile/index.php?module=seccode&sechash='.urlencode($_GET['sechash']).'&version='.(empty($_GET['secversion']) ? '4' : $_GET['secversion']).'" />';
+		exit;
+	}
+
+	function output() {}
+
+}
+
+?>

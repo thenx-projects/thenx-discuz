@@ -1,0 +1,41 @@
+<!--
+  ~ /*
+  ~  * Copyright 2012-2020 the original author or authors.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *      https://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<div class="bm" id="main_messaqge">
+	<form method="post" autocomplete="off" name="groupform" id="groupform" class="s_clear" action="forum.php?mod=group&action=invite">
+		<input type="hidden" name="formhash" value="{FORMHASH}" />
+		<input type="hidden" name="fid" value="$_G[fid]" />
+		<input type="hidden" name="referer" value="{echo dreferer()}" />
+		<!--{loop $friendarray $uid $member}-->
+			<input type="checkbox" name="inviteuid[]" value="$uid">$member[username] $member[avatar]
+		<!--{/loop}-->
+		<table cellspacing="0" cellpadding="0" class="tfm" summary="{lang group_join_type_invite}">
+			<caption>{lang group_choose_friend_to_invite}</caption>
+			<tbody>
+				<tr>
+					<th>{lang group_invite_list}</th>
+					<td><textarea rows="4" cols="40" name="invitemsg" class="pt"></textarea></td>
+				</tr>
+				<tr>
+					<th>&nbsp;</th>
+					<td><button class="pn pnc" type="submit" name="invitesubmit" value="true" tabindex="1"><strong>{lang finished}</strong></button></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+</div>
