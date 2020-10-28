@@ -1,3 +1,39 @@
+/*
+ *
+ *  * Copyright 2012-2020 the original author or authors.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *      https://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
+/*
+ *
+ *  * Copyright 2012-2010 the original author or authors.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *      https://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
+ *
+ */
+
 INSERT INTO pre_common_admingroup SET `admingid`='1',`alloweditpost`='1',`alloweditpoll`='1',`allowstickthread`='3',`allowmodpost`='1',`allowdelpost`='1',`allowmassprune`='1',`allowrefund`='1',`allowcensorword`='1',`allowviewip`='1',`allowbanip`='1',`allowedituser`='1',`allowmoduser`='1',`allowbanuser`='1',`allowbanvisituser`='1',`allowpostannounce`='1',`allowviewlog`='1',`allowbanpost`='1',`supe_allowpushthread`='1',`allowhighlightthread`='1',`allowlivethread`='1',`allowdigestthread`='3',`allowrecommendthread`='1',`allowbumpthread`='1',`allowclosethread`='1',`allowmovethread`='1',`allowedittypethread`='1',`allowstampthread`='1',`allowcopythread`='1',`allowmergethread`='1',`allowsplitthread`='1',`allowrepairthread`='1',`allowwarnpost`='1',`allowviewreport`='1',`alloweditforum`='1',`allowremovereward`='1',`allowedittrade`='1',`alloweditactivity`='1',`allowstickreply`='1',`allowmanagearticle`='1',`allowaddtopic`='1',`allowmanagetopic`='1',`allowdiy`='1',`allowclearrecycle`='1',`allowmanagetag`='1',`managefeed`='1',`managedoing`='1',`manageshare`='1',`manageblog`='1',`managealbum`='1',`managecomment`='1',`managemagiclog`='1',`managereport`='1',`managehotuser`='1',`managedefaultuser`='1',`managevideophoto`='1',`managemagic`='1',`manageclick`='1',`allowstamplist`='1',`allowmanagecollection`='1',`allowmakehtml`='1';
 INSERT INTO pre_common_admingroup SET `admingid`='2',`alloweditpost`='1',`alloweditpoll`='0',`allowstickthread`='2',`allowmodpost`='1',`allowdelpost`='1',`allowmassprune`='1',`allowrefund`='1',`allowcensorword`='1',`allowviewip`='1',`allowbanip`='1',`allowedituser`='1',`allowmoduser`='1',`allowbanuser`='1',`allowbanvisituser`='1',`allowpostannounce`='1',`allowviewlog`='1',`allowbanpost`='1',`supe_allowpushthread`='0',`allowhighlightthread`='1',`allowlivethread`='1',`allowdigestthread`='3',`allowrecommendthread`='1',`allowbumpthread`='1',`allowclosethread`='1',`allowmovethread`='1',`allowedittypethread`='1',`allowstampthread`='1',`allowcopythread`='1',`allowmergethread`='1',`allowsplitthread`='1',`allowrepairthread`='1',`allowwarnpost`='1',`allowviewreport`='1',`alloweditforum`='1',`allowremovereward`='1',`allowedittrade`='0',`alloweditactivity`='0',`allowstickreply`='0',`allowmanagearticle`='0',`allowaddtopic`='0',`allowmanagetopic`='0',`allowdiy`='0',`allowclearrecycle`='0',`allowmanagetag`='0',`managefeed`='0',`managedoing`='0',`manageshare`='0',`manageblog`='0',`managealbum`='0',`managecomment`='0',`managemagiclog`='0',`managereport`='0',`managehotuser`='0',`managedefaultuser`='0',`managevideophoto`='0',`managemagic`='0',`manageclick`='0',`allowstamplist`='1',`allowmanagecollection`='1',`allowmakehtml`='0';
 INSERT INTO pre_common_admingroup SET `admingid`='3',`alloweditpost`='1',`alloweditpoll`='0',`allowstickthread`='1',`allowmodpost`='1',`allowdelpost`='1',`allowmassprune`='0',`allowrefund`='0',`allowcensorword`='0',`allowviewip`='1',`allowbanip`='0',`allowedituser`='0',`allowmoduser`='1',`allowbanuser`='1',`allowbanvisituser`='0',`allowpostannounce`='0',`allowviewlog`='1',`allowbanpost`='1',`supe_allowpushthread`='0',`allowhighlightthread`='1',`allowlivethread`='1',`allowdigestthread`='3',`allowrecommendthread`='1',`allowbumpthread`='1',`allowclosethread`='1',`allowmovethread`='1',`allowedittypethread`='1',`allowstampthread`='1',`allowcopythread`='1',`allowmergethread`='1',`allowsplitthread`='1',`allowrepairthread`='1',`allowwarnpost`='1',`allowviewreport`='1',`alloweditforum`='1',`allowremovereward`='1',`allowedittrade`='0',`alloweditactivity`='0',`allowstickreply`='0',`allowmanagearticle`='0',`allowaddtopic`='0',`allowmanagetopic`='0',`allowdiy`='0',`allowclearrecycle`='0',`allowmanagetag`='0',`managefeed`='0',`managedoing`='0',`manageshare`='0',`manageblog`='0',`managealbum`='0',`managecomment`='0',`managemagiclog`='0',`managereport`='0',`managehotuser`='0',`managedefaultuser`='0',`managevideophoto`='0',`managemagic`='0',`manageclick`='0',`allowstamplist`='1',`allowmanagecollection`='0',`allowmakehtml`='0';
