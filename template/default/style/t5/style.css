@@ -1,0 +1,10 @@
+/*
+[name]蓝[/name]
+[iconbgcolor]#0053B9[/iconbgcolor]
+Powered by Discuz! X
+*/
+
+body { background: #FFF url(bgimg.jpg) no-repeat 50% 0; }
+	#nv li.a { background: #2B7ACD; }
+		#nv li.a a, #nv li.a a:hover { background: #FFF; color: #369 !important; border-radius: 4px 4px 0 0; box-shadow: inset 0px 2px 2px #114F90; }
+.ct2_a, .ct3_a { background-color: #FFF; }

@@ -1,0 +1,41 @@
+/* ----------------------------------
+Self-adaption Width CSS file for Discuz! X
+(C) Comsenz Inc.
+http://www.comsenz.com
+Created & Modified by Pony.
+---------------------------------- */
+
+.wp { width: 98%; }
+	#hd .wp, #wp { min-width: 960px; }
+
+.ct2 { margin-right: 235px; }
+	.ct2 .sd { margin-right: -235px; }
+	.ct2 .mn { width: 100%; }
+
+.ct2 #chart, .ct2 #an { margin-right: -235px; }
+
+.ct2_a { padding-left: 150px; }
+	.ct2_a .appl { margin-left: -150px; }
+	.ct2_a .mn { width: 99%; }
+	#nv_userapp .ct2_a .mn, .ct2_a_r .mn { width: 99%; }
+
+.ct3_a { padding: 0 240px 0 160px; }
+	.ct3_a .appl { margin-left: -160px; }
+	.ct3_a .sd { margin-right: -240px; }
+	.ct3_a .mn { margin: 0; width: 100%; }
+
+#nv { background-repeat: repeat-x; background-position: 0 -33px; }
+
+#mu ul { border-bottom: 1px solid {COMMONBORDER}; background-image: none; background-color: {COMMONBG}; }
+
+.pg_post .ct2_a { margin-left: 0; padding-left: 0; }
+	.pg_post .ct2_a .appl { margin-left: 0; background: none; }
+.pg_modcp .ct2_a, .pg_announcement .ct2_a { border: none; }
+	.pg_modcp .ct2_a .mn, .pg_announcement .ct2_a .mn { margin-right: 0; padding-top: 0; }
+
+.tdats .tdat { width: 20%; }
+.tdats .tfxf { width: 79.5%; }
+.tdats .tfx, .tdats .tb, .tscr { width: 39.5%; }
+	.tscr .tdat, .tscr .tdat th, .tscr .tdat td { width: 100%; }
+
+.widthauto .switchwidth:before { content: "\f105"; }
