@@ -1,0 +1,33 @@
+<!--
+  ~ /*
+  ~  * Copyright 2012-2020 the original author or authors.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *      https://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<!--{template common/header_ajax}-->
+
+<!--{eval $i = 0;}-->
+<table cellspacing="2" cellpadding="2" class="imgl"><tr>
+<!--{loop $photolist $photo}-->
+	<!--{eval $i++;}-->
+	<td valign="bottom" width="25%">
+		<a href="javascript:;"><img src="$photo[thumburl]" title="$photo[filename]" onclick="wysiwyg ? insertText('<img src=\'$photo[url]\' border=0 style=\'max-width:400px\'/>', false) : insertText('[img]$photo[url][/img]', <!--{echo strlen($photo[url]) + 11}-->, 0);doane(event);" onload="thumbImg(this, 1)" width="110" style="height:auto" _width="110" _height="110"></a>
+	</td>
+	<!--{if $i % 4 == 0 && isset($photolist[$i])}--></tr><tr><!--{/if}-->
+<!--{/loop}-->
+<!--{if ($imgpad = $i % 4) > 0}--><!--{echo str_repeat('<td width="25%"></td>', 4 - $imgpad);}--><!--{/if}-->
+</tr></table>
+<div class="pgs cl">$multi</div>
+<!--{template common/footer_ajax}-->

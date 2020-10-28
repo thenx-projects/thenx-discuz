@@ -1,0 +1,55 @@
+{template header}
+
+<!--
+  ~ /*
+  ~  * Copyright 2012-2020 the original author or authors.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *      https://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<div class="container">
+	<h3 class="marginbot">
+		<a class="sgbtn" href="admin.php?m=user&a=ls">{lang user_list}</a>
+		{lang menu_log}
+	</h3>
+	<div class="mainbox">
+		<!--{if $userlog}-->
+			<table class="datalist">
+				<tr>
+					<th>ID</th>
+					<th>UID</th>
+					<th>{lang log_operation}</th>
+					<th>{lang log_extra}</th>
+				</tr>
+				<!--{loop $userlog $log}-->
+					<tr>
+						<td>$log['lid']</td>
+						<td>$log['uid']</td>
+						<td>$log['action']</td>
+						<td>$log['extra']</td>
+					</tr>
+				<!--{/loop}-->
+				<tr class="nobg">
+					<td class="tdpage" colspan="5">$multipage</td>
+				</tr>
+			</table>
+		<!--{else}-->
+			<div class="note">
+				<p class="i">{lang list_empty}</p>
+			</div>
+		<!--{/if}-->
+	</div>
+</div>
+
+{template footer}

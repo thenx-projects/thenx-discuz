@@ -1,0 +1,36 @@
+<!--
+  ~ /*
+  ~  * Copyright 2012-2020 the original author or authors.
+  ~  *
+  ~  * Licensed under the Apache License, Version 2.0 (the "License");
+  ~  * you may not use this file except in compliance with the License.
+  ~  * You may obtain a copy of the License at
+  ~  *
+  ~  *      https://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  * Unless required by applicable law or agreed to in writing, software
+  ~  * distributed under the License is distributed on an "AS IS" BASIS,
+  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  * See the License for the specific language governing permissions and
+  ~  * limitations under the License.
+  ~  */
+  -->
+
+<!--{template common/header}-->
+<div class="f_c">
+	<div id="messagetext">
+		<p>$show_message</p>
+        <!--{if $_G['forcemobilemessage']}-->
+        	<p >
+            	<a href="{$_G['setting']['mobile']['pageurl']}" class="mtn">{lang continue}</a><br />
+                <a href="javascript:history.back();">{lang goback}</a>
+            </p>
+        <!--{/if}-->
+		<!--{if $url_forward}-->
+			<p><a href="$url_forward">{lang message_forward_mobile}</a></p>
+		<!--{elseif $allowreturn}-->
+			<p><a href="javascript:history.back();">{lang message_go_back}</a></p>
+		<!--{/if}-->
+	</div>
+</div>
+<!--{template common/footer}-->
