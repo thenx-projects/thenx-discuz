@@ -17,13 +17,6 @@
  *
  */
 
-/**
- *      [Discuz!] (C)2001-2099 Comsenz Inc.
- *      This is NOT a freeware, use is subject to license terms
- *
- *      $Id: update.php 36348 2017-01-13 06:36:44Z nemohou $
- */
-
 include_once('../source/class/class_core.php');
 include_once('../source/function/function_core.php');
 
