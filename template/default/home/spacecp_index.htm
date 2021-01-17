@@ -1,21 +1,3 @@
-<!--
-  ~ /*
-  ~  * Copyright 2012-2020 the original author or authors.
-  ~  *
-  ~  * Licensed under the Apache License, Version 2.0 (the "License");
-  ~  * you may not use this file except in compliance with the License.
-  ~  * You may obtain a copy of the License at
-  ~  *
-  ~  *      https://www.apache.org/licenses/LICENSE-2.0
-  ~  *
-  ~  * Unless required by applicable law or agreed to in writing, software
-  ~  * distributed under the License is distributed on an "AS IS" BASIS,
-  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~  * See the License for the specific language governing permissions and
-  ~  * limitations under the License.
-  ~  */
-  -->
-
 <!--{template common/header}-->
 
 <!--{if $_GET['op'] == 'start'}-->
@@ -418,7 +400,7 @@ function succeedhandle_$_GET['handlekey'] (url, message, values) {
 					<tr>
 						<th>{lang display_mode}</th>
 						<!--{eval $bigmod = $config['showmod'] == 'big' ? ' checked' : ''; $defaultmod = $config['showmod'] == 'default' ? ' checked' : ''; }-->
-						<td> <input type="radio" value="big" name="showmod"$bigmod>{lang complete} <input type="radio" value="default" name="showmod"$defaultmod>{lang list}</td>
+						<td> <input type="radio" value="big" name="showmod"$bigmod>{lang complete} <input type="radio" value="default" name="showmod"$defaultmod>{lang default}</td>
 					</tr>
 					<tr>
 						<th>{lang start_mode}</th>
@@ -431,29 +413,11 @@ function succeedhandle_$_GET['handlekey'] (url, message, values) {
 						<td> <input type="radio" value="true" name="shuffle"$shuffle1>{lang shuffle_list_1} <input type="radio" value="false" name="shuffle"$shuffle2>{lang shuffle_list_2}</td>
 					</tr>
 					<tr>
-						<th>{lang interface_color}</th>
+						<th>{lang default_cover_color}</th>
 						<td>
-							<p class="mbn">
-								{lang cron_tab_color}
-								<input type="text" name="crontabcolor" id="usercrontabcolor_v" value="{$config['crontabcolor']}" size="7" class="px p_fre" />
-								<input id="cm_ctc" onclick="createPalette('m_ctc', 'usercrontabcolor_v');" type="button" class="pn colorwd" value="" style="background-color: {$config['crontabcolor']}">
-							</p>
-							<p class="mbn">
-								{lang button_color}
-								<input type="text" name="buttoncolor" id="userbuttoncolor_v" value="{$config['buttoncolor']}" size="7" class="px p_fre" />
-								<input id="cm_bc" onclick="createPalette('m_bc', 'userbuttoncolor_v');" type="button" class="pn colorwd" value="" style="background-color: {$config['buttoncolor']}">
-							</p>
-							<p class="mbn">
-								{lang play_list_color}
-								<input type="text" name="fontcolor" id="userfontcolor_v" value="{$config['fontcolor']}" size="7" class="px p_fre" />
-								<input id="cm_fc" onclick="createPalette('m_fc', 'userfontcolor_v');" type="button" class="pn colorwd" value="" style="background-color: {$config['fontcolor']}">
-							</p>
+							<input type="text" name="crontabcolor" id="usercrontabcolor_v" value="{$config['crontabcolor']}" size="7" class="px p_fre" />
+							<input id="cm_ctc" onclick="createPalette('m_ctc', 'usercrontabcolor_v');" type="button" class="pn colorwd" value="" style="background-color: {$config['crontabcolor']}">
 						</td>
-					</tr>
-					<tr>
-						<th>{lang cron_bg}</th>
-						<td><input type="text" name="crontabbj" value="$config['crontabbj']" size="40" maxlength="200" class="px" />
-							<br />{lang com_mode_message}</td>
 					</tr>
 					<tr>
 						<th>{lang musicbox_height}</th>
@@ -557,9 +521,7 @@ function succeedhandle_$_GET['handlekey'] (url, message, values) {
 									</tr>
 									<tr>
 										<th>{lang front_cover}</th>
-										<td><input type="text" name="cdbj[]" value="" size="40" maxlength="200" class="px" />
-											<br />
-					   {lang complete_mode_message}</td>
+										<td><input type="text" name="cdbj[]" value="" size="40" maxlength="200" class="px" /></td>
 									</tr>
 								</table></td>
 							<td><a href="javascript:;" onclick="delMenu(this)"> {lang delete}</a></td>

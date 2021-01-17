@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /*
 	[Discuz!] (C)2001-2099 Comsenz Inc.
@@ -26,8 +9,8 @@
 
 class seccode {
 
-	var $code;			//100000-999999 ï¿½ï¿½Î§ï¿½ï¿½ï¿½ï¿½ï¿½
-	var $type 	= 0;		//0 Ó¢ï¿½ï¿½Í¼Æ¬ï¿½ï¿½Ö¤ï¿½ï¿½  1 ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ï¿½ï¿½Ö¤ï¿½ï¿½  2 Flash ï¿½ï¿½Ö¤ï¿½ï¿½  3 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½
+	var $code;			//100000-999999 ·¶Î§ÄÚËæ»ú
+	var $type 	= 0;		//0 Ó¢ÎÄÍ¼Æ¬ÑéÖ¤Âë  1 ÖÐÎÄÍ¼Æ¬ÑéÖ¤Âë  2 Flash ÑéÖ¤Âë  3 ÓïÒôÑéÖ¤Âë
 	var $width 	= 0;
 	var $height 	= 0;
 	var $background	= 1;
@@ -37,8 +20,8 @@ class seccode {
 	var $color 	= 1;
 	var $size 	= 0;
 	var $shadow 	= 1;
-	var $animator 	= 0;		//GIF ï¿½ï¿½ï¿½ï¿½
-	var $fontpath	= '';		//TTF ï¿½Ö¿ï¿½Ä¿Â¼
+	var $animator 	= 0;		//GIF ¶¯»­
+	var $fontpath	= '';		//TTF ×Ö¿âÄ¿Â¼
 	var $datapath	= '';
 	var $includepath= '';
 

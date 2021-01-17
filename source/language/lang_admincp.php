@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /**
  *      [Discuz!] (C)2001-2099 Comsenz Inc.
@@ -1620,8 +1603,8 @@ $lang = array
 	'setting_serveropti_onlinehold' => '在线保持时间(分钟)',
 	'setting_serveropti_onlinehold_comment' => '请根据访问情况设置合理的数值，访问量大的站点应当调小该数值，设置范围 5 - 60，过大或者过小的设置都有可能会增大服务器资源开销',
 	'setting_serveropti_jspath' => 'JS 文件 URL',
-	'setting_serveropti_jspath_comment' => '设置站点 JS 文件的 URL。当设置为缓存目录时，系统会将默认目录中的 *.js 文件进行压缩然后保存到缓存目录以提高读取速度',
-	'setting_serveropti_jspath_default' => '默认目录 static/js/',
+	'setting_serveropti_jspath_comment' => '设置站点 JS 文件的 URL。当设置为缓存目录时，系统会将系统目录中的 *.js 文件进行压缩然后保存到缓存目录以提高读取速度和用户访问速度',
+	'setting_serveropti_jspath_default' => '系统目录 static/js/',
 	'setting_serveropti_jspath_cache' => '缓存目录',
 	'setting_serveropti_jspath_custom' => '自定义 URL',
 	'setting_serveropti_csspath' => 'CSS 文件 URL',
@@ -2118,6 +2101,8 @@ $lang = array
 	'setting_sec_base_need_email_comment' => '选择是的话，用户必须验证激活自己的邮箱后，才可以进行发布操作。 ',
 	'setting_sec_base_uniqueemail' => '验证激活邮箱唯一性',
 	'setting_sec_base_uniqueemail_comment' => '选择是的话，验证激活的邮箱将唯一性，不允许重复',
+	'setting_sec_base_change_email' => '禁止用户前台修改邮箱',
+	'setting_sec_base_change_email_comment' => '选择是的话，用户不能通过前台自行修改账号绑定的邮箱',
 	'setting_sec_base_need_avatar' => '强制用户上传头像',
 	'setting_sec_base_need_avatar_comment' => '选择是的话，用户必须设置自己的头像后才能进行发布操作',
 	'setting_sec_base_need_friendnum' => '强制用户好友个数',
@@ -5631,6 +5616,8 @@ $lang = array
 	'tasks_add_group_special' => '指定用户组',
 	'tasks_add_relatedtask' => '必须完成指定任务',
 	'tasks_add_relatedtask_comment' => '申请此任务是否需要先完成其他任务，利用此设置，可设计一个系列任务，通常为不限制',
+	'tasks_add_exclusivetask' => '必须未领取指定任务',
+	'tasks_add_exclusivetask_comment' => '配置的任务被领取且未放弃时不允许申请或完成本任务，利用此设置，可设计一个系列任务，通常为不限制',
 	'tasks_add_conditions' => '完成任务条件',
 	'tasks_add_maxnum' => '申请人次上限',
 	'tasks_add_maxnum_comment' => '当完成此任务的人次达到这个数值时，系统将自动拒绝新的申请，0 或留空为不限制',

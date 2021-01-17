@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /**
  *      [Discuz!] (C)2001-2099 Comsenz Inc.
@@ -220,6 +203,11 @@ class task {
 			$_G['taskrequired'] = $task['name'];
 		}
 
+		if($this->task['exclusivetaskid']) {
+			$task = C::t('common_task')->fetch($this->task['exclusivetaskid']);
+			$_G['taskexclusive'] = $task['name'];
+		}
+
 		$escript = explode(':', $this->task['scriptname']);
 		if(count($escript) > 1) {
 			include_once DISCUZ_ROOT.'./source/plugin/'.$escript[0].'/task/task_'.$escript[1].'.php';
@@ -342,6 +330,8 @@ class task {
 
 		if($this->task['relatedtaskid'] && !C::t('common_mytask')->count($_G['uid'], $this->task['relatedtaskid'], 1)) {
 			return -1;
+		} elseif($this->task['exclusivetaskid'] && C::t('common_mytask')->count($_G['uid'], $this->task['exclusivetaskid'])) {
+			return -5;
 		} elseif($this->task['applyperm'] && $this->task['applyperm'] != 'all' && !(($this->task['applyperm'] == 'member' && $_G['adminid'] == '0') || ($this->task['applyperm'] == 'admin' && $_G['adminid'] > '0') || preg_match("/(^|\t)(".$_G['groupid'].")(\t|$)/", $this->task['applyperm']))) {
 			return -2;
 		} elseif(!$this->task['period'] && C::t('common_mytask')->count($_G['uid'], $id)) {
@@ -393,6 +383,8 @@ class task {
 			showmessage('task_not_underway');
 		} elseif($this->task['tasklimits'] && $this->task['achievers'] >= $this->task['tasklimits']) {
 			return -1;
+		} elseif($this->task['exclusivetaskid'] && C::t('common_mytask')->count($_G['uid'], $this->task['exclusivetaskid'])) {
+			return -4;
 		}
 
 		$escript = explode(':', $this->task['scriptname']);

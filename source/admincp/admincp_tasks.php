@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /**
  *      [Discuz!] (C)2001-2099 Comsenz Inc.
@@ -307,6 +290,7 @@ if(!($operation)) {
 		}
 		$data = array(
 			'relatedtaskid' => $_GET['relatedtaskid'],
+			'exclusivetaskid' => $_GET['exclusivetaskid'],
 			'available' => 0,
 			'name' => $_GET['name'],
 			'description' => $_GET['description'],
@@ -441,6 +425,7 @@ if(!($operation)) {
 			}
 		}
 		showsetting('tasks_add_relatedtask', array('relatedtaskid', $tasklist), $task['relatedtaskid'], 'select');
+		showsetting('tasks_add_exclusivetask', array('exclusivetaskid', $tasklist), $task['exclusivetaskid'], 'select');
 		showsetting('tasks_add_maxnum', 'tasklimits', $task['tasklimits'], 'text');
 
 		$taskvars = array();
@@ -525,6 +510,7 @@ if(!($operation)) {
 		}
 		C::t('common_task')->update($id, array(
 			'relatedtaskid' => $_GET['relatedtaskid'],
+			'exclusivetaskid' => $_GET['exclusivetaskid'],			
 			'name' => $_GET['name'],
 			'description' => $_GET['description'],
 			'icon' => $_GET['iconnew'],
