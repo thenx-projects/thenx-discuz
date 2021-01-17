@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /**
  *      [Discuz!] (C)2001-2099 Comsenz Inc.
@@ -45,36 +28,8 @@ if ($_GET['op'] == 'getmusiclist') {
 	if($reauthcode == $_GET['hash']) {
 		space_merge($space,'field_home');
 		$userdiy = getuserdiydata($space);
-		$musicmsgs = $userdiy['parameters']['music'];
-		$outxml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-		$outxml .= '<playlist version="1">'."\n";
-		$outxml .= '<mp3config>'."\n";
-		$showmod = 'big' == $musicmsgs['config']['showmod'] ? 'true' : 'false';
-		$outxml .= '<showdisplay>'.$showmod.'</showdisplay>'."\n";
-		$outxml .= '<autostart>'.$musicmsgs['config']['autorun'].'</autostart>'."\n";
-		$outxml .= '<showplaylist>true</showplaylist>'."\n";
-		$outxml .= '<shuffle>'.$musicmsgs['config']['shuffle'].'</shuffle>'."\n";
-		$outxml .= '<repeat>all</repeat>'."\n";
-		$outxml .= '<volume>100</volume>';
-		$outxml .= '<linktarget>_top</linktarget> '."\n";
-		$outxml .= '<backcolor>0x'.substr($musicmsgs['config']['crontabcolor'], -6).'</backcolor> '."\n";
-		$outxml .= '<frontcolor>0x'.substr($musicmsgs['config']['buttoncolor'], -6).'</frontcolor>'."\n";
-		$outxml .= '<lightcolor>0x'.substr($musicmsgs['config']['fontcolor'], -6).'</lightcolor>'."\n";
-		$outxml .= '<jpgfile>'.$musicmsgs['config']['crontabbj'].'</jpgfile>'."\n";
-		$outxml .= '<callback></callback> '."\n";
-		$outxml .= '</mp3config>'."\n";
-		$outxml .= '<trackList>'."\n";
-		foreach ($musicmsgs['mp3list'] as $value){
-			$outxml .= '<track><annotation>'.$value['mp3name'].'</annotation><location>'.$value['mp3url'].'</location><image>'.$value['cdbj'].'</image></track>'."\n";
-		}
-		$outxml .= '</trackList></playlist>';
-		$outxml = diconv($outxml, CHARSET, 'UTF-8');
-		obclean();
-		@header("Expires: -1");
-		@header("Cache-Control: no-store, private, post-check=0, pre-check=0, max-age=0", FALSE);
-		@header("Pragma: no-cache");
-		@header("Content-type: application/xml; charset=utf-8");
-		echo $outxml;
+		// 后端直接返回, 由前端负责将原始数据调整为所需格式
+		helper_output::json($userdiy['parameters']['music']);
 	}
 	exit();
 

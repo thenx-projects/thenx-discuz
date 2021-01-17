@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /**
  *      [Discuz!] (C)2001-2099 Comsenz Inc.
@@ -876,6 +859,7 @@ $lang = array (
   'task_reapply' => '后可以重新申请',
   'task_reapply_now' => '现在可以重新申请',
   'task_relatedtask' => '必须完成指定任务',
+  'task_exclusivetask' => '必须未领取指定任务',
   'task_reward' => '奖励',
   'task_reward_get' => '领取奖励',
   'unlimited' => '不限',
@@ -1171,14 +1155,10 @@ $lang = array (
   'background_color' => '背景颜色',
   'background_rolling' => '背景滚动',
   'big' => '大',
-  'button_color' => '字体按钮颜色',
   'cancel_bg_pic' => '取消背景图',
-  'com_mode_message' => '完整模式才有效果，建议选择 200*18 的 jpg 图片',
   'complete' => '完整',
-  'complete_mode_message' => '完整模式才有效果，建议选择 60*60 的 jpg 图片',
   'content_area' => '内容区',
-  'cron_bg' => '面板背景',
-  'cron_tab_color' => '面板背景颜色',
+  'default_cover_color' => '封面背景',
   'current_playlist' => '当前播放列表',
   'custom_content' => '自定义内容',
   'delete_all' => '全选删除',
@@ -1193,15 +1173,13 @@ $lang = array (
   'header' => '头部',
   'horizontal_repeat' => '横向平铺',
   'increase' => '增加',
-  'interface_color' => '界面颜色',
   'is_first_one' => '已是第一个',
   'is_last_one' => '已到最后一个',
   'link_color' => '链接颜色',
-  'list' => '列表',
   'manual_run' => '手动',
   'middle' => '中',
   'mp3_address' => 'mp3地址',
-  'mp3_warning_message' => '注意:仅支持 mp3 格式添加,即:必须是以 http:// 开始，以 .mp3 结尾',
+  'mp3_warning_message' => '注意:仅支持浏览器可直接播放的音频格式添加',
   'musicbox_height' => '高度',
   'musicbox_height_message' => '设置音乐盒的高度',
   'my_space_describe' => '我的空间描述',
@@ -1209,12 +1187,11 @@ $lang = array (
   'myapp_img' => '图标大小',
   'no_music_play_list' => '暂无音乐播放列表',
   'not_delete_last_line' => '最后一行不允许删除',
-  'not_play_message' => '不能播放的时候请检查该地址 mp3 文件是否存在',
+  'not_play_message' => '无法播放时请检查该地址文件是否存在以及文件格式是否满足要求',
   'nvhidden' => '隐藏',
   'nvshow' => '显示',
   'photo_location' => '图片位置',
   'pic_repeat' => '图片平铺',
-  'play_list_color' => '播放曲目颜色',
   'play_mode' => '播放模式',
   'player_profile' => '播放器配置',
   'recover_style' => '恢复原装皮肤',

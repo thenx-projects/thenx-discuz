@@ -7,24 +7,6 @@
 	$_G[home_tpl_titles][] = '{lang portal}';
 }
 
-<!--
-  ~ /*
-  ~  * Copyright 2012-2020 the original author or authors.
-  ~  *
-  ~  * Licensed under the Apache License, Version 2.0 (the "License");
-  ~  * you may not use this file except in compliance with the License.
-  ~  * You may obtain a copy of the License at
-  ~  *
-  ~  *      https://www.apache.org/licenses/LICENSE-2.0
-  ~  *
-  ~  * Unless required by applicable law or agreed to in writing, software
-  ~  * distributed under the License is distributed on an "AS IS" BASIS,
-  ~  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~  * See the License for the specific language governing permissions and
-  ~  * limitations under the License.
-  ~  */
-  -->
-
 <!--{template common/header}-->
 
 <script type="text/javascript">var fid = parseInt('$_G[fid]'), tid = parseInt('$_G[tid]');</script>
@@ -64,8 +46,9 @@
 			</div>
 
 			<!--{if $_G['setting']['fastpost'] && $allowpostreply && !$_G['forum_thread']['archiveid'] && !$secqaacheck && !$seccodecheck}-->
+			<!--{eval $_GET['extra']=daddslashes($_GET['extra']);$_GET['from']=daddslashes($_GET['from']);}-->
 			<div class="previewvfastpost" id="vfastpost">
-				<form method="post" autocomplete="off" id="vfastpostform_{$_G['tid']}" action="forum.php?mod=post&action=reply&fid=$_G[fid]&tid=$_G[tid]&fromvf=1&extra=$_G[gp_extra]&replysubmit=yes{if $_G['gp_ordertype'] != 1}&infloat=yes&handlekey=vfastpost_{$_G['tid']}{/if}{if $_G[gp_from]}&from=$_G[gp_from]{/if}" onsubmit="this.message.value = parseurl(this.message.value);changecontentdivid({$_G['tid']});ajaxpost('vfastpostform_{$_G['tid']}', 'return_reply', 'return_reply', 'onerror');return false;">
+				<form method="post" autocomplete="off" id="vfastpostform_{$_G['tid']}" action="forum.php?mod=post&action=reply&fid=$_G['fid']&tid=$_G['tid']&fromvf=1&extra=$_GET['extra']&replysubmit=yes{if $_GET['ordertype'] != 1}&infloat=yes&handlekey=vfastpost_{$_G['tid']}{/if}{if $_GET['from']}&from=$_GET['from']{/if}" onsubmit="this.message.value = parseurl(this.message.value);changecontentdivid({$_G['tid']});ajaxpost('vfastpostform_{$_G['tid']}', 'return_reply', 'return_reply', 'onerror');return false;">
 					<input type="hidden" name="formhash" value="{FORMHASH}" />
 					<table cellspacing="0" cellpadding="0" id="vfastposttb">
 						<tr>

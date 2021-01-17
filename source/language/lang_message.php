@@ -1,21 +1,4 @@
 <?php
-/*
- *
- *  * Copyright 2012-2020 the original author or authors.
- *  *
- *  * Licensed under the Apache License, Version 2.0 (the "License");
- *  * you may not use this file except in compliance with the License.
- *  * You may obtain a copy of the License at
- *  *
- *  *      https://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
 
 /**
  *      [Discuz!] (C)2001-2099 Comsenz Inc.
@@ -266,6 +249,7 @@ $lang = array (
   'profile_username_tooshort' => '抱歉，您输入的用户名小于 3 个字符，请输入一个较长的用户名',
   'profile_username_toolong' => '抱歉，您的用户名超过 15 个字符，请输入一个较短的用户名',
   'profile_passwd_notmatch' => '抱歉，两次输入的密码不一致',
+  'profile_email_not_change' => '抱歉，本站不允许通过前台自行修改账号绑定的邮箱',
   'profile_username_illegal' => '用户名包含敏感字符',
   'profile_username_duplicate' => '该用户名已被注册',
   'profile_illegal' => '格式不正确或为空',
@@ -482,6 +466,7 @@ $lang = array (
 
   'task_close' => '抱歉，站点任务关闭',
   'task_relatedtask' => '申请此任务需要先完成另一个任务，任务页面跳转中请稍候……',
+  'task_exclusivetask' => '抱歉，您已领取且未放弃另一个任务，不能再申请或完成此任务',
   'task_grouplimit' => '抱歉，您所在的用户组不允许申请此任务',
   'task_duplicate' => '抱歉，您已申请过此任务，请不要重复申请',
   'task_nextperiod' => '抱歉，本期您已申请过此任务，请下期再来',
@@ -1098,6 +1083,7 @@ $lang = array (
   'post_url_nopermission' => '抱歉，您没有权限发表 URL 连接',
 
   'not_in_mobile' => '您访问的页面无手机页面，是否进一步访问电脑版？',
+  'template_developer_not_in_mobile' => '您访问的页面 {file} 无手机模板，是否进一步访问电脑版？',
 
   'magics_operation_nopermission' => '抱歉，此道具只能操作自己发帖子或评论',
 
