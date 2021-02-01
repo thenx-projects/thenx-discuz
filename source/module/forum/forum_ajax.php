@@ -63,7 +63,6 @@ if($_GET['action'] == 'checkusername') {
 		if(empty($invite['fuid']) && (empty($invite['endtime']) || $_G['timestamp'] < $invite['endtime'])) {
 			$result['uid'] = $invite['uid'];
 			$result['id'] = $invite['id'];
-			$result['appid'] = $invite['appid'];
 		}
 	}
 	if(empty($result)) {
@@ -333,18 +332,18 @@ if($_GET['action'] == 'checkusername') {
 				$thread['highlight'] = '';
 			}
 			$target = $thread['isgroup'] == 1 || $thread['forumstick'] ? ' target="_blank"' : ' onclick="atarget(this)"';
-			if(in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
+			if(is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
 				$thread['threadurl'] = '<a href="'.rewriteoutput('forum_viewthread', 1, '', $thread['tid'], 1, '', '').'"'.$thread['highlight'].$target.'class="s xst">'.$thread['subject'].'</a>';
 			} else {
 				$thread['threadurl'] = '<a href="forum.php?mod=viewthread&amp;tid='.$thread['tid'].'"'.$thread['highlight'].$target.'class="s xst">'.$thread['subject'].'</a>';
 			}
-			if(in_array($thread['displayorder'], array(1, 2, 3, 4))) {
+			if(is_array($_G['setting']['rewritestatus']) && in_array($thread['displayorder'], array(1, 2, 3, 4))) {
 				$thread['id'] = 'stickthread_'.$thread['tid'];
 			} else {
 				$thread['id'] = 'normalthread_'.$thread['tid'];
 			}
 			$thread['threadurl'] = $thread['threadtype'].$thread['threadsort'].$thread['threadurl'];
-			if(in_array('home_space', $_G['setting']['rewritestatus'])) {
+			if(is_array($_G['setting']['rewritestatus']) && in_array('home_space', $_G['setting']['rewritestatus'])) {
 				$thread['authorurl'] = '<a href="'.rewriteoutput('home_space', 1, '', $thread['authorid'], '', '').'">'.$thread['author'].'</a>';
 				$thread['lastposterurl'] = '<a href="'.rewriteoutput('home_space', 1, '', '', rawurlencode($thread['lastposter']), '').'">'.$thread['lastposter'].'</a>';
 			} else {
@@ -481,7 +480,7 @@ if($_GET['action'] == 'checkusername') {
 	print <<<EOF
 		<script type="text/javascript">
 			parent.ATTACHORIMAGE = 1;
-			parent.updateDownImageList('$_GET[message]');
+			parent.updateDownImageList('{$_GET['message']}');
 		</script>
 EOF;
 	dexit();
@@ -704,7 +703,9 @@ EOF;
 			C::t('common_setting')->update($funkey, $funstatus);
 
 			$setting[$funkey] = $funstatus;
-			include libfile('function/cache');
+			if(!function_exists('updatecache')) {
+				include libfile('function/cache');
+			}
 			updatecache('setting');
 		}
 		showmessage('do_success', dreferer(), array(), array('showdialog' => true, 'locationtime' => true));

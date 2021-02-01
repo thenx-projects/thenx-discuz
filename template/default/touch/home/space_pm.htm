@@ -19,7 +19,7 @@
 		<ul>
 			<!--{loop $list $key $value}-->
 			<li>
-			<div class="avatar_img"><img style="height:32px;width:32px;" src="<!--{if $value[pmtype] == 2}-->{STATICURL}image/common/grouppm.png<!--{else}--><!--{avatar($value[touid] ? $value[touid] : ($value[lastauthorid] ? $value[lastauthorid] : $value[authorid]), small, true)}--><!--{/if}-->" /></div>
+			<div class="avatar_img"><img style="height:32px;width:32px;" src="<!--{if $value[pmtype] == 2}-->{STATICURL}image/common/grouppm.png<!--{else}--><!--{avatar($value['touid'] ? $value['touid'] : ($value['lastauthorid'] ? $value['lastauthorid'] : $value['authorid']), 'small', true)}--><!--{/if}-->" /></div>
 				<a href="{if $value[touid]}home.php?mod=space&do=pm&subop=view&touid=$value[touid]{else}home.php?mod=space&do=pm&subop=view&plid={$value['plid']}&type=1{/if}">
 					<div class="cl">
 						<!--{if $value[new]}--><span class="num">$value[pmnum]</span><!--{/if}-->
@@ -34,7 +34,7 @@
 						<!--{/if}-->
 					</div>
 					<div class="cl grey">
-						<span class="time"><!--{date($value[dateline], 'u')}--></span>
+						<span class="time"><!--{date($value['dateline'], 'u')}--></span>
 						<span><!--{if $value['pmtype'] == 2}-->[{lang chatpm}]<!--{if $value[subject]}-->$value[subject]<br><!--{/if}--><!--{/if}--><!--{if $value['pmtype'] == 2 && $value['lastauthor']}--><div style="padding:0 0 0 20px;">......<br>$value['lastauthor'] : $value[message]</div><!--{else}-->$value[message]<!--{/if}--></span>
 					</div>
 				</a>

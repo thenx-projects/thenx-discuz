@@ -96,9 +96,9 @@ function getuserprofile($field) {
 		'count'		=> array('extcredits1','extcredits2','extcredits3','extcredits4','extcredits5','extcredits6','extcredits7','extcredits8','friends','posts','threads','digestposts','doings','blogs','albums','sharings','attachsize','views','oltime','todayattachs','todayattachsize', 'follower', 'following', 'newfollower', 'blacklist'),
 		'status'	=> array('regip','lastip','lastvisit','lastactivity','lastpost','lastsendmail','invisible','buyercredit','sellercredit','favtimes','sharetimes','profileprogress'),
 		'field_forum'	=> array('publishfeed','customshow','customstatus','medals','sightml','groupterms','authstr','groups','attentiongroup'),
-		'field_home'	=> array('videophoto','spacename','spacedescription','domain','addsize','addfriend','menunum','theme','spacecss','blockposition','recentnote','spacenote','privacy','feedfriend','acceptemail','magicgift','stickblogs'),
+		'field_home'	=> array('spacename','spacedescription','domain','addsize','addfriend','menunum','theme','spacecss','blockposition','recentnote','spacenote','privacy','feedfriend','acceptemail','magicgift','stickblogs'),
 		'profile'	=> array('realname','gender','birthyear','birthmonth','birthday','constellation','zodiac','telephone','mobile','idcardtype','idcard','address','zipcode','nationality','birthprovince','birthcity','resideprovince','residecity','residedist','residecommunity','residesuite','graduateschool','company','education','occupation','position','revenue','affectivestatus','lookingfor','bloodtype','height','weight','alipay','icq','qq','yahoo','msn','taobao','site','bio','interest','field1','field2','field3','field4','field5','field6','field7','field8'),
-		'verify'	=> array('verify1', 'verify2', 'verify3', 'verify4', 'verify5', 'verify6', 'verify7'),
+		'verify'	=> array('verify1', 'verify2', 'verify3', 'verify4', 'verify5', 'verify6'),
 	);
 	$profiletable = '';
 	foreach($tablefields as $table => $fields) {
@@ -340,7 +340,7 @@ function checkmobile() {
 		$_G['mobile'] = $v;
 		return '3'; //wml版
 	}
-	$brower = array('mozilla', 'chrome', 'safari', 'opera', 'm3gate', 'winwap', 'openwave', 'myop');
+	$brower = array('mozilla', 'chrome', 'safari', 'opera', 'm3gate', 'winwap', 'openwave');
 	if(dstrpos($useragent, $brower)) return false;
 
 	$_G['mobile'] = 'unknown';
@@ -424,7 +424,9 @@ function avatar($uid, $size = 'middle', $returnsrc = FALSE, $real = FALSE, $stat
 function lang($file, $langvar = null, $vars = array(), $default = null) {
 	global $_G;
 	$fileinput = $file;
-	list($path, $file) = explode('/', $file);
+	$list = explode('/', $file);
+	$path = $list[0];
+	$file = isset($list[1]) ? $list[1] : false;
 	if(!$file) {
 		$file = $path;
 		$path = '';
@@ -438,18 +440,18 @@ function lang($file, $langvar = null, $vars = array(), $default = null) {
 		$key = $path == '' ? $file : $path.'_'.$file;
 		if(!isset($_G['lang'][$key])) {
 			include DISCUZ_ROOT.'./source/language/'.($path == '' ? '' : $path.'/').'lang_'.$file.'.php';
-			$_G['lang'][$key] = $lang;
+			$_G['lang'][$key] = (array)$lang;
 		}
 		if(defined('IN_MOBILE') && !defined('TPL_DEFAULT')) {
 			include DISCUZ_ROOT.'./source/language/mobile/lang_template.php';
-			$_G['lang'][$key] = array_merge($_G['lang'][$key], $lang);
+			$_G['lang'][$key] = array_merge((array)$_G['lang'][$key], (array)$lang);
 		}
 		if($file != 'error' && !isset($_G['cache']['pluginlanguage_system'])) {
 			loadcache('pluginlanguage_system');
 		}
 		if(!isset($_G['hooklang'][$fileinput])) {
 			if(isset($_G['cache']['pluginlanguage_system'][$fileinput]) && is_array($_G['cache']['pluginlanguage_system'][$fileinput])) {
-				$_G['lang'][$key] = array_merge($_G['lang'][$key], $_G['cache']['pluginlanguage_system'][$fileinput]);
+				$_G['lang'][$key] = array_merge((array)$_G['lang'][$key], (array)$_G['cache']['pluginlanguage_system'][$fileinput]);
 			}
 			$_G['hooklang'][$fileinput] = true;
 		}
@@ -479,7 +481,7 @@ function lang($file, $langvar = null, $vars = array(), $default = null) {
 	if(is_string($return) && strpos($return, '{_G/') !== false) {
 		preg_match_all('/\{_G\/(.+?)\}/', $return, $gvar);
 		foreach($gvar[0] as $k => $v) {
-			$searchs[] = $v;
+			$searchs[] = (string)$v;
 			$replaces[] = getglobal($gvar[1][$k]);
 		}
 	}
@@ -598,7 +600,7 @@ function template($file, $templateid = 0, $tpldir = '', $gettplfile = 0, $primal
 	$filebak = $file;
 
 	if(defined('IN_MOBILE') && !defined('TPL_DEFAULT') && strpos($file, $_G['mobiletpl'][IN_MOBILE].'/') === false || (isset($_G['forcemobilemessage']) && $_G['forcemobilemessage'])) {
-		if(IN_MOBILE == 2) {
+		if(defined('IN_MOBILE') && constant('IN_MOBILE') == 2) {
 			$oldfile .= !empty($_G['inajax']) && ($oldfile == 'common/header' || $oldfile == 'common/footer') ? '_ajax' : '';
 		}
 		$file = $_G['mobiletpl'][IN_MOBILE].'/'.$oldfile;
@@ -1134,7 +1136,7 @@ function runhooks($scriptextra = '') {
 
 function hookscript($script, $hscript, $type = 'funcs', $param = array(), $func = '', $scriptextra = '') {
 	global $_G;
-	static $pluginclasses;
+	static $pluginclasses = array();
 	if($hscript == 'home') {
 		if($script == 'space') {
 			$scriptextra = !$scriptextra ? $_GET['do'] : $scriptextra;
@@ -1159,7 +1161,7 @@ function hookscript($script, $hscript, $type = 'funcs', $param = array(), $func 
 			@include_once DISCUZ_ROOT.'./source/plugin/'.$include.'.class.php';
 		}
 	}
-	if(@is_array($_G['setting'][HOOKTYPE][$hscript][$script][$type])) {
+	if(isset($_G['setting'][HOOKTYPE][$hscript][$script][$type]) && is_array($_G['setting'][HOOKTYPE][$hscript][$script][$type])) {
 		$_G['inhookscript'] = true;
 		$funcs = !$func ? $_G['setting'][HOOKTYPE][$hscript][$script][$type] : array($func => $_G['setting'][HOOKTYPE][$hscript][$script][$type][$func]);
 		foreach($funcs as $hookkey => $hookfuncs) {
@@ -1690,9 +1692,9 @@ function updatediytemplate($targettplname = '', $tpldirectory = '') {
 	return $r;
 }
 
-function space_key($uid, $appid=0) {
+function space_key($uid) {
 	global $_G;
-	return substr(md5($_G['setting']['siteuniqueid'].'|'.$uid.(empty($appid)?'':'|'.$appid)), 8, 16);
+	return substr(md5($_G['setting']['siteuniqueid'].'|'.$uid), 8, 16);
 }
 
 
@@ -2059,8 +2061,8 @@ function parse_related_link($content, $extent) {
 }
 
 function check_diy_perm($topic = array(), $flag = '') {
-	static $ret;
-	if(!isset($ret)) {
+	static $ret = array();
+	if(empty($ret)) {
 		global $_G;
 		$common = !empty($_G['style']['tplfile']) || $_GET['inajax'];
 		$blockallow = getstatus($_G['member']['allowadmincp'], 4) || getstatus($_G['member']['allowadmincp'], 5) || getstatus($_G['member']['allowadmincp'], 6);

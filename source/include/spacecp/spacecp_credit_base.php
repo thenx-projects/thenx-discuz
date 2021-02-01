@@ -105,7 +105,7 @@ if($_GET['op'] == 'base') {
 					showmessage('memcp_credits_card_msg_cleardateline_early', '', array(), array('showdialog' => 1, 'showmsg' => true, 'closetime' => true));
 				}
 				if(C::t('common_card')->update_to_used($card['id'])) {
-					updatemembercount($_G[uid], array($card['extcreditskey'] => $card['extcreditsval']), true, 'CDC', 1);
+					updatemembercount($_G['uid'], array($card['extcreditskey'] => $card['extcreditsval']), true, 'CDC', 1);
 					showmessage('memcp_credits_card_msg_succeed', 'home.php?mod=spacecp&ac=credit&op=base', array('extcreditstitle' => $_G['setting']['extcredits'][$card['extcreditskey']]['title'], 'extcreditsval' => $card['extcreditsval']), array('showdialog' => 1, 'alert' => 'right', 'showmsg' => true, 'locationtime' => true));
 				} else {
 					showmessage('memcp_credits_card_msg_used', '', array(), array('showdialog' => 1, 'showmsg' => true, 'closetime' => true));
@@ -153,9 +153,9 @@ if($_GET['op'] == 'base') {
 				'port' => $_G['remoteport'],
 			));
 
-			include template('common/header_ajax');
-			echo '<form id="payform" action="'.$requesturl.'" method="post"></form><script type="text/javascript" reload="1">$(\'payform\').submit();</script>';
-			include template('common/footer_ajax');
+			include isset($_REQUEST['inajax']) ? template('common/header_ajax') : template('common/header');
+			echo '<form id="payform" action="'.$requesturl.'" method="post"></form><script type="text/javascript" reload="1">document.getElementById(\'payform\').submit();</script>';
+			include isset($_REQUEST['inajax']) ? template('common/footer_ajax') : template('common/footer');
 			dexit();
 		}
 	} else {

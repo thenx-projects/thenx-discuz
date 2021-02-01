@@ -60,7 +60,7 @@ function show_msg($error_no, $error_msg = 'ok', $success = 1, $quit = TRUE) {
 
 function check_db($dbhost, $dbuser, $dbpw, $dbname, $tablepre) {
 	if(!function_exists('mysqli_connect')) {
-		show_msg('undefine_func', 'mysql_connect', 0);
+		show_msg('undefine_func', 'mysqli_connect', 0);
 	}
 	if (strpos($dbhost, ":") === FALSE) $dbhost .= ":3306";
 	$link = new mysqli($dbhost, $dbuser, $dbpw);
@@ -217,7 +217,7 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 			$item['r'] = format_space($item['r']);
 		}
 		if(VIEW_OFF) {
-			$env_str .= "\t\t<runCondition name=\"$key\" status=\"$status\" Require=\"$item[r]\" Best=\"$item[b]\" Current=\"$item[current]\"/>\n";
+			$env_str .= "\t\t<runCondition name=\"$key\" status=\"$status\" Require=\"{$item['r']}\" Best=\"{$item['b']}\" Current=\"{$item['current']}\"/>\n";
 		} else {
 			$env_str .= "<tr>\n";
 			$env_str .= "<td>".lang($key)."</td>\n";
@@ -236,10 +236,10 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 			if($item['status'] == 0) {
 				$error_code = ENV_CHECK_ERROR;
 			}
-			$$variable .= "\t\t\t<File name=\"$item[path]\" status=\"$item[status]\" requirePermisson=\"+r+w\" currentPermisson=\"$item[current]\" />\n";
+			$$variable .= "\t\t\t<File name=\"{$item['path']}\" status=\"{$item['status']}\" requirePermisson=\"+r+w\" currentPermisson=\"{$item['current']}\" />\n";
 		} else {
 			$$variable .= "<tr>\n";
-			$$variable .= "<td>$item[path]</td><td class=\"w pdleft1\">".lang('writeable')."</td>\n";
+			$$variable .= "<td>{$item['path']}</td><td class=\"w pdleft1\">".lang('writeable')."</td>\n";
 			if($item['status'] == 1) {
 				$$variable .= "<td class=\"w pdleft1\">".lang('writeable')."</td>\n";
 			} elseif($item['status'] == -1) {
@@ -932,12 +932,7 @@ function runucquery($sql, $tablepre) {
 
 
 function charcovert($string) {
-	if(!get_magic_quotes_gpc()) {
-		$string = str_replace('\'', '\\\'', $string);
-	} else {
-		$string = str_replace('\"', '"', $string);
-	}
-	return $string;
+	return str_replace('\'', '\\\'', $string);
 }
 
 function insertconfig($s, $find, $replace) {
@@ -980,16 +975,24 @@ function fsocketopen($hostname, $port = 80, &$errno, &$errstr, $timeout = 15) {
 function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $ip = '', $timeout = 15, $block = TRUE, $encodetype  = 'URLENCODE', $allowcurl = TRUE) {
 	$return = '';
 	$matches = parse_url($url);
-	$scheme = $matches['scheme'];
+	$scheme = strtolower($matches['scheme']);
 	$host = $matches['host'];
-	$path = $matches['path'] ? $matches['path'].($matches['query'] ? '?'.$matches['query'] : '') : '/';
-	$port = !empty($matches['port']) ? $matches['port'] : ($matches['scheme'] == 'https' ? 443 : 80);
+	$path = !empty($matches['path']) ? $matches['path'].(!empty($matches['query']) ? '?'.$matches['query'] : '') : '/';
+	$port = !empty($matches['port']) ? $matches['port'] : ($scheme == 'https' ? 443 : 80);
 
 	if(function_exists('curl_init') && function_exists('curl_exec') && $allowcurl) {
 		$ch = curl_init();
 		$ip && curl_setopt($ch, CURLOPT_HTTPHEADER, array("Host: ".$host));
 		curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-		curl_setopt($ch, CURLOPT_URL, $scheme.'://'.($ip ? $ip : $host).':'.$port.$path);
+		// 在请求主机名并非一个合法 IP 地址, 且 PHP 版本 >= 5.5.0 时, 使用 CURLOPT_RESOLVE 设置固定的 IP 地址与域名关系
+		// 在不支持的 PHP 版本下, 继续采用原有不支持 SNI 的流程
+		if(!filter_var($host, FILTER_VALIDATE_IP) && version_compare(PHP_VERSION, '5.5.0', 'ge')) {
+			curl_setopt($ch, CURLOPT_DNS_USE_GLOBAL_CACHE, false);
+			curl_setopt($ch, CURLOPT_RESOLVE, array("$host:$port:$ip"));
+			curl_setopt($ch, CURLOPT_URL, $scheme.'://'.$host.':'.$port.$path);
+		} else {
+			curl_setopt($ch, CURLOPT_URL, $scheme.'://'.($ip ? $ip : $host).':'.$port.$path);
+		}
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -1021,9 +1024,12 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		$out = "POST $path HTTP/1.0\r\n";
 		$header = "Accept: */*\r\n";
 		$header .= "Accept-Language: zh-cn\r\n";
+		if($allowcurl) {
+			$encodetype = 'URLENCODE';
+		}
 		$boundary = $encodetype == 'URLENCODE' ? '' : '; boundary='.trim(substr(trim($post), 2, strpos(trim($post), "\n") - 2));
 		$header .= $encodetype == 'URLENCODE' ? "Content-Type: application/x-www-form-urlencoded\r\n" : "Content-Type: multipart/form-data$boundary\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= 'Content-Length: '.strlen($post)."\r\n";
 		$header .= "Connection: Close\r\n";
@@ -1034,7 +1040,7 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		$out = "GET $path HTTP/1.0\r\n";
 		$header = "Accept: */*\r\n";
 		$header .= "Accept-Language: zh-cn\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= "Connection: Close\r\n";
 		$header .= "Cookie: $cookie\r\n\r\n";
@@ -1042,22 +1048,35 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 	}
 
 	$fpflag = 0;
-	if(!$fp = @fsocketopen(($scheme == 'https' ? 'ssl://' : '').($scheme == 'https' ? $host : ($ip ? $ip : $host)), $port, $errno, $errstr, $timeout)) {
-		$context = array(
-			'http' => array(
-				'method' => $post ? 'POST' : 'GET',
-				'header' => $header,
-				'content' => $post,
-				'timeout' => $timeout,
-			),
-			'ssl' => array(
-				'verify_peer' => false,
-				'verify_peer_name' => false,
-			),
+	$context = array();
+	if($scheme == 'https') {
+		$context['ssl'] = array(
+			'verify_peer' => false,
+			'verify_peer_name' => false,
+			'peer_name' => $host
 		);
+		if(version_compare(PHP_VERSION, '5.6.0', '<')) {
+			$context['ssl']['SNI_enabled'] = true;
+			$context['ssl']['SNI_server_name'] = $host;
+		}
+	}
+	if(ini_get('allow_url_fopen')) {
+		$context['http'] = array(
+			'method' => $post ? 'POST' : 'GET',
+			'header' => $header,
+			'timeout' => $timeout
+		);
+		if($post) {
+			$context['http']['content'] = $post;
+		}
 		$context = stream_context_create($context);
-		$fp = @fopen($scheme.'://'.($scheme == 'https' ? $host : ($ip ? $ip : $host)).':'.$port.$path, 'b', false, $context);
+		$fp = @fopen($scheme.'://'.($ip ? $ip : $host).':'.$port.$path, 'b', false, $context);
 		$fpflag = 1;
+	} elseif(function_exists('stream_socket_client')) {
+		$context = stream_context_create($context);
+		$fp = @stream_socket_client(($scheme == 'https' ? 'ssl://' : '').($ip ? $ip : $host).':'.$port, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
+	} else {
+		$fp = @fsocketopen(($scheme == 'https' ? 'ssl://' : '').($scheme == 'https' ? $host : ($ip ? $ip : $host)), $port, $errno, $errstr, $timeout);
 	}
 
 	if(!$fp) {
@@ -1065,7 +1084,9 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 	} else {
 		stream_set_blocking($fp, $block);
 		stream_set_timeout($fp, $timeout);
-		@fwrite($fp, $out);
+		if(!$fpflag) {
+			@fwrite($fp, $out);
+		}
 		$status = stream_get_meta_data($fp);
 		if(!$status['timed_out']) {
 			while (!feof($fp) && !$fpflag) {
@@ -1096,13 +1117,8 @@ function check_env() {
 	$errors = array('quit' => false);
 	$quit = false;
 
-	if(!function_exists('mysql_connect') && !function_exists('mysqli_connect')) {
-		$errors[] = 'mysql_unsupport';
-		$quit = true;
-	}
-
-	if(PHP_VERSION < '4.3') {
-		$errors[] = 'php_version_430';
+	if(!function_exists('mysqli_connect')) {
+		$errors[] = 'mysqli_unsupport';
 		$quit = true;
 	}
 
@@ -1306,7 +1322,7 @@ function save_uc_config($config, $file) {
 
 	list($appauthkey, $appid, $ucdbhost, $ucdbname, $ucdbuser, $ucdbpw, $ucdbcharset, $uctablepre, $uccharset, $ucapi, $ucip) = $config;
 
-	$link = function_exists('mysql_connect') ? mysql_connect($ucdbhost, $ucdbuser, $ucdbpw, 1) : new mysqli($ucdbhost, $ucdbuser, $ucdbpw, $ucdbname);
+	$link = new mysqli($ucdbhost, $ucdbuser, $ucdbpw, $ucdbname);
 	$uc_connnect = $link ? 'mysql' : '';
 
 	$date = gmdate("Y-m-d H:i:s", time() + 3600 * 8);
@@ -1772,6 +1788,7 @@ function import_diy($importfile, $primaltplname, $targettplname) {
 	require_once ROOT_PATH.'./source/class/class_xml.php';
 	if (empty($content)) return $arr;
 	$diycontent = xml2array($content);
+	$diycontent = is_array($diycontent) ? $diycontent : array();
 
 	if ($diycontent) {
 

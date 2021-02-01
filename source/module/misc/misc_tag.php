@@ -64,7 +64,7 @@ if($id || $name) {
 				$tidarray[$result['itemid']] = $result['itemid'];
 			}
 			$threadlist = getthreadsbytids($tidarray);
-			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id=$tag[tagid]&type=thread");
+			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id={$tag['tagid']}&type=thread");
 		}
 	} elseif($type == 'blog') {
 		$showtype = 'blog';
@@ -77,7 +77,7 @@ if($id || $name) {
 			}
 			$bloglist = getblogbyid($blogidarray);
 
-			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id=$tag[tagid]&type=blog");
+			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id={$tag['tagid']}&type=blog");
 		}
 	} else {
 		$shownum = 20;
@@ -122,12 +122,14 @@ function getthreadsbytids($tidarray) {
 		include_once libfile('function_misc', 'function');
 		$fids = array();
 		foreach(C::t('forum_thread')->fetch_all_by_tid($tidarray) as $result) {
-			if(!isset($_G['cache']['forums'][$result['fid']]['name'])) {
-				$fids[$result['fid']] = $result['tid'];
-			} else {
-				$result['name'] = $_G['cache']['forums'][$result['fid']]['name'];
+			if($result['displayorder'] >= 0){
+				if(!isset($_G['cache']['forums'][$result['fid']]['name'])) {
+					$fids[$result['fid']] = $result['tid'];
+				} else {
+					$result['name'] = $_G['cache']['forums'][$result['fid']]['name'];
+				}
+				$threadlist[$result['tid']] = procthread($result);
 			}
-			$threadlist[$result['tid']] = procthread($result);
 		}
 		if(!empty($fids)) {
 			foreach(C::t('forum_forum')->fetch_all_by_fid(array_keys($fids)) as $fid => $forum) {
@@ -154,7 +156,7 @@ function getblogbyid($blogidarray) {
 			$result = array_merge($result, (array)$data_blogfield[$curblogid]);
 			$result['dateline'] = dgmdate($result['dateline']);
 			$classarr = getclassarr($result['uid']);
-			$result['classname'] = $classarr[$result[classid]]['classname'];
+			$result['classname'] = $classarr[$result['classid']]['classname'];
 			if($result['friend'] == 4) {
 				$result['message'] = $result['pic'] = '';
 			} else {

@@ -66,7 +66,7 @@ if ($pluginop == 'config') {
 	}
 
 	if($_GET['sh_type'] == 4){
-		if($_G['setting']['rewritestatus'] && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
+		if($_G['setting']['rewritestatus'] && is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
 			$url = rewriteoutput('forum_viewthread', 1, $_G['siteurl'], $tid);
 		} else {
 			$url = $_G['siteurl'].'forum.php?mod=viewthread&tid='.$tid;
@@ -101,7 +101,7 @@ if ($pluginop == 'config') {
 
 	$connectService->connectMergeMember();
 
-	if($_G['setting']['rewritestatus'] && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
+	if($_G['setting']['rewritestatus'] && is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
 		$url = rewriteoutput('forum_viewthread', 1, $_G['siteurl'], $tid);
 	} else {
 		$url = $_G['siteurl'].'forum.php?mod=viewthread&tid='.$tid;
@@ -350,7 +350,7 @@ if ($pluginop == 'config') {
 			$postionid = C::t('forum_post')->fetch_maxposition_by_tid($thread['posttableid'], $tid);
 			C::t('forum_thread')->update($tid, array('maxposition' => $postionid));
 
-			$lastpost = "$thread[tid]\t$thread[subject]\t$_G[timestamp]\t".'';
+			$lastpost = "{$thread['tid']}\t{$thread['subject']}\t{$_G['timestamp']}\t".'';
 			C::t('forum_forum')->update($thread['fid'], array('lastpost' => $lastpost));
 			C::t('forum_forum')->update_forum_counter($thread['fid'], 0, count($pids), count($pids));
 			if($forum['type'] == 'sub') {

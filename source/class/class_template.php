@@ -341,9 +341,10 @@ class template {
 
 	function loadcsstemplate() {
 		global $_G;
+		$file = file(DISCUZ_ROOT.'./data/cache/style_'.STYLEID.'_module.css');
 		$scripts = array(STYLEID.'_common');
 		$content = $this->csscurmodules = '';
-		$content = @implode('', file(DISCUZ_ROOT.'./data/cache/style_'.STYLEID.'_module.css'));
+		$content = implode('', is_array($file) ? $file : array());
 		$content = preg_replace_callback("/\[(.+?)\](.*?)\[end\]/is", array($this, 'loadcsstemplate_callback_cssvtags_12'), $content);
 		if($this->csscurmodules) {
 			$this->csscurmodules = preg_replace(array('/\s*([,;:\{\}])\s*/', '/[\t\n\r]/', '/\/\*.+?\*\//'), array('\\1', '',''), $this->csscurmodules);
@@ -359,7 +360,7 @@ class template {
 		foreach($scripts as $css) {
 			$scriptcss .= '<link rel="stylesheet" type="text/css" href="'.$_G['setting']['csspath'].$css.'.css?{VERHASH}" />';
 		}
-		$scriptcss .= '{if $_G[uid] && isset($_G[cookie][extstyle]) && strpos($_G[cookie][extstyle], TPLDIR) !== false}<link rel="stylesheet" id="css_extstyle" type="text/css" href="$_G[cookie][extstyle]/style.css" />{elseif $_G[style][defaultextstyle]}<link rel="stylesheet" id="css_extstyle" type="text/css" href="$_G[style][defaultextstyle]/style.css" />{/if}';
+		$scriptcss .= '{if $_G[\'uid\'] && isset($_G[\'cookie\'][\'extstyle\']) && strpos($_G[\'cookie\'][\'extstyle\'], TPLDIR) !== false}<link rel="stylesheet" id="css_extstyle" type="text/css" href="{$_G[\'cookie\'][\'extstyle\']}/style.css" />{elseif $_G[\'style\'][\'defaultextstyle\']}<link rel="stylesheet" id="css_extstyle" type="text/css" href="{$_G[\'style\'][\'defaultextstyle\']}/style.css" />{/if}';
 		if(isset($_G['config']['output']['css4legacyie']) && $_G['config']['output']['css4legacyie']) {
 			$scriptcss .= '<!--[if IE]><link rel="stylesheet" type="text/css" href="'.$_G['setting']['csspath'].STYLEID.'_iefix'.'.css?{VERHASH}" /><![endif]-->';
 		}

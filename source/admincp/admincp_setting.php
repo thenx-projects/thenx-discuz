@@ -366,7 +366,7 @@ if(!submitcheck('settingsubmit')) {
 			$varname[1][] = array('timeoffset', $lang['setting_profile_time_zone'], 'timeoffset');
 
 			showsetting('setting_profile_field', $varname, $groupinfo['field'], 'omcheckbox');
-			echo "<input type=\"hidden\" name=\"settingnew[profile][type]\" value=\"$_GET[type]\" />";
+			echo "<input type=\"hidden\" name=\"settingnew[profile][type]\" value=\"{$_GET['type']}\" />";
 			showtablefooter();
 
 		} else {
@@ -408,7 +408,7 @@ if(!submitcheck('settingsubmit')) {
 
 		$groupselect = '';
 		foreach(C::t('common_usergroup')->fetch_all_by_type('special') as $group) {
-			$groupselect .= "<option value=\"$group[groupid]\" ".($group['groupid'] == $setting['inviteconfig']['invitegroupid'] ? 'selected' : '').">$group[grouptitle]</option>\n";
+			$groupselect .= "<option value=\"{$group['groupid']}\" ".($group['groupid'] == $setting['inviteconfig']['invitegroupid'] ? 'selected' : '').">{$group['grouptitle']}</option>\n";
 		}
 
 		$taskarray = array(array('', cplang('select')));
@@ -889,7 +889,7 @@ if(!submitcheck('settingsubmit')) {
 		$setting['seokeywords'] = dunserialize($setting['seokeywords']);
 
 		$rewritedata = rewritedata();
-		$setting['rewritestatus'] = isset($setting['rewritestatus']) ? dunserialize($setting['rewritestatus']) : '';
+		$setting['rewritestatus'] = isset($setting['rewritestatus']) ? dunserialize($setting['rewritestatus']) : array();
 		$setting['rewriterule'] = isset($setting['rewriterule']) ? dunserialize($setting['rewriterule']) : '';
 		/*search={"setting_optimize":"action=setting&operation=seo","setting_seo":"action=setting&operation=seo"}*/
 		echo '<div id="rewrite"'.($_GET['anchor'] != 'rewrite' ? ' style="display: none"' : '').'>';
@@ -899,12 +899,12 @@ if(!submitcheck('settingsubmit')) {
 			showtablerow('', array('class="vtop tips2" colspan="3"'), array(cplang('setting_seo_rewritestatus_comment')));
 			showsubtitle(array('setting_seo_pages', 'setting_seo_vars', 'setting_seo_rule', 'available'));
 			foreach($rewritedata['rulesearch'] as $k => $v) {
-				$v = !$setting['rewriterule'][$k] ? $v : $setting['rewriterule'][$k];
+				$v = empty($setting['rewriterule'][$k]) ? $v : $setting['rewriterule'][$k];
 				showtablerow('', array('class="td24"', 'class="td31"', 'class="longtxt"', 'class="td25"'), array(
 					cplang('setting_seo_rewritestatus_'.$k),
 					implode(', ', array_keys($rewritedata['rulevars'][$k])),
 					'<input onclick="doane(event)" name="settingnew[rewriterule]['.$k.']" class="txt" value="'.dhtmlspecialchars($v).'"/>',
-					'<input type="checkbox" name="settingnew[rewritestatus][]" class="checkbox" value="'.$k.'" '.(in_array($k, $setting['rewritestatus']) ? 'checked="checked"' : '').'/>'
+					'<input type="checkbox" name="settingnew[rewritestatus][]" class="checkbox" value="'.$k.'" '.((is_array($setting['rewritestatus']) ? in_array($k, $setting['rewritestatus']) : false) ? 'checked="checked"' : '').'/>'
 				));
 			}
 			showtablefooter();
@@ -918,26 +918,6 @@ if(!submitcheck('settingsubmit')) {
 			showtableheader();
 			showtitle('<em class="right">'.cplang('setting_seo_robots_output').'</em>'.cplang('setting_seo'));
 			showtablerow('', array('class="vtop tips2" colspan="4" style="padding-left:20px;"'), array('<ul><li>'.cplang('setting_seo_seotitle_comment').'</li><li>'.cplang('setting_seo_seodescription_comment').'</li><li>'.cplang('setting_seo_seokeywords_comment').'</li></ul>'));
-
-			if($_G['setting']['navs'][5]['navname']) {
-				showtitle($_G['setting']['navs'][5]['navname']);
-				showtablerow('', array('width="80"', ''), array(
-						cplang('setting_seo_seotitle'),
-						'<input type="text" name="settingnew[seotitle][userapp]" value="'.$setting['seotitle']['userapp'].'" class="txt" style="width:280px;" />',
-					)
-				);
-				showtablerow('', array('width="80"', ''), array(
-						cplang('setting_seo_seokeywords'),
-						'<input type="text" name="settingnew[seokeywords][userapp]" value="'.$setting['seokeywords']['userapp'].'" class="txt" style="width:280px;" />'
-					)
-				);
-				showtablerow('', array('width="80"', ''), array(
-						cplang('setting_seo_seodescription'),
-						'<input type="text" name="settingnew[seodescription][userapp]" value="'.$setting['seodescription']['userapp'].'" class="txt" style="width:280px;" />',
-					)
-				);
-			}
-
 			showtablefooter();
 			showtableheader();
 			showsetting('setting_seo_seohead', 'settingnew[seohead]', $setting['seohead'], 'textarea');
@@ -1087,7 +1067,7 @@ EOF;
 		showsetting('setting_cachethread_dir', 'settingnew[cachethreaddir]', $setting['cachethreaddir'], 'text');
 
 		showtitle('setting_cachethread_coefficient_set');
-		showsetting('setting_cachethread_coefficient', 'settingnew[threadcaches]', '', "<input type=\"text\" class=\"txt\" size=\"30\" name=\"settingnew[threadcaches]\" value=\"$setting[threadcaches]\">");
+		showsetting('setting_cachethread_coefficient', 'settingnew[threadcaches]', '', "<input type=\"text\" class=\"txt\" size=\"30\" name=\"settingnew[threadcaches]\" value=\"{$setting['threadcaches']}\">");
 		showsetting('setting_cachethread_coefficient_forum', '', '', $forumselect);
 		/*search*/
 
@@ -1175,7 +1155,7 @@ EOF;
 	} elseif($operation == 'functions') {
 		$allowfuntype = array('portal', 'forum', 'friend', 'group', 'follow', 'collection', 'guide', 'feed', 'blog', 'doing', 'album', 'share', 'wall', 'homepage', 'ranklist', 'medal', 'task', 'magic', 'favorite');
 		$_GET['type'] = in_array($_GET['type'], $allowfuntype) ? trim($_GET['type']) : '';
-		echo "<script>disallowfloat = '{$_G[setting][disallowfloat]}';</script>";
+		echo "<script>disallowfloat = '{$_G['setting']['disallowfloat']}';</script>";
 
 		/*search={"setting_functions":"action=setting&operation=functions","setting_functions_curscript":"action=setting&operation=functions&anchor=curscript"}*/
 		showtableheader('setting_functions_curscript_list', 'nobottom', 'id="curscript"'.($_GET['anchor'] != 'curscript' ? ' style="display: none"' : ''));
@@ -1274,7 +1254,7 @@ EOF;
 			array(2, $lang['setting_functions_comment_allow_2']))), $setting['allowpostcomment'], 'mcheckbox');
 		showsetting('setting_functions_comment_number', 'settingnew[commentnumber]', $setting['commentnumber'], 'text');
 		showsetting('setting_functions_comment_postself', 'settingnew[commentpostself]', $setting['commentpostself'], 'radio');
-		showtagheader('tbody', 'commentextra', in_array(1, $setting['allowpostcomment']));
+		showtagheader('tbody', 'commentextra', is_array($setting['allowpostcomment']) ? in_array(1, $setting['allowpostcomment']) : false);
 		showsetting('setting_functions_comment_firstpost', 'settingnew[commentfirstpost]', $setting['commentfirstpost'], 'radio');
 		showsetting('setting_functions_comment_commentitem_0', 'settingnew[commentitem][0]', $setting['commentitem'][0], 'textarea');
 		showsetting('setting_functions_comment_commentitem_1', 'settingnew[commentitem][1]', $setting['commentitem'][1], 'textarea');
@@ -1494,21 +1474,21 @@ EOF;
 <?php
 		print <<<EOF
 			<tr>
-				<td class="td27" colspan="2">$lang[setting_credits_formula]:</td>
+				<td class="td27" colspan="2">{$lang['setting_credits_formula']}:</td>
 			</tr>
 			<tr>
 				<td colspan="2">
 					<div class="extcredits">
 						$extcreditsbtn
-						<a href="###" onclick="creditinsertunit(' posts ')">$lang[setting_credits_formula_posts]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' threads ')">$lang[setting_credits_formula_threads]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' digestposts ')">$lang[setting_credits_formula_digestposts]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' oltime ')">$lang[setting_credits_formula_oltime]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' friends ')">$lang[setting_credits_formula_friends]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' doings ')">$lang[setting_credits_formula_doings]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' blogs ')">$lang[setting_credits_formula_blogs]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' albums ')">$lang[setting_credits_formula_albums]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' sharings ')">$lang[setting_credits_formula_sharings]</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' posts ')">{$lang['setting_credits_formula_posts']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' threads ')">{$lang['setting_credits_formula_threads']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' digestposts ')">{$lang['setting_credits_formula_digestposts']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' oltime ')">{$lang['setting_credits_formula_oltime']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' friends ')">{$lang['setting_credits_formula_friends']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' doings ')">{$lang['setting_credits_formula_doings']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' blogs ')">{$lang['setting_credits_formula_blogs']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' albums ')">{$lang['setting_credits_formula_albums']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' sharings ')">{$lang['setting_credits_formula_sharings']}</a>&nbsp;
 						<a href="###" onclick="creditinsertunit(' + ')">&nbsp;+&nbsp;</a>&nbsp;
 						<a href="###" onclick="creditinsertunit(' - ')">&nbsp;-&nbsp;</a>&nbsp;
 						<a href="###" onclick="creditinsertunit(' * ')">&nbsp;*&nbsp;</a>&nbsp;
@@ -1516,9 +1496,9 @@ EOF;
 						<a href="###" onclick="creditinsertunit(' (', ') ')">&nbsp;(&nbsp;)&nbsp;</a>&nbsp;
 					</div>
 					<div id="formulapermexp" class="margintop marginbot diffcolor2">$formulapermexp</div>
-					<textarea name="settingnew[creditsformula]" id="creditsformula" class="marginbot" style="width:80%" rows="3" onkeyup="formulaexp()" onkeydown="textareakey(this, event)">$setting[creditsformula]</textarea>
+					<textarea name="settingnew[creditsformula]" id="creditsformula" class="marginbot" style="width:80%" rows="3" onkeyup="formulaexp()" onkeydown="textareakey(this, event)">{$setting['creditsformula']}</textarea>
 					<script type="text/JavaScript">formulaexp()</script>
-					<br /><span class="smalltxt">$lang[setting_credits_formula_comment]</span>
+					<br /><span class="smalltxt">{$lang['setting_credits_formula_comment']}</span>
 				</td>
 			</tr>
 EOF;
@@ -1607,9 +1587,9 @@ EOF;
 
 		<table style="margin-top: 0px;" class="tb tb2">
 			<tr class="header">
-				<th class="td25">$lang[delete]</th>
-				<th class="td28">$lang[setting_mail_setting_server]</th>
-				<th class="td28">$lang[setting_mail_setting_port]</th>
+				<th class="td25">{$lang['delete']}</th>
+				<th class="td28">{$lang['setting_mail_setting_server']}</th>
+				<th class="td28">{$lang['setting_mail_setting_port']}</th>
 			</tr>
 EOF;
 		foreach($setting['mail']['smtp'] as $id => $smtp) {
@@ -1617,8 +1597,8 @@ EOF;
 			$smtp['auth_password'] = $smtp['auth_password'] ? $smtp['auth_password'][0].'********'.substr($smtp['auth_password'], -2) : '';
 			showtablerow('', array('class="td25"', 'class="td28"', 'class="td28"'), array(
 				"<input class=\"checkbox\" type=\"checkbox\" name=\"settingnew[mail][smtp][delete][]\" value=\"$id\">",
-				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][server]\" value=\"$smtp[server]\" style=\"width: 90%;\">",
-				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][port]\" value=\"$smtp[port]\">"
+				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][server]\" value=\"{$smtp['server']}\" style=\"width: 90%;\">",
+				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][port]\" value=\"{$smtp['port']}\">"
 			));
 		}
 		echo '<tr><td colspan="7"><div><a href="###" onclick="setrowtypedata(0);addrow(this, 0);" class="addtr">'.$lang['setting_mail_setting_edit_addnew'].'</a></div></td></tr>';
@@ -1632,13 +1612,13 @@ EOF;
 		<tr><td colspan="2" style="border-top:0px dotted #DEEFFB;">
 		<table style="margin-top: 0px;" class="tb tb2">
 			<tr class="header">
-				<th class="td25">$lang[delete]</th>
-				<th class="td28">$lang[setting_mail_setting_server]</th>
-				<th class="td28">$lang[setting_mail_setting_port]</th>
-				<th id="auth_0">$lang[setting_mail_setting_validate]</th>
-				<th id="from_0">$lang[setting_mail_setting_from]</th>
-				<th id="username_0">$lang[setting_mail_setting_username]</th>
-				<th id="password_0">$lang[setting_mail_setting_password]</th>
+				<th class="td25">{$lang['delete']}</th>
+				<th class="td28">{$lang['setting_mail_setting_server']}</th>
+				<th class="td28">{$lang['setting_mail_setting_port']}</th>
+				<th id="auth_0">{$lang['setting_mail_setting_validate']}</th>
+				<th id="from_0">{$lang['setting_mail_setting_from']}</th>
+				<th id="username_0">{$lang['setting_mail_setting_username']}</th>
+				<th id="password_0">{$lang['setting_mail_setting_password']}</th>
 			</tr>
 EOF;
 		foreach($setting['mail']['smtp'] as $id => $smtp) {
@@ -1647,12 +1627,12 @@ EOF;
 
 			showtablerow('', array('class="td25"', 'class="td28"', 'class="td28"', 'class="td25"'), array(
 			"<input class=\"checkbox\" type=\"checkbox\" name=\"settingnew[mail][esmtp][delete][]\" value=\"$id\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][server]\" value=\"$smtp[server]\" style=\"width: 90%;\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][port]\" value=\"$smtp[port]\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][server]\" value=\"{$smtp['server']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][port]\" value=\"{$smtp['port']}\">",
 			"<input type=\"checkbox\" name=\"settingnew[mail][esmtp][$id][auth]\" value=\"1\" $checkauth>",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][from]\" value=\"$smtp[from]\" style=\"width: 90%;\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_username]\" value=\"$smtp[auth_username]\" style=\"width: 90%;\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_password]\" value=\"$smtp[auth_password]\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][from]\" value=\"{$smtp['from']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_username]\" value=\"{$smtp['auth_username']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_password]\" value=\"{$smtp['auth_password']}\" style=\"width: 90%;\">",
 			));
 		}
 		echo '<tr><td colspan="7"><div><a href="###" onclick="setrowtypedata(1);addrow(this, 0);" class="addtr">'.$lang['setting_mail_setting_edit_addnew'].'</a></div></td></tr>';
@@ -2539,12 +2519,12 @@ EOT;
 				if($count) {
 					foreach(C::t('common_visit')->range($start, $perpage) as $value) {
 						showtablerow('', array('class="td25"', 'class=""', 'class="td28"'), array(
-								"<input type=\"checkbox\" class=\"checkbox\" name=\"ips[]\" value=\"$value[ip]\">",
-								"$value[ip] ".ip::convert($value[ip]),
+								"<input type=\"checkbox\" class=\"checkbox\" name=\"ips[]\" value=\"{$value['ip']}\">",
+								"{$value['ip']} ".ip::convert($value['ip']),
 								$value['view'],
-								"<a href=\"$mpurl&optype=white&ips[]=$value[ip]&antitheftsubmit=yes\">$lang[setting_antitheft_addwhitelist]</a> |
-								 <a href=\"$mpurl&optype=black&ips[]=$value[ip]&antitheftsubmit=yes\">$lang[setting_antitheft_addblacklist]</a> |
-								 <a href=\"$mpurl&optype=delete&ips[]=$value[ip]&antitheftsubmit=yes\">$lang[delete]</a>
+								"<a href=\"$mpurl&optype=white&ips[]={$value['ip']}&antitheftsubmit=yes\">{$lang['setting_antitheft_addwhitelist']}</a> |
+								 <a href=\"$mpurl&optype=black&ips[]={$value['ip']}&antitheftsubmit=yes\">{$lang['setting_antitheft_addblacklist']}</a> |
+								 <a href=\"$mpurl&optype=delete&ips[]={$value['ip']}&antitheftsubmit=yes\">{$lang['delete']}</a>
 								",
 							));
 					}
@@ -2642,20 +2622,12 @@ EOT;
 			cpmsg('uc_config_appid_error', '', 'error');
 		}
 
-		if(function_exists("mysql_connect") && ini_get("mysql.allow_local_infile")=="1" && constant("UC_DBHOST") != $settingnew['uc']['dbhost']){
-			cpmsg('uc_config_load_data_local_infile_error', '', 'error');
-		}
-
 		if($settingnew['uc']['connect']) {
-			$uc_dblink = function_exists("mysql_connect") ? @mysql_connect($settingnew['uc']['dbhost'], $settingnew['uc']['dbuser'], $ucdbpassnew, 1) : new mysqli($settingnew['uc']['dbhost'], $settingnew['uc']['dbuser'], $ucdbpassnew);
+			$uc_dblink = new mysqli($settingnew['uc']['dbhost'], $settingnew['uc']['dbuser'], $ucdbpassnew);
 			if(!$uc_dblink) {
 				cpmsg('uc_database_connect_error', '', 'error');
 			} else {
-				if(function_exists("mysql_connect")) {
-					mysql_close($uc_dblink);
-				} else {
-					$uc_dblink->close();
-				}
+				$uc_dblink->close();
 			}
 		}
 
@@ -3288,7 +3260,7 @@ EOT;
 	if($operation == 'styles') {
 		C::t('common_member_profile_setting')->clear_showinthread();
 		$showinthreadfields = array();
-		if(array_key_exists('field_birthday', $settingnew['customauthorinfo'])) {
+		if(is_array($settingnew['customauthorinfo']) && array_key_exists('field_birthday', $settingnew['customauthorinfo'])) {
 			$settingnew['customauthorinfo']['field_birthyear'] = $settingnew['customauthorinfo']['field_birthmonth'] = $settingnew['customauthorinfo']['field_birthday'];
 		}
 		foreach($settingnew['customauthorinfo'] as $field => $v) {
@@ -3512,7 +3484,7 @@ EOT;
 				'maxpolloptions', 'karmaratelimit', 'losslessdel', 'smcols', 'allowdomain', 'feedday', 'feedmaxnum', 'feedhotday', 'feedhotmin',
 				'feedtargetblank', 'updatestat', 'namechange', 'namecheck', 'networkpage', 'maxreward', 'groupnum', 'starlevelnum', 'friendgroupnum',
 				'pollforumid', 'tradeforumid', 'rewardforumid', 'activityforumid', 'debateforumid', 'maxpage',
-				'starcredit', 'topcachetime', 'newspacevideophoto', 'newspacerealname', 'newspaceavatar', 'newspacenum', 'shownewuser',
+				'starcredit', 'topcachetime', 'newspacerealname', 'newspaceavatar', 'newspacenum', 'shownewuser',
 				'feedhotnum', 'showallfriendnum', 'feedread',
 				'need_friendnum', 'need_avatar', 'uniqueemail', 'need_email', 'allowquickviewprofile', 'preventrefresh',
 				'jscachelife', 'maxmodworksmonths', 'maxonlinelist'))) {
@@ -3649,17 +3621,17 @@ function showdetial(&$forum, $varname, $type = '', $last = '', $toggle = false) 
 			echo '<tr class="header"><td colspan="2">'.$tab1.$forum['name'].'</td></tr>';
 			showtablerow('', array('width="12%"', ''), array(
 					$tab2.cplang('setting_seo_seotitle'),
-					'<input type="text" id="t_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum[id].'][seotitle]" value="'.dhtmlspecialchars($forum['seotitle']).'" class="txt" style="width:280px;" />',
+					'<input type="text" id="t_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum['id'].'][seotitle]" value="'.dhtmlspecialchars($forum['seotitle']).'" class="txt" style="width:280px;" />',
 				)
 			);
 			showtablerow('', array('width="12%"', ''), array(
 					$tab2.cplang('setting_seo_seokeywords'),
-					'<input type="text" id="k_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum[id].'][keywords]" value="'.dhtmlspecialchars($forum['keywords']).'" class="txt" style="width:280px;" />',
+					'<input type="text" id="k_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum['id'].'][keywords]" value="'.dhtmlspecialchars($forum['keywords']).'" class="txt" style="width:280px;" />',
 				)
 			);
 			showtablerow('', array('width="12%"', ''), array(
 					$tab2.cplang('setting_seo_seodescription'),
-					'<input type="text" id="d_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum[id].'][description]" value="'.dhtmlspecialchars($forum['description']).'" class="txt" style="width:280px;" />',
+					'<input type="text" id="d_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum['id'].'][description]" value="'.dhtmlspecialchars($forum['description']).'" class="txt" style="width:280px;" />',
 				)
 			);
 	} else {

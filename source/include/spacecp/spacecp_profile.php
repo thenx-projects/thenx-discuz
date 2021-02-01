@@ -283,8 +283,6 @@ if(submitcheck('profilesubmit')) {
 		C::t('common_member_field_home')->update($space['uid'], array('privacy'=>serialize($space['privacy'])));
 	}
 
-	manyoulog('user', $_G['uid'], 'update');
-
 	include_once libfile('function/feed');
 	feed_add('profile', 'feed_profile_update_'.$operation, array('hash_data'=>'profile'));
 	countprofileprogress();
@@ -382,7 +380,7 @@ if(submitcheck('profilesubmit')) {
 	if($emailnew != $_G['member']['email']) {
 		$authstr = true;
 		emailcheck_send($space['uid'], $emailnew);
-		dsetcookie('newemail', "$space[uid]\t$emailnew\t$_G[timestamp]", 31536000);
+		dsetcookie('newemail', "{$space['uid']}\t$emailnew\t{$_G['timestamp']}", 31536000);
 	}
 	if($setarr) {
 		if($_G['member']['freeze'] == 1) {
@@ -442,7 +440,7 @@ if($operation == 'password') {
 	if($_GET['resend'] && $resend) {
 		$toemail = $space['newemail'] ? $space['newemail'] : $space['email'];
 		emailcheck_send($space['uid'], $toemail);
-		dsetcookie('newemail', "$space[uid]\t$toemail\t$_G[timestamp]", 31536000);
+		dsetcookie('newemail', "{$space['uid']}\t$toemail\t{$_G['timestamp']}", 31536000);
 		dsetcookie('resendemail', TIMESTAMP);
 		showmessage('send_activate_mail_succeed', "home.php?mod=spacecp&ac=profile&op=password");
 	} elseif ($_GET['resend']) {
@@ -502,7 +500,7 @@ if($operation == 'password') {
 	$showbtn = ($vid && $verify['verify'.$vid] != 1) || empty($vid);
 	if(!empty($verify) && is_array($verify)) {
 		foreach($verify as $key => $flag) {
-			if(in_array($key, array('verify1', 'verify2', 'verify3', 'verify4', 'verify5', 'verify6', 'verify7')) && $flag == 1) {
+			if(in_array($key, array('verify1', 'verify2', 'verify3', 'verify4', 'verify5', 'verify6')) && $flag == 1) {
 				$verifyid = intval(substr($key, -1, 1));
 				if($_G['setting']['verify'][$verifyid]['available']) {
 					foreach($_G['setting']['verify'][$verifyid]['field'] as $field) {

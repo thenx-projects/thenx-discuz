@@ -54,9 +54,6 @@ if($apptype == 'discuz') {
 }
 
 parse_str(_authcode($code, 'DECODE', UC_KEY), $get);
-if(get_magic_quotes_gpc()) {
-	$get = _stripslashes($get);
-}
 
 if(empty($get)) {
 	exit('Invalid Request');
@@ -68,138 +65,6 @@ if($timestamp - $get['time'] > 3600) {
 }
 $get['time'] = $timestamp;
 
-class dbstuff {
-	var $querynum = 0;
-	var $link;
-	var $histories;
-	var $time;
-	var $tablepre;
-
-	function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset, $pconnect = 0, $tablepre='', $time = 0) {
-		$this->time = $time;
-		$this->tablepre = $tablepre;
-		if($pconnect) {
-			if(!$this->link = mysql_pconnect($dbhost, $dbuser, $dbpw)) {
-				$this->halt('Can not connect to MySQL server');
-			}
-		} else {
-			if(!$this->link = mysql_connect($dbhost, $dbuser, $dbpw, 1)) {
-				$this->halt('Can not connect to MySQL server');
-			}
-		}
-
-		if($this->version() > '4.1') {
-			if($dbcharset) {
-				mysql_query("SET character_set_connection=".$dbcharset.", character_set_results=".$dbcharset.", character_set_client=binary", $this->link);
-			}
-
-			if($this->version() > '5.0.1') {
-				mysql_query("SET sql_mode=''", $this->link);
-			}
-		}
-
-		if($dbname) {
-			mysql_select_db($dbname, $this->link);
-		}
-
-	}
-
-	function fetch_array($query, $result_type = MYSQL_ASSOC) {
-		return mysql_fetch_array($query, $result_type);
-	}
-
-	function result_first($sql) {
-		$query = $this->query($sql);
-		return $this->result($query, 0);
-	}
-
-	function fetch_first($sql) {
-		$query = $this->query($sql);
-		return $this->fetch_array($query);
-	}
-
-	function fetch_all($sql) {
-		$arr = array();
-		$query = $this->query($sql);
-		while($data = $this->fetch_array($query)) {
-			$arr[] = $data;
-		}
-		return $arr;
-	}
-
-	function cache_gc() {
-		$this->query("DELETE FROM {$this->tablepre}sqlcaches WHERE expiry<$this->time");
-	}
-
-	function query($sql, $type = '', $cachetime = FALSE) {
-		$func = $type == 'UNBUFFERED' && @function_exists('mysql_unbuffered_query') ? 'mysql_unbuffered_query' : 'mysql_query';
-		if(!($query = $func($sql, $this->link)) && $type != 'SILENT') {
-			$this->halt('MySQL Query Error', $sql);
-		}
-		$this->querynum++;
-		$this->histories[] = $sql;
-		return $query;
-	}
-
-	function affected_rows() {
-		return mysql_affected_rows($this->link);
-	}
-
-	function error() {
-		return (($this->link) ? mysql_error($this->link) : mysql_error());
-	}
-
-	function errno() {
-		return intval(($this->link) ? mysql_errno($this->link) : mysql_errno());
-	}
-
-	function result($query, $row) {
-		$query = @mysql_result($query, $row);
-		return $query;
-	}
-
-	function num_rows($query) {
-		$query = mysql_num_rows($query);
-		return $query;
-	}
-
-	function num_fields($query) {
-		return mysql_num_fields($query);
-	}
-
-	function free_result($query) {
-		return mysql_free_result($query);
-	}
-
-	function insert_id() {
-		return ($id = mysql_insert_id($this->link)) >= 0 ? $id : $this->result($this->query("SELECT last_insert_id()"), 0);
-	}
-
-	function fetch_row($query) {
-		$query = mysql_fetch_row($query);
-		return $query;
-	}
-
-	function fetch_fields($query) {
-		return mysql_fetch_field($query);
-	}
-
-	function version() {
-		return mysql_get_server_info($this->link);
-	}
-
-	function escape_string($str) {
-		return mysql_escape_string($str);
-	}
-
-	function close() {
-		return mysql_close($this->link);
-	}
-
-	function halt($message = '', $sql = '') {
-		api_msg('run_sql_error', $message.'<br /><br />'.$sql.'<br /> '.mysql_error());
-	}
-}
 class dbstuffi {
 	var $querynum = 0;
 	var $link;
@@ -270,11 +135,11 @@ class dbstuffi {
 	}
 
 	function error() {
-		return (($this->link) ? $this->link->error : mysqli_error());
+		return $this->link->error;
 	}
 
 	function errno() {
-		return intval(($this->link) ? $this->link->errno : mysqli_errno());
+		return $this->link->errno;
 	}
 
 	function result($query, $row) {
@@ -329,7 +194,7 @@ class dbstuffi {
 	}
 }
 
-$db = function_exists("mysql_connect") ? new dbstuff() : new dbstuffi();
+$db = new dbstuffi();
 $version = '';
 if($apptype == 'discuz') {
 
@@ -442,7 +307,7 @@ if($get['method'] == 'export') {
 	$get['volume'] = isset($get['volume']) ? intval($get['volume']) : 0;
 	$get['volume'] = $get['volume'] + 1;
 	$version = $version ? $version : $apptype;
-	$idstring = '# Identify: '.base64_encode("$timestamp,$version,$apptype,multivol,$get[volume]")."\n";
+	$idstring = '# Identify: '.base64_encode("$timestamp,$version,$apptype,multivol,{$get['volume']}")."\n";
 
 	if(!isset($get['sqlpath']) || empty($get['sqlpath'])) {
 		$get['sqlpath'] = 'backup_'.date('ymd', $timestamp).'_'.random(6);
@@ -484,7 +349,7 @@ if($get['method'] == 'export') {
 	if(trim($sqldump)) {
 		$sqldump = "$idstring".
 			"# <?php exit();?>\n".
-			"# $apptype Multi-Volume Data Dump Vol.$get[volume]\n".
+			"# $apptype Multi-Volume Data Dump Vol.{$get['volume']}\n".
 			"# Time: $time\n".
 			"# Type: $apptype\n".
 			"# Table Prefix: $tablepre\n".
@@ -707,7 +572,7 @@ function auto_next($get, $sqlfile) {
 	$out = "<root>\n";
 	$out .= "\t<error errorCode=\"0\" errorMessage=\"ok\" />\n";
 	$out .= "\t<fileinfo>\n";
-	$out .= "\t\t<file_num>$get[volume]</file_num>\n";
+	$out .= "\t\t<file_num>{$get['volume']}</file_num>\n";
 	$out .= "\t\t<file_size>".filesize($sqlfile)."</file_size>\n";
 	$out .= "\t\t<file_name>".basename($sqlfile)."</file_name>\n";
 	$out .= "\t\t<file_url>".str_replace(ROOT_PATH, (is_https() ? 'https' : 'http').'://'.$_SERVER['HTTP_HOST'].'/', $sqlfile)."</file_url>\n";
@@ -748,7 +613,7 @@ function sqldumptablestruct($table) {
 	$tabledump .= $create[1];
 
 	$tablestatus = $db->fetch_first("SHOW TABLE STATUS LIKE '$table'");
-	$tabledump .= ($tablestatus['Auto_increment'] ? " AUTO_INCREMENT=$tablestatus[Auto_increment]" : '').";\n\n";
+	$tabledump .= ($tablestatus['Auto_increment'] ? " AUTO_INCREMENT={$tablestatus['Auto_increment']}" : '').";\n\n";
 	return $tabledump;
 }
 
@@ -778,9 +643,9 @@ function sqldumptable($table, $currsize = 0) {
 
 	while($currsize + strlen($tabledump) + 500 < $sizelimit * 1000 && $numrows == $offset) {
 		if($firstfield['Extra'] == 'auto_increment') {
-			$selectsql = "SELECT * FROM $table WHERE $firstfield[Field] > $get[startfrom] LIMIT $offset";
+			$selectsql = "SELECT * FROM $table WHERE {$firstfield['Field']} > {$get['startfrom']} LIMIT $offset";
 		} else {
-			$selectsql = "SELECT * FROM $table LIMIT $get[startfrom], $offset";
+			$selectsql = "SELECT * FROM $table LIMIT {$get['startfrom']}, $offset";
 		}
 		$tabledumped = 1;
 		$rows = $db->query($selectsql);
@@ -840,17 +705,6 @@ function fetchtablelist($tablepre = '') {
 		$tables[] = $table;
 	}
 	return $tables;
-}
-
-function _stripslashes($string) {
-	if(is_array($string)) {
-		foreach($string as $key => $val) {
-			$string[$key] = _stripslashes($val);
-		}
-	} else {
-		$string = stripslashes($string);
-	}
-	return $string;
 }
 
 function _authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {

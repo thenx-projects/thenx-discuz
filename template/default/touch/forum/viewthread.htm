@@ -7,7 +7,7 @@
 		<span class="y">
 			<button class="btn_pn btn_pn_blue" id="replyid"><span>{lang reply}</span></button>
 		</span>
-		<a href="<!--{if $_GET[fromguid] == 'hot' && $_G['setting']['guidestatus']}-->forum.php?mod=guide&view=hot&page=$_GET[page]<!--{else}-->forum.php?mod=forumdisplay&fid=$_G[fid]&<!--{eval echo rawurldecode($_GET[extra]);}--><!--{/if}-->" class="z"><img src="{STATICURL}image/mobile/images/icon_back.png" /></a>
+		<a href="<!--{if $_GET[fromguid] == 'hot' && $_G['setting']['guidestatus']}-->forum.php?mod=guide&view=hot&page=$_GET[page]<!--{else}-->forum.php?mod=forumdisplay&fid=$_G[fid]&<!--{eval echo rawurldecode($_GET['extra']);}--><!--{/if}-->" class="z"><img src="{STATICURL}image/mobile/images/icon_back.png" /></a>
 		<span class="name"><!--{eval echo strip_tags($_G['forum']['name']) ? strip_tags($_G['forum']['name']) : $_G['forum']['name'];}--></span>
 	</div>
 
@@ -41,7 +41,7 @@
 	<!--{eval $needhiddenreply = ($hiddenreplies && $_G['uid'] != $post['authorid'] && $_G['uid'] != $_G['forum_thread']['authorid'] && !$post['first'] && !$_G['forum']['ismoderator']);}-->
 	<!--{hook/viewthread_posttop_mobile $postcount}-->
    <div class="plc cl" id="pid$post[pid]">
-	   <span class="avatar"><img src="<!--{if !$post['authorid'] || $post['anonymous']}--><!--{avatar(0, small, true)}--><!--{else}--><!--{avatar($post[authorid], small, true)}--><!--{/if}-->" style="width:32px;height:32px;" /></span>
+	   <span class="avatar"><img src="<!--{if !$post['authorid'] || $post['anonymous']}--><!--{avatar(0, 'small', true)}--><!--{else}--><!--{avatar($post['authorid'], 'small', true)}--><!--{/if}-->" style="width:32px;height:32px;" /></span>
        <div class="display pi" href="#replybtn_$post[pid]">
 		   <ul class="authi">
 				<li class="grey">

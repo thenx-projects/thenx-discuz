@@ -108,7 +108,7 @@ class WeChatServer {
 			case 'voice':
 				$result['mid'] = (string) $postObj->MediaId;
 				$result['format'] = (string) $postObj->Format;
-				if (property_exists($postObj, Recognition)) {
+				if (property_exists($postObj, 'Recognition')) {
 					$result['txt'] = (string) $postObj->Recognition;
 				}
 				break;
@@ -119,7 +119,7 @@ class WeChatServer {
 
 					case 'subscribe':
 					case 'scan':
-						if (property_exists($postObj, EventKey)) {
+						if (property_exists($postObj, 'EventKey')) {
 							$result['key'] = str_replace(
 								'qrscene_', '', (string) $postObj->EventKey
 							);
@@ -1064,7 +1064,7 @@ class WeChatHook {
 
 	public static function getPluginUrl($pluginid, $param = array()) {
 		global $_G;
-		if (in_array('plugin', $_G['setting']['rewritestatus'])) {
+		if (is_array($_G['setting']['rewritestatus']) && in_array('plugin', $_G['setting']['rewritestatus'])) {
 			$url = $_G['siteurl'] . rewriteoutput('plugin', 1, 'wechat', 'access') . '?';
 		} else {
 			$url = $_G['siteurl'] . 'plugin.php?id=wechat:access&';

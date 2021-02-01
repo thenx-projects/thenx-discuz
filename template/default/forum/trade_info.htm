@@ -30,7 +30,7 @@
 	<div class="bm bw0">
 
 <div class="ih cl bbda">
-	<div class="icn avt"><a href="home.php?mod=space&uid=$trade[sellerid]"><!--{avatar($trade[sellerid],small)}--></a></div>
+	<div class="icn avt"><a href="home.php?mod=space&uid=$trade[sellerid]"><!--{avatar($trade['sellerid'], 'small')}--></a></div>
 	<dl>
 		<dt class="ptn">
 			<span class="y">
@@ -254,7 +254,7 @@
 				<div class="bm_c cl xl">
 					<ul>
 					<!--{loop $userthreads $userthread}-->
-						<li><span class="z xg1">[<!--{date($userthread[dateline], 'n-j')}-->]</span>&nbsp;<a href="forum.php?mod=viewthread&tid=$userthread[tid]">$userthread[subject]</a></li>
+						<li><span class="z xg1">[<!--{date($userthread['dateline'], 'n-j')}-->]</span>&nbsp;<a href="forum.php?mod=viewthread&tid=$userthread[tid]">$userthread[subject]</a></li>
 					<!--{/loop}-->
 					</ul>
 				</div>

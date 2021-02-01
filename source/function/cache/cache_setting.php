@@ -618,9 +618,9 @@ function get_cachedata_setting_plugin($method = '') {
 									}
 									// If $funcname include __ , then before __ is $curscript.
 									if(strpos($funcname, '__') !== false) {
-										$curscript = explode('__', $funcname)[0];
+										$curscript = current(explode('__', $funcname));
 									}
-									if(!@in_array($script, $data[$k][$hscript][$curscript]['module'])) {
+									if(!is_array($data[$k][$hscript][$curscript]['module']) || !in_array($script, $data[$k][$hscript][$curscript]['module'])) {
 										$data[$k][$hscript][$curscript]['module'][$plugin['identifier']] = $script;
 										$data[$k][$hscript][$curscript]['adminid'][$plugin['identifier']] = $module['adminid'];
 									}
@@ -654,7 +654,7 @@ function get_cachedata_setting_plugin($method = '') {
 			}
 		}
 		if($addadminmenu) {
-			$adminmenu[$plugin['modules']['system'] ? 0 : 1][] = array('url' => "plugins&operation=config&do=$plugin[pluginid]", 'action' => 'plugins_config_'.$plugin['pluginid'], 'name' => $plugin['name']);
+			$adminmenu[$plugin['modules']['system'] ? 0 : 1][] = array('url' => "plugins&operation=config&do={$plugin['pluginid']}", 'action' => 'plugins_config_'.$plugin['pluginid'], 'name' => $plugin['name']);
 		}
 	}
 	if(!$method) {
@@ -746,9 +746,6 @@ function get_cachedata_mainnav() {
 				continue;
 			}
 		}
-		if($nav['identifier'] == 5 && $nav['type'] == 0 && !$_G['setting']['my_app_status']) {
-			$nav['available'] = 0;
-		}
 		if($nav['identifier'] == 8 && $nav['type'] == 0 && !$_G['setting']['ranklist']['status']) {
 			$nav['available'] = 0;
 		}
@@ -758,13 +755,6 @@ function get_cachedata_mainnav() {
 		$data['navs'][$id]['available'] = $nav['available'];
 		$nav['name'] = $nav['name'].($nav['title'] ? '<span>'.$nav['title'].'</span>' : '');
 		$subnavs = '';
-		if(!($nav['identifier'] == 5 && $nav['type'] == 0)) {
-			foreach(C::t('common_nav')->fetch_all_subnav($nav['id']) as $subnav) {
-				$item = "<a href=\"$subnav[url]\" hidefocus=\"true\" ".($subnav['title'] ? "title=\"$subnav[title]\" " : '').($subnav['target'] == 1 ? "target=\"_blank\" " : '').parsehighlight($subnav['highlight']).">$subnav[name]</a>";
-				$liparam = !$nav['subtype'] || !$nav['subcols'] ? '' : ' style="width:'.sprintf('%1.1f', (1 / $nav['subcols']) * 100).'%"';
-				$subnavs .= '<li'.$liparam.'>'.$item.'</li>';
-			}
-		}
 		list($navid) = explode('.', basename($nav['url']));
 		if($nav['type'] || $navid == 'misc' || $nav['identifier'] == 6) {
 			if($nav['type'] == 4) {

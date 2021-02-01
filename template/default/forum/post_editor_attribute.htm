@@ -12,7 +12,7 @@
 					<!--{eval $extcreditstype = $replycredit_rule['extcreditstype'] ? $replycredit_rule['extcreditstype'] : $_G['setting']['creditstransextra'][10];}-->
 				<!--{/if}-->
 				<!--{eval $userextcredit = getuserprofile('extcredits'.$extcreditstype);}-->
-				<!--{if ($_GET[action] == 'newthread' && $userextcredit > 0) || ($_GET[action] == 'edit' && $isorigauthor && isfirstpost)}-->
+				<!--{if ($_GET[action] == 'newthread' && $userextcredit > 0) || ($_GET[action] == 'edit' && $isorigauthor && $isfirstpost)}-->
 					<label id="extra_replycredit_b" onclick="showExtra('extra_replycredit')"><span id="extra_replycredit_chk">{lang replycredit}</span></label>
 				<!--{/if}-->
 			<!--{/if}-->
@@ -134,7 +134,7 @@
 						<dl>
 							<dt>&nbsp;</dt>
 							<dd>&nbsp;</dd>
-							<dt><label for="stopfloor">{lang stopfloor}: </label></dt>
+							<dt><label for="replylimit">{lang stopfloor}: </label></dt>
 							<dd>
 								<input type="text" name="replylimit" id="replylimit" class="px" autocomplete="off" value="$postinfo[rush][replylimit]" onkeyup="$('rushreply').checked = true;" /> <span class="xg1">{lang replylimit}</span>
 							</dd>

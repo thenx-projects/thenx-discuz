@@ -19,7 +19,7 @@ class credit {
 
 	function __construct() {}
 
-	function &instance() {
+	public static function &instance() {
 		static $object;
 		if(empty($object)) {
 			$object = new credit();
@@ -115,7 +115,7 @@ class credit {
 							$logarr = array(
 								'cyclenum' => "cyclenum=$cyclenunm",
 								'total' => "total=total+'$coef'",
-								'dateline' => "dateline='$_G[timestamp]'"
+								'dateline' => "dateline='{$_G['timestamp']}'"
 							);
 							$updatecredit = true;
 						}
@@ -148,7 +148,7 @@ class credit {
 							$logarr = array(
 								'cyclenum' => "cyclenum=cyclenum+'$coef'",
 								'total' => "total=total+'$coef'",
-								'dateline' => "dateline='$_G[timestamp]'"
+								'dateline' => "dateline='{$_G['timestamp']}'"
 							);
 							$updatecredit = true;
 						} elseif($_G['timestamp'] >= $nextcycle) {
@@ -156,8 +156,8 @@ class credit {
 							$logarr = array(
 								'cyclenum' => "cyclenum=$coef",
 								'total' => "total=total+'$coef'",
-								'dateline' => "dateline='$_G[timestamp]'",
-								'starttime' => "starttime='$_G[timestamp]'",
+								'dateline' => "dateline='{$_G['timestamp']}'",
+								'starttime' => "starttime='{$_G['timestamp']}'",
 							);
 							$updatecredit = true;
 						}
@@ -360,7 +360,7 @@ class credit {
 
 	}
 
-	function deletelogbyfid($rid, $fid) {
+	public static function deletelogbyfid($rid, $fid) {
 
 		$fid = intval($fid);
 		if($rid && $fid) {
