@@ -3,15 +3,15 @@
 	<a href="home.php?mod=spacecp&ac=feed&op=menu&feedid=$value[feedid]" class="o{if $_G['uid'] == $value[uid]} del{/if}" id="a_feed_menu_$value[feedid]" onclick="showWindow(this.id, this.href, 'get', 0);doane(event);" title="{if $_G['uid'] != $value[uid]}{lang shield_feed}{else}{lang delete_feed}{/if}" style="display:none;">{lang menu}</a>
 	<!--{/if}-->
 	<div class="cl" {$value[style]}>
-		<a class="t" href="home.php?mod=space&uid={$uid}&do=home&view=$_GET[view]&appid=$value[appid]&icon=$value[icon]" title="{lang just_look_dynamic}"><img src="$value[icon_image]" /></a>
+		<a class="t" href="home.php?mod=space&uid={$uid}&do=home&view=$_GET[view]&icon=$value[icon]" title="{lang just_look_dynamic}"><img src="$value[icon_image]" /></a>
 		$value[title_template] 
 		<!--{if $value[new]}-->
 		<span style="color:red;">New</span> 
 		<!--{/if}-->
-		<span class="xg1"><!--{date($value[dateline], 'u')}--></span>
+		<span class="xg1"><!--{date($value['dateline'], 'u')}--></span>
 
 		<!--{if empty($_G['home']['tpl'][hidden_menu])}-->
-		<!--{eval $_GET[key] = $key = random(8);}-->
+		<!--{eval $_GET['key'] = $key = random(8);}-->
 		<!--{if $value['idtype']=='doid'}-->
 		(<a href="javascript:;" {if $_G['uid']}onclick="docomment_get('$value[id]', '$key');"{else}onclick="showWindow(this.id, 'home.php?mod=spacecp&ac=feed', 'get', 0);doane(event);"{/if} id="{$_GET[key]}_do_a_op_$value[id]">{lang reply}</a>)
 		<!--{elseif in_array($value['idtype'], array('blogid','picid','sid','eventid'))}-->

@@ -88,7 +88,7 @@ $lang = array(
 	'tips_ucenter' => '请填写 UCenter 相关信息',
 	'tips_ucenter_comment' => 'UCenter 是 Comsenz 公司产品的核心服务程序，Discuz! Board 的安装和运行依赖此程序。如果您已经安装了 UCenter，请填写以下信息。否则，请到 <a href="http://www.discuz.com/" target="blank">Comsenz 产品中心</a> 下载并且安装，然后再继续。',
 
-	'advice_mysql_connect' => '请检查 mysql 模块是否正确加载',
+	'advice_mysql_connect' => '请检查 mysqli 模块是否正确加载',
 	'advice_gethostbyname' => '是否 PHP 配置中禁止了 gethostbyname 函数。请联系空间商，确定开启了此项功能',
 	'advice_file_get_contents' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
 	'advice_xml_parser_create' => '该函数需要 PHP 支持 XML。请联系空间商，确定开启了此项功能',
@@ -173,9 +173,6 @@ $lang = array(
 
 	'install_in_processed' => '正在安装...',
 	'install_succeed' => '安装成功，点击进入',
-	'install_cloud' => '安装成功，欢迎开通Discuz!云平台<br>Discuz!云平台致力于帮助站长提高网站流量，增强网站运营能力，增加网站收入。<br>Discuz!云平台目前免费提供了QQ互联、腾讯分析、纵横搜索、漫游应用、SOSO表情服务。Discuz!云平台将陆续提供更多优质服务项目。<br>开通Discuz!平台之前，请确保您的网站（Discuz!、UCHome或SupeSite）已经升级到Discuz! X3。',
-	'to_install_cloud' => '到后台开通',
-	'to_index' => '暂不开通',
 
 	'init_credits_karma' => '威望',
 	'init_credits_money' => '金钱',
@@ -331,10 +328,12 @@ $lang = array(
 	'func_name' => '函数名称',
 	'check_result' => '检查结果',
 	'suggestion' => '建议',
-	'advice_mysql' => '请检查 mysql 模块是否正确加载',
+	'advice_mysql' => '请检查 mysqli 模块是否正确加载',
 	'advice_fopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
 	'advice_xml' => '该函数需要 PHP 支持 XML。请联系空间商，确定开启了此项功能',
 	'none' => '无',
+	'undefine_func' => '不存在的函数',
+	'mysqli_unsupport' => '请检查 mysqli 模块是否正确加载',
 
 	'dbhost' => '数据库服务器',
 	'dbuser' => '数据库用户名',

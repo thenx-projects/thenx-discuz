@@ -167,7 +167,7 @@ $lang = array
 	'pm_to' => '收件人',
 	'pm_date' => '日期',
 
-	'share_message' => '您好！我在 {$_G[setting][bbname]} 看到了这篇帖子，认为很有价值，特推荐给您。\\n\\n$thread[subject]\\n地址 [url={$threadurl}]{$threadurl}[/url]\\n\\n希望您能喜欢',
+	'share_message' => '您好！我在 {$_G[\'setting\'][\'bbname\']} 看到了这篇帖子，认为很有价值，特推荐给您。\\n\\n$thread[\'subject\']\\n地址 [url={$threadurl}]{$threadurl}[/url]\\n\\n希望您能喜欢',
 
 	'week_0' => '星期日',
 	'week_1' => '星期一',
@@ -261,7 +261,6 @@ $lang = array
 	'perms_allowpoke' => '允许打招呼',
 	'perms_allowfriend' => '允许加好友',
 	'perms_allowclick' => '允许表态',
-	'perms_allowmyop' => '允许使用应用',
 	'perms_allowcomment' => '发表留言/评论',
 	'perms_allowstatdata' => '查看统计数据报表',
 	'perms_allowstat' => '允许查看趋势统计',

@@ -103,19 +103,20 @@ if($operation == 'filecheck') {
 		}
 
 		$weekbefore = TIMESTAMP - 604800;
-		$addlist = @array_merge(@array_diff_assoc($md5data, $md5datanew), $cachelist[2]);
-		$dellist = @array_diff_assoc($md5datanew, $md5data);
-		$modifylist = @array_merge(@array_diff_assoc($modifylist, $dellist), $cachelist[1]);
-		$showlist = @array_merge($md5data, $md5datanew, $cachelist[0]);
+		$md5datanew = is_array($md5datanew) ? $md5datanew : array();
+		$addlist = array_merge(array_diff_assoc($md5data, $md5datanew), is_array($cachelist[2]) ? $cachelist[2] : array());
+		$dellist = array_diff_assoc($md5datanew, $md5data);
+		$modifylist = array_merge(array_diff_assoc($modifylist, $dellist), is_array($cachelist[1]) ? $cachelist[1] : array());
+		$showlist = array_merge($md5data, $md5datanew, $cachelist[0]);
 		$doubt = 0;
 		$dirlist = $dirlog = array();
 		foreach($showlist as $file => $md5) {
 			$dir = dirname($file);
-			if(@array_key_exists($file, $modifylist)) {
+			if(is_array($modifylist) && array_key_exists($file, $modifylist)) {
 				$fileststus = 'modify';
-			} elseif(@array_key_exists($file, $dellist)) {
+			} elseif(is_array($dellist) && array_key_exists($file, $dellist)) {
 				$fileststus = 'del';
-			} elseif(@array_key_exists($file, $addlist)) {
+			} elseif(is_array($addlist) && array_key_exists($file, $addlist)) {
 				$fileststus = 'add';
 			} else {
 				$filemtime = @filemtime($file);
@@ -147,10 +148,10 @@ if($operation == 'filecheck') {
 
 		if($homecheck) {
 			ajaxshowheader();
-			echo "<em class=\"edited\">$lang[filecheck_modify]: $modifiedfiles</em> &nbsp; ".
-				"<em class=\"del\">$lang[filecheck_delete]: $deletedfiles</em> &nbsp; ".
-				"<em class=\"unknown\">$lang[filecheck_unknown]: $unknownfiles</em> &nbsp; ".
-				"<em class=\"unknown\">$lang[filecheck_doubt]: $doubt</em>  &nbsp; ".
+			echo "<em class=\"edited\">{$lang['filecheck_modify']}: $modifiedfiles</em> &nbsp; ".
+				"<em class=\"del\">{$lang['filecheck_delete']}: $deletedfiles</em> &nbsp; ".
+				"<em class=\"unknown\">{$lang['filecheck_unknown']}: $unknownfiles</em> &nbsp; ".
+				"<em class=\"unknown\">{$lang['filecheck_doubt']}: $doubt</em>  &nbsp; ".
 				$lang['filecheck_last_homecheck'].': '.dgmdate(TIMESTAMP, 'u').' <a href="'.ADMINSCRIPT.'?action=checktools&operation=filecheck&step=3">['.$lang['filecheck_view_list'].']</a>';
 			ajaxshowfooter();
 		}
@@ -175,10 +176,10 @@ if($operation == 'filecheck') {
 		showtips('filecheck_tips');
 		showtableheader('filecheck_completed');
 		showtablerow('', 'colspan="4"', "<div class=\"margintop marginbot\">".
-			"<em class=\"edited\">$lang[filecheck_modify]: $modifiedfiles</em> ".($modifiedfiles > 0 ? "<a href=\"###\" onclick=\"showresult('modify')\">[$lang[view]]</a> " : '').
-			" &nbsp; <em class=\"del\">$lang[filecheck_delete]: $deletedfiles</em> ".($deletedfiles > 0 ? "<a href=\"###\" onclick=\"showresult('del')\">[$lang[view]]</a> " : '').
-			" &nbsp; <em class=\"unknown\">$lang[filecheck_unknown]: $unknownfiles</em> ".($unknownfiles > 0 ? "<a href=\"###\" onclick=\"showresult('add')\">[$lang[view]]</a> " : '').
-			($doubt > 0 ? "&nbsp;&nbsp;&nbsp;&nbsp;<em class=\"unknown\">$lang[filecheck_doubt]: $doubt</em> <a href=\"###\" onclick=\"showresult('doubt')\">[$lang[view]]</a> " : '').
+			"<em class=\"edited\">{$lang['filecheck_modify']}: $modifiedfiles</em> ".($modifiedfiles > 0 ? "<a href=\"###\" onclick=\"showresult('modify')\">[{$lang['view']}]</a> " : '').
+			" &nbsp; <em class=\"del\">{$lang['filecheck_delete']}: $deletedfiles</em> ".($deletedfiles > 0 ? "<a href=\"###\" onclick=\"showresult('del')\">[{$lang['view']}]</a> " : '').
+			" &nbsp; <em class=\"unknown\">{$lang['filecheck_unknown']}: $unknownfiles</em> ".($unknownfiles > 0 ? "<a href=\"###\" onclick=\"showresult('add')\">[{$lang['view']}]</a> " : '').
+			($doubt > 0 ? "&nbsp;&nbsp;&nbsp;&nbsp;<em class=\"unknown\">{$lang['filecheck_doubt']}: $doubt</em> <a href=\"###\" onclick=\"showresult('doubt')\">[{$lang['view']}]</a> " : '').
 			"</div>");
 		showsubtitle(array('filename', '', 'lastmodified', ''));
 		echo $result;
@@ -199,14 +200,14 @@ if($operation == 'filecheck') {
 	if($step == 1) {
 		$styleselect = "<br><br><select name=\"styleid\">";
 		foreach(C::t('common_style')->fetch_all_data() as $style) {
-			$styleselect .= "<option value=\"$style[styleid]\" ".
+			$styleselect .= "<option value=\"{$style['styleid']}\" ".
 				($style['styleid'] == $_G['setting']['styleid'] ? 'selected="selected"' : NULL).
-				">$style[name]</option>\n";
+				">{$style['name']}</option>\n";
 		}
 		$styleselect .= '</select>';
 		cpmsg(cplang('hookcheck_tips_step1', array('template' => $styleselect)), 'action=checktools&operation=hookcheck&step=2', 'form', '', FALSE);
 	} elseif($step == 2) {
-		cpmsg(cplang('hookcheck_verifying'), "action=checktools&operation=hookcheck&step=3&styleid=$_POST[styleid]", 'loading', '', FALSE);
+		cpmsg(cplang('hookcheck_verifying'), "action=checktools&operation=hookcheck&step=3&styleid={$_POST['styleid']}", 'loading', '', FALSE);
 	} elseif($step == 3) {
 		if(!$discuzfiles = @file('./source/admincp/discuzhook.dat')) {
 			cpmsg('filecheck_nofound_md5file', '', 'error');
@@ -274,8 +275,8 @@ if($operation == 'filecheck') {
 			showformheader('forums');
 			showtableheader('hookcheck_completed');
 			showtablerow('', 'colspan="4"', "<div class=\"margintop marginbot\">".
-				'<a href="javascript:;" onclick="show_all_hook(\'dir_\', \'tbody\')">'.$lang[show_all].'</a> | <a href="javascript:;" onclick="hide_all_hook(\'dir_\', \'tbody\')">'.$lang[hide_all].'</a>'.
-				" &nbsp; <em class=\"del\">$lang[hookcheck_delete]: $diffnum</em> ".
+				'<a href="javascript:;" onclick="show_all_hook(\'dir_\', \'tbody\')">'.$lang['show_all'].'</a> | <a href="javascript:;" onclick="hide_all_hook(\'dir_\', \'tbody\')">'.$lang['hide_all'].'</a>'.
+				" &nbsp; <em class=\"del\">{$lang['hookcheck_delete']}: $diffnum</em> ".
 				"</div>");
 			showsubtitle(array('', 'filename', 'hookcheck_discuzhook', 'hookcheck_delhook'));
 			echo $result;
@@ -427,7 +428,9 @@ if($operation == 'filecheck') {
 		}
 	} else {
 		$type = $_GET['type'];
-		if(!$_G['setting']['watermarkstatus'][$type]) {
+		$status = dunserialize($_G['setting']['watermarkstatus']);
+		$status = is_array($status) ? $status : array();
+		if(!array_key_exists($type, $status) || !$status[$type]) {
 			cpmsg('watermarkpreview_error', '', 'error');
 		}
 		require_once libfile('class/image');
@@ -455,10 +458,10 @@ if($operation == 'filecheck') {
 	$rewritedata = rewritedata();
 	$rule['{apache1}'] = $rule['{apache2}'] = $rule['{iis}'] = $rule['{iis7}'] = $rule['{zeus}'] = $rule['{nginx}'] = '';
 	foreach($rewritedata['rulesearch'] as $k => $v) {
-		if(!in_array($k, $_G['setting']['rewritestatus'])) {
+		if(!is_array($_G['setting']['rewritestatus']) || !in_array($k, $_G['setting']['rewritestatus'])) {
 			continue;
 		}
-		$v = !$_G['setting']['rewriterule'][$k] ? $v : $_G['setting']['rewriterule'][$k];
+		$v = empty($_G['setting']['rewriterule'][$k]) ? $v : $_G['setting']['rewriterule'][$k];
 		$pvmaxv = count($rewritedata['rulevars'][$k]) + 2;
 		$vkeys = array_keys($rewritedata['rulevars'][$k]);
 		$rewritedata['rulereplace'][$k] = pvsort($vkeys, $v, $rewritedata['rulereplace'][$k]);

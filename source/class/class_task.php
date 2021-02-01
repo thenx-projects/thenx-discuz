@@ -21,7 +21,7 @@ class task {
 
 	function __construct() {}
 
-	function &instance() {
+	public static function &instance() {
 		static $object;
 		if(empty($object)) {
 			$object = new task();
@@ -46,7 +46,7 @@ class task {
 				if($task['allowapply'] < 0) {
 					continue;
 				}
-				$task['noperm'] = $task['applyperm'] && $task['applyperm'] != 'all' && !(($task['applyperm'] == 'member'&& $_G['adminid'] == '0') || ($task['applyperm'] == 'admin' && $_G['adminid'] > '0') || forumperm($task['applyperm']));
+				$task['noperm'] = $task['applyperm'] && $task['applyperm'] != 'all' && !(($task['applyperm'] == 'member' && in_array($_G['adminid'], array(0, -1))) || ($task['applyperm'] == 'admin' && $_G['adminid'] > '0') || forumperm($task['applyperm']));
 				$task['appliesfull'] = $task['tasklimits'] && $task['achievers'] >= $task['tasklimits'];
 				if($item == 'canapply' && ($task['noperm'] || $task['appliesfull'])) {
 					continue;
@@ -193,7 +193,7 @@ class task {
 		if(!in_array($this->task['applyperm'], array('', 'member', 'admin'))) {
 			$query = C::t('common_usergroup')->fetch_all(explode(',', str_replace("\t", ',', $this->task['applyperm'])));
 			foreach($query as $group) {
-				$this->task['grouprequired'] .= $comma.$group[grouptitle];
+				$this->task['grouprequired'] .= $comma.$group['grouptitle'];
 				$comma = ', ';
 			}
 		}
@@ -259,7 +259,7 @@ class task {
 		}
 
 		if($allowapply > 0) {
-			if($this->task['applyperm'] && $this->task['applyperm'] != 'all' && !(($this->task['applyperm'] == 'member' && $_G['adminid'] == '0') || ($this->task['applyperm'] == 'admin' && $_G['adminid'] > '0') || preg_match("/(^|\t)(".$_G['groupid'].")(\t|$)/", $this->task['applyperm']))) {
+			if($this->task['applyperm'] && $this->task['applyperm'] != 'all' && !(($this->task['applyperm'] == 'member' && in_array($_G['adminid'], array(0, -1))) || ($this->task['applyperm'] == 'admin' && $_G['adminid'] > '0') || preg_match("/(^|\t)(".$_G['groupid'].")(\t|$)/", $this->task['applyperm']))) {
 				$allowapply = -2;
 			} elseif($this->task['tasklimits'] && $this->task['achievers'] >= $this->task['tasklimits']) {
 				$allowapply = -3;
@@ -332,7 +332,7 @@ class task {
 			return -1;
 		} elseif($this->task['exclusivetaskid'] && C::t('common_mytask')->count($_G['uid'], $this->task['exclusivetaskid'])) {
 			return -5;
-		} elseif($this->task['applyperm'] && $this->task['applyperm'] != 'all' && !(($this->task['applyperm'] == 'member' && $_G['adminid'] == '0') || ($this->task['applyperm'] == 'admin' && $_G['adminid'] > '0') || preg_match("/(^|\t)(".$_G['groupid'].")(\t|$)/", $this->task['applyperm']))) {
+		} elseif($this->task['applyperm'] && $this->task['applyperm'] != 'all' && !(($this->task['applyperm'] == 'member' && in_array($_G['adminid'], array(0, -1))) || ($this->task['applyperm'] == 'admin' && $_G['adminid'] > '0') || preg_match("/(^|\t)(".$_G['groupid'].")(\t|$)/", $this->task['applyperm']))) {
 			return -2;
 		} elseif(!$this->task['period'] && C::t('common_mytask')->count($_G['uid'], $id)) {
 			return -3;
@@ -422,7 +422,7 @@ class task {
 				} elseif($this->task['reward'] == 'invite') {
 					$rewardtext = $this->task['prize'];
 				}
-				notification_add($_G[uid], 'task', 'task_reward_'.$notification, array(
+				notification_add($_G['uid'], 'task', 'task_reward_'.$notification, array(
 					'taskid' => $this->task['taskid'],
 					'name' => $this->task['name'],
 					'creditbonus' => $_G['setting']['extcredits'][$this->task['prize']]['title'].' '.$this->task['bonus'].' '.$_G['setting']['extcredits'][$this->task['prize']]['unit'],
@@ -510,6 +510,15 @@ class task {
 			showmessage('task_nonexistence');
 		}
 
+		$escript = explode(':', $this->task['scriptname']);
+		if(count($escript) > 1) {
+			include_once DISCUZ_ROOT.'./source/plugin/'.$escript[0].'/task/task_'.$escript[1].'.php';
+			$taskclassname = 'task_'.$escript[1];
+		} else {
+			require_once libfile('task/'.$this->task['scriptname'], 'class');
+			$taskclassname = 'task_'.$this->task['scriptname'];
+		}
+		$taskclass = new $taskclassname;
 		if(method_exists($taskclass, 'delete')) {
 			$taskclass->delete($this->task);
 		}
@@ -578,7 +587,7 @@ class task {
 		$codes = array();
 		for ($i=0; $i < $num; $i++) {
 			$code = strtolower(random(6));
-			$codes[] = "('$_G[uid]', '$code', '$_G[timestamp]', '$expiration', '$_G[clientip]')";
+			$codes[] = "('{$_G['uid']}', '$code', '{$_G['timestamp']}', '$expiration', '{$_G['clientip']}')";
 			$invitedata = array(
 					'uid' => $_G['uid'],
 					'code' => $code,
@@ -634,7 +643,7 @@ class task {
 			$h = floor($t / 3600);
 			$m = floor(($t - $h * 3600) / 60);
 			$s = floor($t - $h * 3600 - $m * 60);
-			return ($h ? "$h{$_G['setting']['dlang'][date][4]}" : '').($m ? "$m{$_G[setting][dlang][date][6]}" : '').($h || !$s ? '' : "$s{$_G[setting][dlang][date][7]}");
+			return ($h ? "$h{$_G['setting']['dlang']['date'][4]}" : '').($m ? "$m{$_G['setting']['dlang']['date'][6]}" : '').($h || !$s ? '' : "$s{$_G['setting']['dlang']['date'][7]}");
 		}
 		return '';
 	}

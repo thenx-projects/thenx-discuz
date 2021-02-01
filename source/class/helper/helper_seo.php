@@ -20,8 +20,8 @@ class helper_seo {
 		$replaces = array($_G['setting']['bbname']);
 
 		$seotitle = $seodescription = $seokeywords = '';
-		$titletext = $defset['seotitle'] ? $defset['seotitle'] : $_G['setting']['seotitle'][$page];
-		$descriptiontext = $defset['seodescription'] ? $defset['seodescription'] : $_G['setting']['seodescription'][$page];
+		$titletext = isset($defset['seotitle']) ? $defset['seotitle'] : (!empty($_G['setting']['seotitle'][$page]) ? $_G['setting']['seotitle'][$page] : '');
+		$descriptiontext = isset($defset['seodescription']) ? $defset['seodescription'] : (!empty($_G['setting']['seodescription'][$page]) ? $_G['setting']['seodescription'][$page] : '');
 		$keywordstext = $defset['seokeywords'] ? $defset['seokeywords'] : $_G['setting']['seokeywords'][$page];
 		preg_match_all("/\{([a-z0-9_-]+?)\}/", $titletext.$descriptiontext.$keywordstext, $pageparams);
 		if($pageparams) {
@@ -85,8 +85,8 @@ class helper_seo {
 			foreach($_G['cache']['relatedlink'] as $link) {
 				$link['extent'] = sprintf('%04b', $link['extent']);
 				if($link['extent'][$allextent[$extent]] && $link['name'] && $link['url']) {
-					$searcharray[$link[name]] = '/('.preg_quote($link['name']).')/i';
-					$replacearray[$link[name]] = "<a href=\"$link[url]\" target=\"_blank\" class=\"relatedlink\">$link[name]</a>";
+					$searcharray[$link['name']] = '/('.preg_quote($link['name']).')/i';
+					$replacearray[$link['name']] = "<a href=\"{$link['url']}\" target=\"_blank\" class=\"relatedlink\">{$link['name']}</a>";
 				}
 			}
 			if($searcharray && $replacearray) {

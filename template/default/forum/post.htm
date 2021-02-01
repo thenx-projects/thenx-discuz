@@ -26,7 +26,7 @@
 	var ispicstyleforum = <!--{if $_G['forum']['picstyle']}-->1<!--{else}-->0<!--{/if}-->;
 </script>
 
-<!--{if $_GET[action] == 'edit'}--><!--{eval $editor[value] = $postinfo[message];}--><!--{else}--><!--{eval $editor[value] = $message;}--><!--{/if}-->
+<!--{if $_GET[action] == 'edit'}--><!--{eval $editor['value'] = $postinfo['message'];}--><!--{else}--><!--{eval $editor['value'] = $message;}--><!--{/if}-->
 <script type="text/javascript" src="{$_G['setting']['jspath']}forum_post.js?{VERHASH}"></script>
 
 <!--{if $isfirstpost && $sortid}-->
@@ -66,7 +66,7 @@
 <!--{/block}-->
 
 <!--{if $_GET['action'] != 'newthread'}-->
-	<!--{eval $subjectcut = cutstr($thread[subject], 30);}-->
+	<!--{eval $subjectcut = cutstr($thread['subject'], 30);}-->
 <!--{/if}-->
 <!--{block actionsubject}-->
 	<!--{if $_GET['action'] == 'reply'}-->
@@ -138,7 +138,7 @@
 				<!--{if $_G['group']['allowposttrade']}--><li$postspecialcheck[2]><a href="javascript:;" onclick="switchpost('forum.php?mod=post&action=newthread&special=2')">{lang post_newthreadtrade}</a></li><!--{/if}-->
 				<!--{if $_G['setting']['threadplugins']}-->
 					<!--{loop $_G['forum']['threadplugin'] $tpid}-->
-						<!--{if array_key_exists($tpid, $_G['setting']['threadplugins']) && @in_array($tpid, $_G['group']['allowthreadplugin'])}-->
+						<!--{if array_key_exists($tpid, $_G['setting']['threadplugins']) && is_array($_G['group']['allowthreadplugin']) && in_array($tpid, $_G['group']['allowthreadplugin'])}-->
 							<li{if $specialextra==$tpid} class="a"{/if}><a href="javascript:;" onclick="switchpost('forum.php?mod=post&action=newthread&specialextra=$tpid')">{$_G[setting][threadplugins][$tpid][name]}</a></li>
 						<!--{/if}-->
 					<!--{/loop}-->

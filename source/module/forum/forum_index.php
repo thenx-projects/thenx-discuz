@@ -236,10 +236,10 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 
 	foreach($forums as $forum) {
 		if($forum_fields[$forum['fid']]['fid']) {
-			$forum = array_merge($forum, $forum_fields[$forum['fid']]);
+			$forum = (array_key_exists('fid', $forum) && array_key_exists($forum['fid'], $forum_fields)) ? array_merge($forum, $forum_fields[$forum['fid']]) : $forum;
 		}
 		if($forum_access['fid']) {
-			$forum = array_merge($forum, $forum_access[$forum['fid']]);
+			$forum = (array_key_exists('fid', $forum) && array_key_exists($forum['fid'], $forum_access)) ? array_merge($forum, $forum_access[$forum['fid']]) : $forum;
 		}
 		$forumname[$forum['fid']] = strip_tags($forum['name']);
 		$forum['extra'] = empty($forum['extra']) ? array() : dunserialize($forum['extra']);
@@ -332,7 +332,7 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 
 		$detailstatus = $showoldetails == 'yes' || (((!isset($_G['cookie']['onlineindex']) && !$_G['setting']['whosonline_contract']) || $_G['cookie']['onlineindex']) && $onlinenum < 500 && !$showoldetails);
 
-		$guestcount = $membercount = 0;
+		$guestcount = $membercount = $invisiblecount = 0;
 		if(!empty($_G['setting']['sessionclose'])) {
 			$detailstatus = false;
 			$membercount = C::app()->session->count(1);
@@ -478,8 +478,12 @@ function get_index_page_guest_cache() {
 		});
 		readfile($indexcache['filename']);
 		$updatetime = dgmdate($filemtime, 'Y-m-d H:i:s');
-		$gzip = $_G['gzipcompress'] ? ', Gzip On' : '';
-		echo '<script type="text/javascript">$("debuginfo") ? $("debuginfo").innerHTML = ", Updated at '.$updatetime.', Processed in '.sprintf("%0.6f", microtime(TRUE) - $start_time).' second(s)'.$gzip.'." : "";</script></body></html>';
+		$debuginfo = ", Updated at $updatetime";
+		if(getglobal('setting/debug')) {
+			$gzip = $_G['gzipcompress'] ? ', Gzip On' : '';
+			$debuginfo .= ', Processed in '.sprintf("%0.6f", microtime(TRUE) - $start_time).' second(s)'.$gzip;
+		}
+		echo '<script type="text/javascript">$("debuginfo") ? $("debuginfo").innerHTML = "'.$debuginfo.'." : "";</script></body></html>';
 		ob_end_flush();
 		exit();
 	}

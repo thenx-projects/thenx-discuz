@@ -108,7 +108,7 @@ class control extends adminbase {
 			$_ENV['cache']->updatedata('apps');
 
 			$_ENV['app']->alter_app_table($appid, 'ADD');
-			$this->writelog('app_add', "appid=$appid; appname=$_POST[name]");
+			$this->writelog('app_add', "appid=$appid; appname={$_POST['name']}");
 			header("location: admin.php?m=app&a=detail&appid=$appid&addapp=yes&sid=".$this->view->sid);
 		}
 	}
@@ -180,7 +180,7 @@ class control extends adminbase {
 				}
 			}
 			$tagtemplates = array();
-			$tagtemplates['template'] = MAGIC_QUOTES_GPC ? stripslashes(getgpc('tagtemplates', 'P')) : getgpc('tagtemplates', 'P');
+			$tagtemplates['template'] = getgpc('tagtemplates', 'P');
 			$tagfields = explode("\n", getgpc('tagfields', 'P'));
 			foreach($tagfields as $field) {
 				$field = trim($field);
@@ -207,6 +207,7 @@ class control extends adminbase {
 			$app = $_ENV['app']->get_app_by_appid($appid);
 		}
 		$tagtemplates = $this->unserialize($app['tagtemplates']);
+		$tagtemplates = is_array($tagtemplates) ? $tagtemplates : array();
 		$template = dhtmlspecialchars($tagtemplates['template']);
 		$tmp = '';
 		if(is_array($tagtemplates['fields'])) {

@@ -576,12 +576,12 @@ class uploadUcAvatar {
 				$s2 = $sep2 = '';
 				foreach($v as $k2 => $v2) {
 					$k2 = urlencode($k2);
-					$s2 .= "$sep2{$k}[$k2]=".urlencode(uc_stripslashes($v2));
+					$s2 .= "$sep2{$k}[$k2]=".urlencode($v2);
 					$sep2 = '&';
 				}
 				$s .= $sep.$s2;
 			} else {
-				$s .= "$sep$k=".urlencode(uc_stripslashes($v));
+				$s .= "$sep$k=".urlencode($v);
 			}
 			$sep = '&';
 		}
@@ -622,7 +622,7 @@ class showActivity {
 		return true;
 	}
 
-	function misc() {
+	public static function misc() {
 		global $_G;
 		if(!$_POST || $_GET['action'] != 'activityapplies' && $_GET['action'] != 'activityapplylist') {
 			return;
@@ -636,7 +636,7 @@ class showActivity {
 		}
 	}
 
-	function post() {
+	public static function post() {
 		global $_G;
 		if($_GET['action'] != 'reply') {
 			return;
@@ -659,7 +659,7 @@ class showActivity {
 		}
 	}
 
-	function returnvoters($type) {
+	public static function returnvoters($type) {
 		global $_G;
 		$return = array();
 		if($type == 1) {

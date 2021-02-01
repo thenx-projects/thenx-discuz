@@ -21,7 +21,7 @@ if (!checkperm('allowstatdata') && $_GET['hash'] != $stat_hash) {
 }
 
 $cols = array();
-$cols['login'] = array('login', 'mobilelogin', 'connectlogin', 'register', 'invite', 'appinvite');
+$cols['login'] = array('login', 'mobilelogin', 'connectlogin', 'register', 'invite');
 if (!$_G['setting']['connect']['allow']) {
 	unset($cols['login'][2]);
 }
@@ -64,8 +64,8 @@ if (!empty($_GET['xml'])) {
 		if ($type == 'all') {
 			foreach ($cols as $ck => $cvs) {
 				if ($ck == 'login') {
-					$graph['login'] .= "<value xid='$count'>$value[login]</value>";
-					$graph['register'] .= "<value xid='$count'>$value[register]</value>";
+					$graph['login'] .= "<value xid='$count'>{$value['login']}</value>";
+					$graph['register'] .= "<value xid='$count'>{$value['register']}</value>";
 				} else {
 					$num = 0;
 					foreach ($cvs as $cvk) {
@@ -117,6 +117,6 @@ foreach ($_GET['types'] as $value) {
 	$types .= '&types[]=' . $value;
 	$actives[$value] = ' class="a"';
 }
-$statuspara = "path=&settings_file=data/stat_setting.xml&data_file=" . urlencode("misc.php?mod=stat&op=trend&xml=1&type=$type&primarybegin=$primarybegin&primaryend=$primaryend{$types}{$merge}&hash=$stat_hash");
+$statuspara = "misc.php?mod=stat&op=trend&xml=1&type=$type&primarybegin=$primarybegin&primaryend=$primaryend{$types}{$merge}&hash=$stat_hash";
 
 include template('home/misc_stat');

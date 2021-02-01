@@ -78,16 +78,6 @@ class discuz_application extends discuz_base{
 
 		error_reporting(E_ERROR);
 
-		if(PHP_VERSION < '5.3.0') {
-			set_magic_quotes_runtime(0);
-		}
-
-		if (PHP_VERSION < '5.4.0') {
-			define('MAGIC_QUOTES_GPC', function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc());
-		} else {
-			define('MAGIC_QUOTES_GPC', FALSE);
-		}
-
 		define('ICONV_ENABLE', function_exists('iconv'));
 		define('MB_ENABLE', function_exists('mb_convert_encoding'));
 		define('EXT_OBGZIP', function_exists('ob_gzhandler'));
@@ -151,8 +141,6 @@ class discuz_application extends discuz_base{
 			'cache' => array(),
 			'session' => array(),
 			'lang' => array(),
-			'my_app' => array(),
-			'my_userapp' => array(),
 
 			'fid' => 0,
 			'tid' => 0,
@@ -176,7 +164,7 @@ class discuz_application extends discuz_base{
 			'notice_structure' => array(
 				'mypost' => array('post','pcomment','activity','reward','goods','at'),
 				'interactive' => array('poke','friend','wall','comment','click','sharenotice'),
-				'system' => array('system','myapp','credit','group','verify','magic','task','show','group','pusearticle','mod_member','blog','article'),
+				'system' => array('system','credit','group','verify','magic','task','show','group','pusearticle','mod_member','blog','article'),
 				'manage' => array('mod_member','report','pmreport'),
 				'app' => array(),
 			),
@@ -235,12 +223,6 @@ class discuz_application extends discuz_base{
 	private function _init_input() {
 		if (isset($_GET['GLOBALS']) ||isset($_POST['GLOBALS']) ||  isset($_COOKIE['GLOBALS']) || isset($_FILES['GLOBALS'])) {
 			system_error('request_tainting');
-		}
-
-		if(MAGIC_QUOTES_GPC) {
-			$_GET = dstripslashes($_GET);
-			$_POST = dstripslashes($_POST);
-			$_COOKIE = dstripslashes($_COOKIE);
 		}
 
 		$prelength = strlen($this->config['cookie']['cookiepre']);
@@ -801,10 +783,10 @@ class discuz_application extends discuz_base{
 		if($mobile === 'no') {
 			dsetcookie('mobile', 'no', 3600);
 			$nomobile = true;
-		} elseif($this->var['cookie']['mobile'] == 'no' && $mobileflag) {
+		} elseif(isset($this->var['cookie']['mobile']) && $this->var['cookie']['mobile'] == 'no' && $mobileflag) {
 			checkmobile();
 			dsetcookie('mobile', '');
-		} elseif($this->var['cookie']['mobile'] == 'no') {
+		} elseif(isset($this->var['cookie']['mobile']) && $this->var['cookie']['mobile'] == 'no') {
 			$nomobile = true;
 		} elseif(!($mobile_ = checkmobile())) {
 			$nomobile = true;
@@ -823,7 +805,7 @@ class discuz_application extends discuz_base{
 		}
 
 		if($nomobile || (!$this->var['setting']['mobile']['mobileforward'] && !$mobileflag)) {
-			if($_SERVER['HTTP_HOST'] == $this->var['setting']['domain']['app']['mobile'] && $this->var['setting']['domain']['app']['default']) {
+			if(!empty($this->var['setting']['domain']['app']['mobile']) && $_SERVER['HTTP_HOST'] == $this->var['setting']['domain']['app']['mobile'] && !empty($this->var['setting']['domain']['app']['default'])) {
 				dheader('Location:'.$this->var['scheme'].'://'.$this->var['setting']['domain']['app']['default'].$_SERVER['REQUEST_URI']);
 				return false;
 			} else {

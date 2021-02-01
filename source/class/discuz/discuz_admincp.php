@@ -32,7 +32,7 @@ class discuz_admincp
 	var $sessionlife = 1800;
 	var $sessionlimit = 0;
 
-	function &instance() {
+	public static function &instance() {
 		static $object;
 		if(empty($object)) {
 			$object = new discuz_admincp();
@@ -259,9 +259,9 @@ class discuz_admincp
 			return false;
 		} elseif(empty($founders)) {
 			return true;
-		} elseif(strexists(",$founders,", ",$user[uid],")) {
+		} elseif(strexists(",$founders,", ",{$user['uid']},")) {
 			return true;
-		} elseif(!is_numeric($user['username']) && strexists(",$founders,", ",$user[username],")) {
+		} elseif(!is_numeric($user['username']) && strexists(",$founders,", ",{$user['username']},")) {
 			return true;
 		} else {
 			return FALSE;

@@ -106,7 +106,7 @@ $lang = array (
   'select_thread_empty' => '没有选择主题',
   'threadtype_infotypes_option_invalid' => '分类扩展选项名称或者变量名为空',
   'threadtype_infotypes_optionvariable_iskeyword' => '选项变量名不被允许使用',
-  'threadtype_infotypes_optionvariable_invalid' => '分类选项变量名重复',
+  'threadtype_infotypes_optionvariable_invalid' => '分类选项变量名重复或不为字母开头',
   'threadtype_infotypes_succeed' => '分类选项更新成功 ',
   'forums_threadtypes_duplicate' => '新增主题分类与现有重复',
   'threadtype_import_succeed' => '导入成功',
@@ -461,7 +461,6 @@ $lang = array (
   'uc_database_connect_error' => '连接用户中心数据库服务器失败检查设置',
   'uc_config_write_error' => '配置文件写入失败，请检查设置',
   'uc_config_appid_error' => 'UCenter 应用 ID 必须为数字，请检查设置',
-  'uc_config_load_data_local_infile_error' => '服务器开启了 MySQL LOAD DATA LOCAL IN FILE 功能，为避免可能发生的安全威胁，不允许在线编辑 UCenter 数据库服务器地址，如需修改请编辑 config/config_ucenter.php 内 UC_DBHOST 常量',
   'setting_ipaccess_invalid' => '操作错误！您必须将自己的 IP 加入到允许访问站点的 IP 列表中',
   'setting_adminipaccess_invalid' => '操作错误！您必须将自己的 IP 加入到允许访问后台的 IP 列表中',
   'setting_creditsformula_invalid' => '积分公式包含无效变量或运算符',
@@ -613,8 +612,6 @@ $lang = array (
   'connect_like_url_error' => 'QQ空间喜欢的链接必须是 qq.com 域名',
   'connect_like_url_miss' => '您没有填写QQ空间喜欢链接 URL',
   'connect_update_succeed' => 'QQ绑定设置更新成功 ',
-
-  'my_app_status_off' => '请先正常开启漫游功能',
 
   'moderate_articles_succeed' => '审核操作成功，共 {validates} 个文章被通过，{ignores} 个文章被忽略，{deletes} 个文章被删除',
 

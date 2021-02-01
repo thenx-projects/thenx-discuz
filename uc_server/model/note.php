@@ -1,7 +1,7 @@
 <?php
 
 /*
-	[UCenter] (C)2001-2009 Comsenz Inc.
+	[UCenter] (C)2001-2099 Comsenz Inc.
 	This is NOT a freeware, use is subject to license terms
 
 	$Id: note.php 1122 2011-11-14 03:06:25Z monkey $
@@ -124,7 +124,7 @@ class notemodel {
 			}
 		}
 		if($closenote) {
-			$this->db->query("UPDATE ".UC_DBTABLEPRE."notelist SET closed='1' WHERE noteid='$note[noteid]'");
+			$this->db->query("UPDATE ".UC_DBTABLEPRE."notelist SET closed='1' WHERE noteid='{$note['noteid']}'");
 		}
 
 		$this->_gc();
@@ -144,9 +144,6 @@ class notemodel {
 			$method = $note['operation'];
 			if(is_string($method) && !empty($method)) {
 				parse_str($note['getdata'], $note['getdata']);
-				if(get_magic_quotes_gpc()) {
-					$note['getdata'] = $this->base->dstripslashes($note['getdata']);
-				}
 				$note['postdata'] = xml_unserialize($note['postdata']);
 				$response = $uc_note->$method($note['getdata'], $note['postdata']);
 			}
@@ -167,10 +164,10 @@ class notemodel {
 				$func = $this->operations[$note['operation']][3];
 				$_ENV[$this->operations[$note['operation']][2]]->$func($appid, $response);
 			}
-			$this->db->query("UPDATE ".UC_DBTABLEPRE."notelist SET app$appid='1', totalnum=totalnum+1, succeednum=succeednum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='$note[noteid]'", 'SILENT');
+			$this->db->query("UPDATE ".UC_DBTABLEPRE."notelist SET app$appid='1', totalnum=totalnum+1, succeednum=succeednum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='{$note['noteid']}'", 'SILENT');
 			$return = TRUE;
 		} else {
-			$this->db->query("UPDATE ".UC_DBTABLEPRE."notelist SET app$appid = app$appid-'1', totalnum=totalnum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='$note[noteid]'", 'SILENT');
+			$this->db->query("UPDATE ".UC_DBTABLEPRE."notelist SET app$appid = app$appid-'1', totalnum=totalnum+1, dateline='{$this->base->time}' $closedsqladd WHERE noteid='{$note['noteid']}'", 'SILENT');
 			$return = FALSE;
 		}
 		return $return;

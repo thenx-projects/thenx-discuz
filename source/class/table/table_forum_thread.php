@@ -74,7 +74,7 @@ class table_forum_thread extends discuz_table
 		$threadtableids = array('0' => 0);
 		$db = DB::object();
 		$query = $db->query("SHOW TABLES LIKE '".str_replace('_', '\_', DB::table('forum_thread').'_%')."'");
-		while($table = $db->fetch_array($query, $db->drivertype == 'mysqli' ? MYSQLI_NUM : MYSQL_NUM)) {
+		while($table = $db->fetch_array($query, constant('MYSQLI_NUM'))) {
 			$tablename = $table[0];
 			$tableid = intval(substr($tablename, strrpos($tablename, '_') + 1));
 			if(empty($tableid)) {
@@ -506,7 +506,7 @@ class table_forum_thread extends discuz_table
 					}
 				}
 			}
-			if($firstpage && !empty($tlkey) && ($ttl = getglobal('setting/memory/forum_thread_forumdisplay')) !== null && ($data = $this->fetch_cache($tlkey, 'forumdisplay_')) !== false) {
+			if(!$tableid && $firstpage && !empty($tlkey) && ($ttl = getglobal('setting/memory/forum_thread_forumdisplay')) !== null && ($data = $this->fetch_cache($tlkey, 'forumdisplay_')) !== false) {
 				$delusers = $this->fetch_cache('deleteuids', '');
 				if(!empty($delusers)) {
 					foreach($data as $tid => $value) {
@@ -521,7 +521,7 @@ class table_forum_thread extends discuz_table
 			}
 		}
 		$data = DB::fetch_all("SELECT * FROM ".DB::table($this->get_table_name($tableid))." $forceindex".$this->search_condition($conditions)." $ordersql ".DB::limit($start, $limit));
-		if(!defined('IN_MOBILE') && $firstpage && !empty($tlkey) && ($ttl = getglobal('setting/memory/forum_thread_forumdisplay')) !== null) {
+		if(!defined('IN_MOBILE') && !$tableid && $firstpage && !empty($tlkey) && ($ttl = getglobal('setting/memory/forum_thread_forumdisplay')) !== null) {
 			$this->store_cache($tlkey, $data, $ttl, 'forumdisplay_');
 		}
 		return $data;
@@ -530,7 +530,7 @@ class table_forum_thread extends discuz_table
 	public function fetch_all_by_special($special, $authorid = 0, $replies = 0, $displayorder = null, $subject = '', $join = 0, $start = 0, $limit = 0, $order = 'dateline', $sort = 'DESC') {
 		$condition = $this->make_special_condition($special, $authorid, $replies, $displayorder, $subject, $join, 0);
 		$ordersql = !empty($order) ? ' ORDER BY t.'.DB::order($order, $sort) : '';
-		return DB::fetch_all("SELECT t.* FROM %t t $condition[jointable] ".$condition['where'].$ordersql.DB::limit($start, $limit), $condition['parameter'], $this->_pk);
+		return DB::fetch_all("SELECT t.* FROM %t t {$condition['jointable']} ".$condition['where'].$ordersql.DB::limit($start, $limit), $condition['parameter'], $this->_pk);
 	}
 	public function fetch_all_heats() {
 		$heatdateline = getglobal('timestamp') - 86400 * getglobal('setting/indexhot/days');
@@ -585,7 +585,7 @@ class table_forum_thread extends discuz_table
 
 	public function count_by_special($special, $authorid = 0, $replies = 0, $displayorder = null, $subject = '', $join = 0) {
 		$condition = $this->make_special_condition($special, $authorid, $replies, $displayorder, $subject, $join, 0);
-		return DB::result_first("SELECT COUNT(*) FROM %t t $condition[jointable] ".$condition['where'], $condition['parameter']);
+		return DB::result_first("SELECT COUNT(*) FROM %t t {$condition['jointable']} ".$condition['where'], $condition['parameter']);
 	}
 	private function make_special_condition($special, $authorid = 0, $replies = 0, $displayorder = null, $subject = '', $join = 0, $tableid = 0) {
 		$wherearr = $condition = array();

@@ -34,7 +34,7 @@ if($page === 1 && !empty($_G['setting']['antitheft']['allow']) && empty($_G['set
 	helper_antitheft::check($_G['forum_thread']['tid'], 'tid');
 }
 
-if($_G['setting']['cachethreadlife'] && $_G['forum']['threadcaches'] && !$_G['uid'] && $page == 1 && !$_G['forum']['special'] && empty($_GET['do']) && empty($_GET['threadindex']) && !defined('IN_ARCHIVER') && !defined('IN_MOBILE')) {
+if($_G['setting']['cachethreadlife'] && $_G['forum']['threadcaches'] && !$_G['uid'] && $page == 1 && !$_G['forum']['special'] && empty($_GET['do']) && empty($_GET['from']) && empty($_GET['threadindex']) && !defined('IN_ARCHIVER') && !defined('IN_MOBILE')) {
 	viewthread_loadcache();
 }
 
@@ -74,7 +74,7 @@ if($_GET['from'] == 'portal' && !$_G['setting']['portalstatus']) {
 	$_GET['from'] = '';
 } elseif($_GET['from'] == 'preview' && !$_G['inajax']) {
 	$_GET['from'] = '';
-} elseif($_GET['from'] == 'album' && ($_G['setting']['guestviewthumb']['flag'] && !$_G['uid'] && IN_MOBILE != 2 || !$_G['group']['allowgetimage'])) {
+} elseif($_GET['from'] == 'album' && ($_G['setting']['guestviewthumb']['flag'] && !$_G['uid'] && (!defined('IN_MOBILE') || constant('IN_MOBILE') != 2) || !$_G['group']['allowgetimage'])) {
 	$_GET['from'] = '';
 }
 
@@ -158,7 +158,7 @@ if($_GET['from'] == 'portal') {
 
 $_GET['extra'] = $_GET['extra'] ? rawurlencode($_GET['extra']) : '';
 
-if(@in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
+if(is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
 	$canonical = rewriteoutput('forum_viewthread', 1, '', $_G['tid'], 1, '', '');
 } else {
 	$canonical = 'forum.php?mod=viewthread&tid='.$_G['tid'];
@@ -190,14 +190,14 @@ if($_G['forum']['formulaperm']) {
 }
 
 if($_G['forum']['password'] && $_G['forum']['password'] != $_G['cookie']['fidpw'.$_G['fid']]) {
-	dheader("Location: $_G[siteurl]forum.php?mod=forumdisplay&fid=$_G[fid]");
+	dheader("Location: {$_G['siteurl']}forum.php?mod=forumdisplay&fid={$_G['fid']}");
 }
 
 if($_G['forum']['price'] && !$_G['forum']['ismoderator']) {
 	$membercredits = C::t('common_member_forum_buylog')->get_credits($_G['uid'], $_G['fid']);
 	$paycredits = $_G['forum']['price'] - $membercredits;
 	if($paycredits > 0) {
-		dheader("Location: $_G[siteurl]forum.php?mod=forumdisplay&fid=$_G[fid]");
+		dheader("Location: {$_G['siteurl']}forum.php?mod=forumdisplay&fid={$_G['fid']}");
 	}
 }
 
@@ -320,7 +320,7 @@ $_G['forum']['allowpost'] = isset($_G['forum']['allowpost']) ? $_G['forum']['all
 $allowpostreply = ($_G['forum']['allowreply'] != -1) && (($_G['forum_thread']['isgroup'] || (!$_G['forum_thread']['closed'] && !checkautoclose($_G['forum_thread']))) || $_G['forum']['ismoderator']) && ((!$_G['forum']['replyperm'] && $_G['group']['allowreply']) || ($_G['forum']['replyperm'] && forumperm($_G['forum']['replyperm'])) || $_G['forum']['allowreply']);
 $fastpost = $_G['setting']['fastpost'] && !$_G['forum_thread']['archiveid'] && ($_G['forum']['status'] != 3 || $_G['isgroupuser']);
 $allowfastpost = $_G['setting']['fastpost'] && $allowpostreply;
-if(!$_G['uid'] && ($_G['setting']['need_avatar'] || $_G['setting']['need_email'] || $_G['setting']['need_friendnum']) || !$_G['adminid'] && (!cknewuser(1) || $_G['setting']['newbiespan'] && (!getuserprofile('lastpost') || TIMESTAMP - getuserprofile('lastpost') < $_G['setting']['newbiespan'] * 60) && TIMESTAMP - $_G['member']['regdate'] < $_G['setting']['newbiespan'] * 60)) {
+if(!$_G['uid'] && ($_G['setting']['need_avatar'] || $_G['setting']['need_email'] || $_G['setting']['need_friendnum']) || in_array($_G['adminid'], array(0, -1)) && (!cknewuser(1) || $_G['setting']['newbiespan'] && (!getuserprofile('lastpost') || TIMESTAMP - getuserprofile('lastpost') < $_G['setting']['newbiespan'] * 60) && TIMESTAMP - $_G['member']['regdate'] < $_G['setting']['newbiespan'] * 60)) {
 	$allowfastpost = false;
 }
 $_G['group']['allowpost'] = $_G['forum']['allowpost'] != -1 && ((!$_G['forum']['postperm'] && $_G['group']['allowpost']) || ($_G['forum']['postperm'] && forumperm($_G['forum']['postperm'])) || $_G['forum']['allowpost']);
@@ -377,7 +377,7 @@ if($_G['forum_thread']['special'] == 2) {
 } elseif($_G['forum_thread']['special'] == 5) {
 	if(isset($_GET['stand'])) {
 		$specialadd2 = 1;
-		$specialextra = "&amp;stand=$_GET[stand]";
+		$specialextra = "&amp;stand={$_GET['stand']}";
 	}
 }
 
@@ -514,7 +514,7 @@ if(empty($_GET['viewpid'])) {
 		$specialextra);
 } else {
 	$_GET['viewpid'] = intval($_GET['viewpid']);
-	$pageadd = "AND p.pid='$_GET[viewpid]'";
+	$pageadd = "AND p.pid='{$_GET['viewpid']}'";
 }
 
 $_G['forum_newpostanchor'] = $_G['forum_postcount'] = 0;
@@ -541,8 +541,8 @@ if($maxposition) {
 		if($post['invisible'] != 0) {
 			$have_badpost = 1;
 		}
-		$cachepids[$post[position]] = $post['pid'];
-		$postarr[$post[position]] = $post;
+		$cachepids[$post['position']] = $post['pid'];
+		$postarr[$post['position']] = $post;
 		$lastposition = $post['position'];
 	}
 	$realpost = count($postarr);
@@ -618,7 +618,7 @@ if(!empty($isdel_post)) {
 	}
 	if($updatedisablepos && !$rushreply) {
 		C::t('forum_threaddisablepos')->insert(array('tid' => $_G['tid']), false, true);
-		dheader("Location:forum.php?mod=viewthread&tid=$_G[tid]");
+		dheader("Location:forum.php?mod=viewthread&tid={$_G['tid']}");
 	}
 	$ordertype != 1 ? ksort($postarr) : krsort($postarr);
 }
@@ -846,13 +846,13 @@ if($_G['forum_thread']['special'] > 0 && (empty($_GET['viewpid']) || $_GET['view
 }
 if(empty($_GET['authorid']) && empty($postlist)) {
 	if($rushreply) {
-		dheader("Location: forum.php?mod=redirect&tid=$_G[tid]&goto=lastpost");
+		dheader("Location: forum.php?mod=redirect&tid={$_G['tid']}&goto=lastpost");
 	} else {
 		$replies = C::t('forum_post')->count_visiblepost_by_tid($_G['tid']);
 		$replies = intval($replies) - 1;
 		if($_G['forum_thread']['replies'] != $replies && $replies > 0) {
 			C::t('forum_thread')->update($_G['tid'], array('replies' => $replies), false, false, $archiveid);
-			dheader("Location: forum.php?mod=redirect&tid=$_G[tid]&goto=lastpost");
+			dheader("Location: forum.php?mod=redirect&tid={$_G['tid']}&goto=lastpost");
 		}
 	}
 }
@@ -1196,7 +1196,7 @@ function viewthread_procpost($post, $lastvisit, $ordertype, $maxposition = 0) {
 	if($_G['setting']['commentnumber'] && ($post['first'] && $_G['setting']['commentfirstpost'] || !$post['first']) && $post['comment']) {
 		$_G['forum_cachepid'][$post['pid']] = $post['pid'];
 	}
-	$post['allowcomment'] = $_G['setting']['commentnumber'] && in_array(1, $_G['setting']['allowpostcomment']) && ($_G['setting']['commentpostself'] || $post['authorid'] != $_G['uid']) &&
+	$post['allowcomment'] = $_G['setting']['commentnumber'] && is_array($_G['setting']['allowpostcomment']) && in_array(1, $_G['setting']['allowpostcomment']) && ($_G['setting']['commentpostself'] || $post['authorid'] != $_G['uid']) &&
 		($post['first'] && $_G['setting']['commentfirstpost'] && in_array($_G['group']['allowcommentpost'], array(1, 3)) ||
 		(!$post['first'] && in_array($_G['group']['allowcommentpost'], array(2, 3))));
 	$forum_allowbbcode = $_G['forum']['allowbbcode'] ? -$post['groupid'] : 0;
@@ -1307,8 +1307,12 @@ function viewthread_loadcache() {
 			readfile($threadcache['filename']);
 			viewthread_updateviews($_G['forum_thread']['threadtableid']);
 			$updatetime = dgmdate($filemtime, 'Y-m-d H:i:s');
-			$gzip = $_G['gzipcompress'] ? ', Gzip On' : '';
-			echo '<script type="text/javascript">$("debuginfo") ? $("debuginfo").innerHTML = ", Updated at '.$updatetime.', Processed in '.sprintf("%0.6f", microtime(TRUE) - $start_time).' second(s)'.$gzip.'." : "";</script></body></html>';
+			$debuginfo = ", Updated at $updatetime";
+			if(getglobal('setting/debug')) {
+				$gzip = $_G['gzipcompress'] ? ', Gzip On' : '';
+				$debuginfo .= ', Processed in '.sprintf("%0.6f", microtime(TRUE) - $start_time).' second(s)'.$gzip;
+			}
+			echo '<script type="text/javascript">$("debuginfo") ? $("debuginfo").innerHTML = "'.$debuginfo.'." : "";</script></body></html>';
 			ob_end_flush();
 			exit();
 		}
@@ -1408,7 +1412,7 @@ function viewthread_profile_nodeparse($param) {
 		list($plugin, $pluginid) = explode(':', $name);
 		if($plugin == 'plugin') {
 			global $_G;
-			static $pluginclasses;
+			static $pluginclasses = array();
 			if(isset($_G['setting']['plugins']['profile_node'][$pluginid])) {
 				@include_once DISCUZ_ROOT.'./source/plugin/'.$_G['setting']['plugins']['profile_node'][$pluginid].'.class.php';
 				$classkey = 'plugin_'.$pluginid;
@@ -1584,6 +1588,7 @@ function rushreply_rule () {
 				}
 				$preg[] = "(,$var,)";
 			}
+			$preg = is_array($preg) ? $preg : array($preg);
 			$preg_str = "/".implode('|', $preg)."/";
 		}
 	}

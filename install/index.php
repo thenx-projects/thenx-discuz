@@ -10,10 +10,6 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 @set_time_limit(1000);
 
-if(function_exists('set_magic_quotes_runtime')) {
-	@set_magic_quotes_runtime(0);
-}
-
 define('IN_DISCUZ', TRUE);
 define('IN_COMSENZ', TRUE);
 define('ROOT_PATH', dirname(__FILE__).'/../');
@@ -292,12 +288,8 @@ if($method == 'show_license') {
 					show_msg('database_connect_error', $error, 0);
 				}
 			}
-			$mysql_version = $link->server_info;
-			if($mysql_version > '4.1') {
-				$link->query("CREATE DATABASE IF NOT EXISTS `$dbname` DEFAULT CHARACTER SET ".DBCHARSET);
-			} else {
-				$link->query("CREATE DATABASE IF NOT EXISTS `$dbname`");
-			}
+
+			$link->query("CREATE DATABASE IF NOT EXISTS `$dbname` DEFAULT CHARACTER SET " . constant('DBCHARSET'));
 
 			if($link->errno) {
 				show_msg('database_errno_1044', $link->error, 0);
@@ -305,7 +297,8 @@ if($method == 'show_license') {
 			$link->close();
 		}
 
-		if(strpos($tablepre, '.') !== false || intval($tablepre[0])) {
+		// 表前缀格式限制最后一个字符为 _ , 避免形如 pre_1 的表前缀产生导致程序处理出错.
+		if(strpos($tablepre, '.') !== false || intval($tablepre[0]) || strrpos($tablepre, '_') !== strlen($tablepre) - 1) {
 			show_msg('tablepre_invalid', $tablepre, 0);
 		}
 

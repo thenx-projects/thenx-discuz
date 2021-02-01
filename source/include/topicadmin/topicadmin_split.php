@@ -45,6 +45,7 @@ if(!submitcheck('modsubmit')) {
 	foreach(C::t('forum_post')->fetch_all_by_tid_position($thread['posttableid'], $_G['tid'], $nos) as $post) {
 		$pids[] = $post['pid'];
 	}
+	$pids = is_array($pids) ? $pids : array($pids);
 	if(!($pids = implode(',',$pids))) {
 		showmessage('admin_split_new_invalid');
 	}
@@ -103,7 +104,7 @@ if(!submitcheck('modsubmit')) {
 
 	$modpostsnum++;
 	$resultarray = array(
-	'redirect'	=> "forum.php?mod=forumdisplay&fid=$_G[fid]",
+	'redirect'	=> "forum.php?mod=forumdisplay&fid={$_G['fid']}",
 	'reasonpm'	=> ($sendreasonpm ? array('data' => $splitauthors, 'var' => 'thread', 'item' => 'reason_moderate', 'notictype' => 'post') : array()),
 	'reasonvar'	=> array('tid' => $thread['tid'], 'subject' => $thread['subject'], 'modaction' => $modaction, 'reason' => $reason),
 	'modtids'	=> $thread['tid'].','.$newtid,

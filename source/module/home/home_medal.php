@@ -77,7 +77,7 @@ if(empty($_GET['action'])) {
 	}
 
 	$applysucceed = FALSE;
-	$medalpermission = $medal['permission'] ? dunserialize($medal['permission']) : '';
+	$medalpermission = $medal['permission'] ? dunserialize($medal['permission']) : array();
 	if($medalpermission[0] || $medalpermission['usergroupallow']) {
 		include libfile('function/forum');
 		medalformulaperm(serialize(array('medal' => $medalpermission)), 1);
@@ -97,7 +97,7 @@ if(empty($_GET['action'])) {
 			if($medal['price']) {
 				$medal['credit'] = $medal['credit'] ? $medal['credit'] : $_G['setting']['creditstransextra'][3];
 				if($medal['price'] > getuserprofile('extcredits'.$medal['credit'])) {
-					showmessage('medal_not_get_credit', '', array('credit' => $_G['setting']['extcredits'][$medal[credit]][title]));
+					showmessage('medal_not_get_credit', '', array('credit' => $_G['setting']['extcredits'][$medal['credit']]['title']));
 				}
 				updatemembercount($_G['uid'], array($medal['credit'] => -$medal['price']), true, 'BME', $medal['medalid']);
 			}

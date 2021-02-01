@@ -1,7 +1,7 @@
 <?php
 
 /*
-	[Discuz!] (C)2001-2009 Comsenz Inc111.
+	[Discuz!] (C)2001-2099 Comsenz Inc111.
 	This is NOT a freeware, use is subject to license terms
 
 	$Id: home_magic.php 33875 2013-08-26 07:33:49Z andyzheng $
@@ -150,7 +150,7 @@ if($action == 'shop') {
 
 		if(!submitcheck('operatesubmit')) {
 
-			$useperm = (strstr($magicperm['usergroups'], "\t$_G[groupid]\t") || !$magicperm['usergroups']) ? '1' : '0';
+			$useperm = (strstr($magicperm['usergroups'], "\t{$_G['groupid']}\t") || !$magicperm['usergroups']) ? '1' : '0';
 
 			if($magicperm['targetgroups']) {
 				loadcache('usergroups');
@@ -312,7 +312,7 @@ if($action == 'shop') {
 
 		if($operation == 'use') {
 
-			$useperm = (strstr($magicperm['usergroups'], "\t$_G[groupid]\t") || empty($magicperm['usergroups'])) ? '1' : '0';
+			$useperm = (strstr($magicperm['usergroups'], "\t{$_G['groupid']}\t") || empty($magicperm['usergroups'])) ? '1' : '0';
 			if(!$useperm) {
 				showmessage('magics_use_nopermission');
 			}
