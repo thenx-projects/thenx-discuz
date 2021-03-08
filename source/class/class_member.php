@@ -138,7 +138,7 @@ class logging_ctl {
 				$ucsynlogin = $this->setting['allowsynlogin'] ? uc_user_synlogin($_G['uid']) : '';
 
 				$pwold = false;
-				if($this->setting['strongpw'] && !$this->setting['pwdsafety']) {
+				if($this->setting['strongpw']) {
 					if(in_array(1, $this->setting['strongpw']) && !preg_match("/\d+/", $_GET['password'])) {
 						$pwold = true;
 					}
@@ -371,9 +371,13 @@ class register_ctl {
 				}
 			} elseif(!$this->setting['regstatus']) {
 				if($this->setting['regconnect']) {
-					dheader('location:connect.php?mod=login&op=init&referer=forum.php&statfrom=login_simple');
+					//不是QQ互联登录则跳转到QQ互联，避免越权完成普通注册
+					if(CURMODULE != 'connect'){
+						dheader('location:connect.php?mod=login&op=init&referer=forum.php&statfrom=login_simple');
+					}
+				}else{
+					showmessage(!$this->setting['regclosemessage'] ? 'register_disable' : str_replace(array("\r", "\n"), '', $this->setting['regclosemessage']));
 				}
-				showmessage(!$this->setting['regclosemessage'] ? 'register_disable' : str_replace(array("\r", "\n"), '', $this->setting['regclosemessage']));
 			}
 		}
 
@@ -388,7 +392,7 @@ class register_ctl {
 		if($this->setting['regverify']) {
 			if($this->setting['areaverifywhite']) {
 				$location = $whitearea = '';
-				$location = trim(convertip($_G['clientip'], "./"));
+				$location = trim(convertip($_G['clientip']));
 				if($location) {
 					$whitearea = preg_quote(trim($this->setting['areaverifywhite']), '/');
 					$whitearea = str_replace(array("\\*"), array('.*'), $whitearea);
@@ -414,7 +418,7 @@ class register_ctl {
 		if($this->setting['regstatus'] == 2) {
 			if($this->setting['inviteconfig']['inviteareawhite']) {
 				$location = $whitearea = '';
-				$location = trim(convertip($_G['clientip'], "./"));
+				$location = trim(convertip($_G['clientip']));
 				if($location) {
 					$whitearea = preg_quote(trim($this->setting['inviteconfig']['inviteareawhite']), '/');
 					$whitearea = str_replace(array("\\*"), array('.*'), $whitearea);
@@ -534,12 +538,15 @@ class register_ctl {
 			if($sendurl) {
 				$hashstr = urlencode(authcode("{$_GET['email']}\t{$_G['timestamp']}", 'ENCODE', $_G['config']['security']['authkey']));
 				$registerurl = $_G['setting']['securesiteurl']."member.php?mod=".$this->setting['regname']."&amp;hash={$hashstr}&amp;email={$_GET['email']}";
-				$email_register_message = lang('email', 'email_register_message', array(
-					'bbname' => $this->setting['bbname'],
-					'siteurl' => $_G['setting']['securesiteurl'],
-					'url' => $registerurl
-				));
-				if(!sendmail("{$_GET['email']} <{$_GET['email']}>", lang('email', 'email_register_subject'), $email_register_message)) {
+				$email_register_message = array(
+					'tpl' => 'email_register',
+					'var' => array(
+						'bbname' => $this->setting['bbname'],
+						'siteurl' => $_G['setting']['securesiteurl'],
+						'url' => $registerurl
+					)
+				);
+				if(!sendmail("{$_GET['email']} <{$_GET['email']}>", $email_register_message)) {
 					runlog('sendmail', "{$_GET['email']} sendmail failed.");
 				}
 				showmessage('register_email_send_succeed', dreferer(), array('bbname' => $this->setting['bbname']), array('showdialog' => false, 'msgtype' => 3, 'closetime' => 10));
@@ -886,13 +893,16 @@ class register_ctl {
 					$authstr = $this->setting['regverify'] == 1 ? "{$_G['timestamp']}\t2\t$idstring" : '';
 					C::t('common_member_field_forum')->update($_G['uid'], array('authstr' => $authstr));
 					$verifyurl = $_G['setting']['securesiteurl']."member.php?mod=activate&amp;uid={$_G['uid']}&amp;id=$idstring";
-					$email_verify_message = lang('email', 'email_verify_message', array(
-						'username' => $_G['member']['username'],
-						'bbname' => $this->setting['bbname'],
-						'siteurl' => $_G['setting']['securesiteurl'],
-						'url' => $verifyurl
-					));
-					if(!sendmail("$username <$email>", lang('email', 'email_verify_subject'), $email_verify_message)) {
+					$email_verify_message = array(
+						'tpl' => 'email_verify',
+						'var' => array(
+							'username' => $_G['member']['username'],
+							'bbname' => $this->setting['bbname'],
+							'siteurl' => $_G['setting']['securesiteurl'],
+							'url' => $verifyurl
+						)
+					);
+					if(!sendmail("$username <$email>", $email_verify_message)) {
 						runlog('sendmail', "$email sendmail failed.");
 					}
 					$message = 'register_email_verify';

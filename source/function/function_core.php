@@ -673,7 +673,7 @@ function getcurrentnav() {
 			$_GET['mod'] = 'follow';
 		}
 		foreach($_G['setting']['navmns'][$_G['basefilename']] as $navmn) {
-			if($navmn[0] == array_intersect_assoc($navmn[0], $_GET) || ($navmn[0]['mod'] == 'space' && $_GET['mod'] == 'spacecp' && ($navmn[0]['do'] == $_GET['ac'] || $navmn[0]['do'] == 'album' && $_GET['ac'] == 'upload'))) {
+			if($navmn[0] == array_intersect_assoc($navmn[0], $_GET) || (isset($_GET['gid']) && $navmn[0]['mod'] == 'forumdisplay' && $navmn[0]['fid'] == $_GET['gid'])  || ($navmn[0]['mod'] == 'space' && $_GET['mod'] == 'spacecp' && ($navmn[0]['do'] == $_GET['ac'] || $navmn[0]['do'] == 'album' && $_GET['ac'] == 'upload'))) {
 				$mnid = $navmn[1];
 			}
 		}
@@ -1098,7 +1098,13 @@ function output_replace($content) {
 		}
 
 		foreach($_G['setting']['output']['preg']['search'] as $key => $value) {
-			$content = preg_replace_callback($value, create_function('$matches', 'return '.$_G['setting']['output']['preg']['replace'][$key].';'), $content);
+			$content = preg_replace_callback(
+				$value,
+				function ($matches) use ($_G, $key) {
+					return eval('return ' . $_G['setting']['output']['preg']['replace'][$key] . ';');
+				},
+				$content
+			);
 		}
 	}
 
@@ -1852,7 +1858,7 @@ function periodscheck($periods, $showmessage = 1) {
 		if($_G['setting']['postignorearea']) {
 			$location = $whitearea = '';
 			require_once libfile('function/misc');
-			$location = trim(convertip($_G['clientip'], "./"));
+			$location = trim(convertip($_G['clientip']));
 			if($location) {
 				$whitearea = preg_quote(trim($_G['setting']['postignorearea']), '/');
 				$whitearea = str_replace(array("\\*"), array('.*'), $whitearea);

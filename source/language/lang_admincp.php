@@ -72,7 +72,6 @@ $lang = array
 	'thismonth' => '本月',
 	'thisweek' => '本周',
 	'today' => '今日',
-	'thread' => '帖子',
 	'subject' => '标题',
 	'nosubject' => '无标题',
 	'message' => '内容',
@@ -94,7 +93,6 @@ $lang = array
 	'ip' => 'IP 地址',
 	'usergroup' => '用户组',
 	'usernum' => '用户数：',
-	'admingroup' => '管理组',
 	'guest' => '游客',
 	'anonymous' => '匿名',
 	'forum' => '版块',
@@ -212,7 +210,6 @@ $lang = array
 	'num' => '数量',
 	'weight' => '重量',
 	'saveconf' => '保存为设置方案',
-	'view' => '查看',
 	'value' => '数据',
 	'hour' => '小时制',
 	'hourtime' => '小时',
@@ -395,8 +392,8 @@ $lang = array
 
 	'nav_attaches' => '论坛附件管理',
 	'nav_attaches_group' => '群组附件管理',
-	'nav_styles' => '风格管理',
-	'nav_templates' => '模板管理',
+	'nav_styles' => '模板风格管理',
+	'nav_templates' => '模板套系管理',
 	'nav_smilies' => '表情管理',
 	'nav_click' => '表态动作',
 
@@ -416,11 +413,10 @@ $lang = array
 	'nav_share' => '分享管理',
 	'nav_postcomment' => '帖子点评管理',
 
-	'nav_plugins' => '插件',
+	'nav_plugins' => '插件管理',
 	'nav_announce' => '站点公告',
 	'nav_javascript' => '数据调用',
 	'nav_infoside' => '边栏',
-	'nav_fileperms' => '文件权限检查',
 	'nav_updatecounters' => '更新统计',
 
 	'nav_admingroups' => '管理组',
@@ -674,7 +670,7 @@ $lang = array
 	'report_optuser' => '处理人',
 	'report_opttime' => '处理时间',
 	'report_receive_tips' => '<li>下面列出了在后台有举报管理权限的管理员及全部超级版主。</li><li>有新的举报时将给所有选中用户发送通知。</li><li>当有新的帖子被举报时同时会给相应版主发送通知。</li>',
-	'report_tips' => '<li>可以根据举报真实情况，给举报者加减积分，<a href="admin.php?action=setting&operation=credits" target="_blank">设置用户举报奖惩使用的积分</a></li><li>多人举报时奖惩第一个举报人。</li>',
+	'report_tips' => '<li>可以根据举报真实情况，给举报者加减积分，<a href="'.ADMINSCRIPT.'?action=setting&operation=credits" target="_blank">设置用户举报奖惩使用的积分</a></li><li>多人举报时奖惩第一个举报人。</li>',
 	'report_need_founder' => '只有创始人可以管理此项',
 	'switch_url' => '输入 URL',
 	'switch_upload' => '上传文件',
@@ -1069,7 +1065,6 @@ $lang = array
 	'setting_styles_viewthread_userinfo_creditinfo' => '信用度',
 	'setting_styles_viewthread_userinfo_follower' => '听众数',
 	'setting_styles_viewthread_userinfo_following' => '收听数',
-	'setting_styles_viewthread_userinfo_friends' => '好友',
 	'setting_styles_viewthread_userinfo_readperm' => '阅读权限',
 	'setting_styles_viewthread_userinfo_gender' => '性别',
 	'setting_styles_viewthread_userinfo_location' => '来自',
@@ -1223,10 +1218,10 @@ $lang = array
 	'setting_home_base_networkpage_comment' => '该设置只对排行榜中的竞价排行、在线成员、全部成员有效',
 	'setting_home_base_topcachetime' => '成员排行榜缓存时间(单位：分钟)',
 	'setting_home_base_topcachetime_comment' => '用户排行榜中，除竞价排行、在线成员、全部成员外，其余排行榜是缓存处理的。<br>请根据服务器的负载情况，设置合理的更新时间间隔。最少不能低于5分钟',
-	'setting_home_base_starcredit' => '星星经验阀值',
-	'setting_home_base_starcredit_comment' => '(默认为 100)当用户经验数到此阀值时，增加一个星星。最小为2，否则此功能无效，不显示星星数',
-	'setting_home_base_starlevelnum' => '星星升级阀值',
-	'setting_home_base_starlevelnum_comment' => '(默认为 5)星星数在达到此阀值时，会升级为高级别的图标。最小为2，否则此项功能无效，始终以星星显示',
+	'setting_home_base_starcredit' => '星星经验阈值',
+	'setting_home_base_starcredit_comment' => '(默认为 100)当用户经验数到此阈值时，增加一个星星。最小为2，否则此功能无效，不显示星星数',
+	'setting_home_base_starlevelnum' => '星星升级阈值',
+	'setting_home_base_starlevelnum_comment' => '(默认为 5)星星数在达到此阈值时，会升级为高级别的图标。最小为2，否则此项功能无效，始终以星星显示',
 	'setting_home_base_groupnum' => '好友用户组个数',
 	'setting_home_base_groupnum_comment' => '(默认为 8)设置每个用户最多拥有的好友用户组个数',
 	'setting_home_base_default_follow_forum' => '广播帖默认版块',
@@ -1274,6 +1269,7 @@ $lang = array
 	'setting_home_privacy' => '隐私设置',
 	'setting_home_privacy_new_user' => '新用户默认隐私设置',
 	'setting_home_privacy_view_index' => '个人空间首页',
+	'setting_home_privacy_view_profile' => '个人空间资料',
 	'setting_home_privacy_alluser' => '全站用户可见',
 	'setting_home_privacy_friend' => '仅好友可见',
 	'setting_home_privacy_self' => '仅自己可见',
@@ -1804,8 +1800,6 @@ $lang = array
 
 
 	'setting_functions_other' => '其他',
-	'setting_functions_other_pwdsafety' => '启用登录密码加密',
-	'setting_functions_other_pwdsafety_comment' => '选择“是”，站点登录时的密码将进行加密后再传输',
 	'setting_functions_other_uidlogin' => '启用UID登录',
 	'setting_functions_other_uidlogin_comment' => '选择“是”，站点登录时允许通过 UID的方式登录验证',
 	'setting_functions_other_autoidselect' => '启用登录自动选择帐号',
@@ -1883,7 +1877,7 @@ $lang = array
 	'setting_permissions_allowviewuserthread_comment' => '设置是否允许查看其他用户的主题和帖子，选择相应的版块那么在个人空间将出现“主题”模块和链接',
 	'setting_permissions_allowviewuserthread_forum_group' => '所有版块和群组',
 	'setting_permissions_allowviewuserthread_fids' => '允许查看哪些版块的帖子',
-	'setting_permissions_allowviewuserthread_fids_comment' => '设置允许查看其他用户哪些版块的主题和帖子',
+	'setting_permissions_allowviewuserthread_fids_comment' => '设置允许查看其他用户哪些版块的主题和帖子，可以按住 CTRL 多选',
 	'setting_permissions_allowmoderatingthread' => '是否提示用户自己有未审核的主题或者帖子',
 	'setting_permissions_allowmoderatingthread_comment' => '选择“是”，用户如果有正在审核的主题，将可以在帖子列表页看到提示',
 	'setting_permissions_memliststatus' => '允许查看会员列表',
@@ -2025,9 +2019,11 @@ $lang = array
 	'setting_mail_setting' => '设置',
 	'setting_mail_setting_silent' => '屏蔽邮件发送中的全部错误提示',
 	'setting_mail_setting_send' => '邮件发送方式',
+	'setting_mail_setting_send_comment' => '如需使用 SSL 加密的 SMTP 发送，请在服务器地址前添加 ssl:// 并调整端口号。',
 	'setting_mail_setting_send_1' => '通过 PHP 函数的 sendmail 发送(推荐此方式)',
 	'setting_mail_setting_send_2' => '通过 SOCKET 连接 SMTP 服务器发送(支持 ESMTP 验证)',
 	'setting_mail_setting_send_3' => '通过 PHP 函数 SMTP 发送 Email(仅 Windows 主机下有效，不支持 ESMTP 验证)',
+	'setting_mail_setting_send_4' => '通过插件发送(插件控制发送流程)',
 	'setting_mail_setting_server' => 'SMTP 服务器',
 	'setting_mail_setting_port' => '端口',
 	'setting_mail_setting_validate' => '验证',
@@ -2043,6 +2039,8 @@ $lang = array
 	'setting_mail_setting_includeuser' => '收件人地址中包含用户名',
 	'setting_mail_setting_includeuser_comment' => '选择“是”将在收件人的邮件地址中包含站点用户名',
 	'setting_mail_setting_edit_addnew' => '添加新SMTP服务器',
+	'setting_mail_setting_plugin' => '插件标识及脚本标识',
+	'setting_mail_setting_plugin_comment' => '填写插件的标识符和脚本名称的后半段，用英文冒号隔开',
 
 	'setting_mail_check' => '检测',
 	'setting_mail_check_test_from' => '测试发件人',
@@ -2519,7 +2517,7 @@ $lang = array
 
 	'tag' => '标签管理',
 	'tag_set' => '设置',
-	'tag_status' => '是否启用标签',
+	'tag_enable' => '是否启用标签',
 	'tag_tagitem_num' => '标签关联主题数量',
 	'tag_tagitem_num_comment' => '设置主题帖关联相关标签主题的数量，0 为不关联。注意: 数量太大会消耗服务器资源，推荐数目 10',
 	'tag_index_num' => '首页显示标签数量',
@@ -2572,7 +2570,7 @@ $lang = array
 	'usertag_user' => '用户',
 	'usertag_send_notice' => '发通知',
 	'mobile' => '手机',
-	'setting_mobile' => '手机版访问设置',
+	'setting_mobile' => '手机版设置',
 	'setting_mobile_status' => '手机版全局设置',
 	'setting_mobile_index' => '首页推荐设置',
 	'setting_mobile_forums' => '版块设置',
@@ -2580,7 +2578,7 @@ $lang = array
 	'setting_mobile_allowmobile' => '开启手机版',
 	'setting_mobile_allowmobile_comment' => '开启本功能，用户使用手机访问论坛时，将自动跳转到手机版界面<br />手机访问域名配置请进入: <a href="?action=domain&operation=app">全局 - 域名设置 - 应用域名</a><br />底部导航设置请进入：<a href="?action=nav&operation=footernav">界面 - 导航设置 - 底部导航</a>',
 	'setting_mobile_allowmnew' => '启用本地化微社区前端',
-	'setting_mobile_allowmnew_comment' => '使用本地化微社区前端，本地化微社区前端的 URL 为“' . $_G['siteurl'] . 'm/”。开启后本前端体系将替换原有的手机版体系，但不支持第三方插件以及搜索引擎收录，请谨慎使用',
+	'setting_mobile_allowmnew_comment' => '使用本地化微社区前端，本地化微社区前端的 URL 为“' . $_G['siteurl'] . 'm/”。<br />开启后本前端体系将替换原有的手机版体系，但<b>不支持第三方插件以及搜索引擎收录，请谨慎使用</b>',
 	'setting_mobile_mobileforward' => '开启手机浏览器自动跳转',
 	'setting_mobile_mobileforward_comment' => '开启后用户使用手机浏览器访问社区论坛功能页以外页面时自动跳转到论坛首页进行访问',
 	'setting_mobile_otherindex' => '允许非论坛作为首页',
@@ -2710,7 +2708,7 @@ $lang = array
 	'forums_grid_style_image' => '图文并茂',
 	'forums_grid_style_text' => '简洁文字',
 	'forums_grid_data_source' => '数据来源版块',
-	'forums_grid_data_source_comment' => '数据来源版块,默认为所有版块',
+	'forums_grid_data_source_comment' => '数据来源版块，默认为所有版块，可以按住 CTRL 多选',
 	'forums_grid_text_length' => '标题截取长度',
 	'forums_grid_text_length_comment' => '设置标题的最大长度，超过的部分将被截取掉, 单位：字符',
 	'forums_grid_high_light' => '是否显示主题高亮',
@@ -3212,8 +3210,9 @@ $lang = array
 	'nav_mynav_add' => '添加快捷导航',
 	'nav_spacenav_tips' => '以下导航链接在“家园展示风格”中启用“以SNS模块风格展示”时有效',
 
-	'styles' => '风格管理',
-	'styles_admin' => '风格管理',
+	'styles' => '模板',
+	'styles_admin' => '模板管理',
+	'styles_list' => '模板列表',
 	'styles_admin_tips' => '<li>如果把导出的风格文件放置在模板目录下，则可以通过风格管理直接安装风格</li>',
 	'styles_admin_name' => '方案名称',
 	'styles_admin_template' => '所用模板',
@@ -3358,8 +3357,24 @@ $lang = array
 	'styles_import_ignore_version' => '允许导入老版本 Discuz! 的界面(易产生错误!!)',
 	'styles_import_version_invalid' => '版本号不匹配，当前版本：{cur_version}，系统版本：{set_version}',
 
-	'templates_admin' => '模板管理',
+	'styles_validator_nowupgrade' => '以下模板现在可以更新为新版本，点击安装更新',
+	'styles_validator_newversion' => '以下模板存在新版本，点击安装更新',
+	'styles_validator_error' => '以下模板不是正版模板，点击安装正版模板',
+
+	'templates_admin' => '模板套系管理',
 	'templates_admin_name' => '模板名称',
+	'templates_add' => '设计新模板',
+	'templates_add_tips' => '<li><b>本功能仅供模板开发者使用。</b></li><li>模板开发人员在使用本功能前请务必仔细阅读《<a href="https://open.dismall.com/?!devdoc" target="_blank">Discuz! 技术文档</a>》中的内容。</li><li>警告: 不正确的模板设计或安装可能危及到整个站点的正常使用。</li>',
+	'templates_edit_name' => '模板名称(name)',
+	'templates_edit_name_comment' => '此模板的名称，中英文均可，最多 40 个字节',
+	'templates_edit_copyright' => '版权信息(copyright)',
+	'templates_edit_copyright_comment' => '设置模板的版权信息，最多 100 个字节，一旦设置无法更改',
+	'templates_edit_identifier' => '唯一标识符(identifier)',
+	'templates_edit_identifier_comment' => '模板的唯一英文标识，不能够与现有模板标识重复。可使用字母、数字、下划线命名，不能包含其他符号或特殊字符，需以字母开头，最大 40 个字节',
+	'templates_edit_style' => '初始化模板设置',
+	'templates_edit_style_comment' => '使用已经存在的模板设置初始化本模板，或创建空白设置的模板',
+	'templates_empty' => '空',
+	'templates_question' => '模板问题求助',
 
 	'templates_maint' => '模板维护',
 	'templates_maint_default_comment' => '<li>您正在修改默认模板，为了扩充其他模板的方便，强烈建议您不要对默认模板的内容进行修改。</li><li>如要修改请将要修改的模板文件复制到其他模板目录后再修改。</li>',
@@ -3603,8 +3618,6 @@ $lang = array
 	'members_search_nonemedal' => '暂时没有可用勋章',
 	'members_search_noneusertags' => '暂时没有用户标签',
 
-	'members_verify' => '审核资料',
-
 	'members_verify_tips' => '<li>可以批量操作</li>',
 	'members_verify_pass' => '通过',
 	'members_verify_pass_with_group' => '并升到用户组',
@@ -3625,7 +3638,6 @@ $lang = array
 	'members_verify_base' => '基本设置',
 	'members_verify_add' => '添加认证',
 	'members_verify_verify' => '审核资料',
-	'members_verify_setting' => '用户认证设置',
 	'members_verify_available' => '启用',
 	'members_verify_id' => '认证代号',
 	'members_verify_title' => '认证名称',
@@ -3636,10 +3648,7 @@ $lang = array
 	'members_verify_showicon' => '显示认证图标',
 	'members_verify_uid' => '用户 UID',
 	'members_verify_username' => '用户名',
-	'members_verify_dateline' => '提交时间',
 	'members_verify_info' => '审核信息',
-	'members_verify_oldvalue' => '当前信息',
-	'members_verify_newvalue' => '提交信息',
 	'members_verify_type' => '审核类型',
 	'members_verify_fieldid' => '审核项',
 	'members_verify_profile' => '资料审核',
@@ -3731,7 +3740,7 @@ $lang = array
 	'members_ipban_tips' => '<li>此操作需要在管理组内开启相关权限。</li><li>如果您是站点管理员，可以使用CIDR格式禁止某段地址。</li><li>如果您不是站点管理员，您将无法使用CIDR且只能对自己添加的项目进行编辑或删除。</li>',
 	'members_ipban_location' => '地理位置',
 	'members_ipban_input' => '导入禁止 IP 列表',
-	'members_ipban_input_tips' => '<li>此操作需要在管理组内开启相关权限，只有站点管理员可以使用。</li><li>可以使用以前导出的禁止IP列表，也可以手动编写以便批量禁止IP。</li><li>你可以 <a href="admin.php?action=members&operation=ipban&ipact=output">导出现有禁止IP库</a></li>',
+	'members_ipban_input_tips' => '<li>此操作需要在管理组内开启相关权限，只有站点管理员可以使用。</li><li>可以使用以前导出的禁止IP列表，也可以手动编写以便批量禁止IP。</li><li>你可以 <a href="'.ADMINSCRIPT.'?action=members&operation=ipban&ipact=output">导出现有禁止IP库</a></li>',
 	'members_ipban_input_comment' => '手动导入禁止 IP 的格式为“IP地址;有效天数”或者“IP地址”（有效期默认30天），每行一条；也可以导入以前导出的禁止IP地址列表。',
 
 	'members_profile' => '用户栏目',
@@ -3744,7 +3753,6 @@ $lang = array
 	'members_profile_edit_name' => '栏目名称',
 	'members_profile_edit_field' => '字段名',
 	'members_profile_edit_field_desc' => '栏目描述',
-	'members_profile_edit_available' => '启用',
 	'members_profile_edit_field_type' => '填写类型',
 	'members_profile_edit_display_order' => '显示顺序',
 	'members_profile_edit_display_order_comment' => '值越大显示越靠后',
@@ -3771,7 +3779,7 @@ $lang = array
 	'members_profile_edit_invisible_comment' => '如果设为是，则不论个人隐私如何设定都不会在个人空间资料页面显示',
 	'members_profile_edit_showincard' => '是否在名片中显示',
 	'members_profile_edit_showinthread' => '是否在帖子中显示',
-	'members_profile_edit_showinthread_comment' => '选择是，还需在<a href="admin.php?action=setting&operation=styles&anchor=viewthread" target="_blank">帖子内容页</a>中选择展示位置',
+	'members_profile_edit_showinthread_comment' => '选择是，还需在<a href="'.ADMINSCRIPT.'?action=setting&operation=styles&anchor=viewthread" target="_blank">帖子内容页</a>中选择展示位置',
 	'members_profile_edit_showinregister' => '是否在注册页面显示',
 	'members_profile_edit_allowsearch' => '允许搜索',
 	'members_profile_edit_default_privacy' => '默认隐私',
@@ -4354,6 +4362,8 @@ $lang = array
 	'usergroups_edit_credit_exempt_outperm' => '管辖版块外',
 
 	'usergroups_edit_home' => '空间相关',
+	'usergroups_edit_home_allow_viewprofile' => '允许查看用户资料',
+	'usergroups_edit_home_allow_viewprofile_comment' => '设置是否允许查看其他用户的资料信息',
 	'usergroups_edit_home_allow_blog' => '发表日志',
 	'usergroups_edit_home_allow_blog_mod' => '发表日志需要审核',
 	'usergroups_edit_home_allow_doing' => '发表记录',
@@ -4427,6 +4437,7 @@ $lang = array
 	'groups_manage_founder_uid' => '创建者 UID',
 	'groups_editgroup_name' => '群组名',
 	'groups_editgroup_category' => '群组分类',
+	'groups_editgroup_category_comment' => '可以按住 CTRL 多选',
 	'group_mergetype' => '合并分类',
 	'group_mergegroup' => '合并到群组',
 	'group_changetype' => '转移到分类:',
@@ -5112,7 +5123,6 @@ $lang = array
 	'misc_tag_hot' => '热门标签',
 	'misc_tag_search' => '搜索标签',
 	'misc_tag_threadnum_between' => '主题数介于',
-	'misc_tag_status' => '状态',
 	'misc_tag_all_delete' => '全部删除',
 	'misc_tag_all_close' => '全部锁定',
 	'misc_tag_all_open' => '全部开放',
@@ -5202,7 +5212,6 @@ $lang = array
 	'faq_keywords_comment' => '配合帮助标识用于帮助信息的前台的模版调用',
 	'faq_content' => '帮助内容',
 	'faq_content_comment' => '帮助内容，支持 HTML 代码',
-	'faq_sortup' => '上级分类',
 	'faq_additem' => '添加新帮助主题',
 	'faq_addcat' => '添加新帮助分类',
 
@@ -5211,6 +5220,8 @@ $lang = array
 	'plugins_visit' => '评分',
 	'plugins_editlink' => '设计',
 	'plugins_validator' => '检查更新',
+	'plugins_validator_new' => '发现新版({updatecount})',
+	'plugins_question' => '插件问题求助',
 	'plugins_list' => '插件列表',
 	'plugins_system' => '系统插件',
 	'plugins_install' => '安装新插件',
@@ -5249,7 +5260,7 @@ $lang = array
 	'plugins_edit_copyright' => '版权信息(copyright)',
 	'plugins_edit_copyright_comment' => '设置插件的版权信息，最多 100 个字节，一旦设置无法更改',
 	'plugins_edit_identifier' => '唯一标识符(identifier)',
-	'plugins_edit_identifier_comment' => '插件的唯一英文标识，不能够与现有插件标识重复。可使用字母、数字、下划线命名，不能包含其他符号或特殊字符，最大 40 个字节',
+	'plugins_edit_identifier_comment' => '插件的唯一英文标识，不能够与现有插件标识重复。可使用字母、数字、下划线命名，不能包含其他符号或特殊字符，需以字母开头，最大 40 个字节',
 	'plugins_edit_adminid' => '后台权限等级(adminid)',
 	'plugins_edit_adminid_comment' => '使用管理中心中插件接口自带的插件参数设置程序所需的最低权限等级要求。注意: 插件的后台模块拥有自己的权限设置，因此不受此限制',
 	'plugins_edit_directory' => '插件目录(directory)',
@@ -6038,7 +6049,7 @@ $lang = array
 	'db_import_confirm' => '导入和当前 Discuz! 版本不一致的数据极有可能产生无法解决的故障，您确定继续吗？',
 	'db_import_confirm_sql' => '您确定导入该备份吗？',
 	'db_import_confirm_zip' => '您确定解压该备份吗？',
-	'db_import_tips' => '<li>本功能在恢复备份数据的同时，将全部覆盖原有数据，请确定恢复前已将论坛关闭，恢复全部完成后可以将论坛重新开放。</li><li>恢复数据前请在 Discuz! X2.5 安装文件目录下utility文件夹内找到 restore.php 文件，然后将 restore.php 文件上传到程序文件夹data目录下。<b>为了您站点的安全，成功恢复数据后请务必及时删除 restore.php 文件。</b></li><li>您可以在数据备份记录处查看站点的备份文件的详细信息，删除过期的备份,并导入需要的备份。</li>',
+	'db_import_tips' => '<li>本功能在恢复备份数据的同时，将全部覆盖原有数据，请确定恢复前已将论坛关闭，恢复全部完成后可以将论坛重新开放。</li><li>恢复数据前请在 Discuz! 安装文件目录下 utility 文件夹内找到 restore.php 文件，然后将 restore.php 文件上传到程序文件夹data目录下。<b>为了您站点的安全，成功恢复数据后请务必及时删除 restore.php 文件。</b></li><li>您可以在数据备份记录处查看站点的备份文件的详细信息，删除过期的备份,并导入需要的备份。</li>',
 	'do_import_option' => '<ul><li>您可以在本页面数据备份记录处导入备份恢复数据，也可以通过在浏览器中执行 <a href="{restore_url}" target="_blank">{restore_url}</a> 恢复数据',
 	'db_import_from_server' => '从服务器(填写文件名或 URL)',
 	'db_import_from_local' => '从本地文件',
@@ -6735,9 +6746,6 @@ $lang = array
 	'blockxml_xmlurl_delete_confirm' => '确定要删除此 第三方模块吗？',
 	'blockxml_xmlurl_delete_succeed' => ' 第三方模块删除成功 ',
 	'blockxml_xmlurl_add_succeed' => ' 第三方模块添加成功 ',
-	'blockxml_xmlurl_update_succeed' => 'XML 模块更新成功',
-	'blockxml_xmlurl_delete_confirm' => '确定要删除此 XML 模块吗？',
-	'blockxml_xmlurl_delete_succeed' => ' XML 模块删除成功',
 	'blockxml_import_version_invalid' => '版本号不匹配，当前版本：{cur_version}，系统版本：{set_version}',
 	'CLIENT_NOT_EXISTS' => '客户端不存在',
 	'SIGN_ERROR' => '数据签名错误',
@@ -6927,7 +6935,6 @@ $lang = array
 	'threads_search_sourcetable' => '搜索以下 thread 分表',
 	'threadsplit_move_tidrange' => 'tid 范围',
 	'threadsplit_move_to' => '移动到',
-	'threadsplit_manage_threadcount' => '主题数',
 	'threadsplit_manage_table_add' => '添加存档表',
 	'threadsplit_manage_update' => '更新表信息',
 	'threadsplit_manage_forum_update' => '更新版块存档',
@@ -6946,18 +6953,6 @@ $lang = array
 	'membersplit_count' => '总用户数',
 	'membersplit_table_orig' => '用户表信息',
 	'membersplit_archive' => '开始分表',
-
-	'category_channel' => '基本设置',
-	'category_channel_config' => '基本设置',
-	'category_channel_open' => '是否开启',
-	'category_channel_title' => '名称',
-	'category_channel_identifier' => '标识',
-	'category_channel_identifier_comment' => '做为改模块的唯一标识，如无必要请勿修改',
-
-	'category_option' => '选项管理',
-	'category_sort' => '分类管理',
-	'category_area' => '地区管理',
-	'category_counter' => '统计数据',
 
 	'category_channel' => '基本设置',
 	'category_channel_config' => '基本设置',
@@ -7015,8 +7010,8 @@ $lang = array
 
 	'cloudaddons_ftp_setting' => '站点 FTP 设置',
 	'cloudaddons_unwriteabledirs' => '站点 {basedir} 目录下的以下目录不可写，无法在线安装此应用，请填写本站点的 FTP 连接参数(本设置不会被保存):<br />{unwriteabledirs}',
-	'cloudaddons_plugin_link' => '获取更多插件',
-	'cloudaddons_style_link' => '获取更多风格',
+	'cloudaddons_plugin_link' => '<b class="highlight">获取更多插件</b>',
+	'cloudaddons_style_link' => '<b class="highlight">获取更多模板</b>',
 	'cloudaddons_linkto' => '在应用中心查看',
 	'plugins_validator_nowupgrade' => '以下插件现在可以更新为新版本，点击安装更新',
 	'plugins_validator_newversion' => '以下插件存在新版本，点击安装更新',
@@ -7042,6 +7037,11 @@ RewriteBase /discuz
 {apache2}
 </pre>
 
+<h1>Nginx Web Server</h1>
+<pre class="colorbox">
+{nginx}
+</pre>
+
 <h1>IIS Web Server(独立主机用户)</h1>
 <pre class="colorbox">
 [ISAPI_Rewrite]
@@ -7064,16 +7064,33 @@ RepeatLimit 32
 &lt;/rewrite&gt;
 </pre>
 
-<h1>Zeus Web Server</h1>
+<h1>Lighttpd Web Server</h1>
 <pre class="colorbox">
-{zeus}
+url.rewrite-once = (
+{lighttpd})
 </pre>
 
-<h1>Nginx Web Server</h1>
+<h1>Caddy Web Server</h1>
 <pre class="colorbox">
-{nginx}
+{caddy}
 </pre>',
 
+	'detect_environment' => '运行环境检测',
+	'contributors' => 'Discuz! 开源贡献者',
+	'contributors_see' => 'Click Here To See Them',
+	'detect_environment_error' => '你的服务器无法检测新版，请点击查看新版',
+	'refresh' => '刷新',
+	'qq_group' => 'QQ群：',
+	'discuz_news' => 'Discuz! 动态',
+	'log_in_to_update' => '暂未获取到动态，请登录 Discuz! 社区 查看。',
+	'download_latest' => 'Discuz! X3.4 最新版本下载',
+	'org_name' => '腾讯云计算（北京）有限责任公司',
+	'dev_manager' => '戴志康 (Kevin \'Crossday\' Day)',
+	'app_discussion' => 'Discuz! 应用讨论区',
+	'org_site' => '公司网站',
+	'purchase_service' => '购买授权',
+	'discussion_area' => '讨论区',
+	'app_center' => 'Discuz! 应用中心',
 );
 
 $adminextend = array();
