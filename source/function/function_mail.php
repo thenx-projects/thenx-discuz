@@ -12,10 +12,18 @@ if(!defined('IN_DISCUZ')) {
 }
 
 set_time_limit(0);
-function sendmail($toemail, $subject, $message, $from = '') {
+function sendmail($toemail, $subject, $message = '', $from = '') {
 	global $_G;
 	if(!is_array($_G['setting']['mail'])) {
 		$_G['setting']['mail'] = dunserialize($_G['setting']['mail']);
+	}
+	if($_G['setting']['mail']['mailsend'] == 4) {
+		$etype = explode(':', $_G['setting']['mail']['plugin']);
+		$codefile = DISCUZ_ROOT.'./source/plugin/'.$etype[0].'/mailsend/mailsend_'.$etype[1].'.php';
+		include_once $codefile;
+		$class = 'mailsend_'.$etype[1];
+		$code = new $class();
+		return $code->sendmail($toemail, $subject, $message, $from);
 	}
 	$_G['setting']['mail']['server'] = $_G['setting']['mail']['port'] = $_G['setting']['mail']['auth'] = $_G['setting']['mail']['from'] = $_G['setting']['mail']['auth_username'] = $_G['setting']['mail']['auth_password'] = '';
 	if($_G['setting']['mail']['mailsend'] != 1) {
@@ -31,23 +39,20 @@ function sendmail($toemail, $subject, $message, $from = '') {
 			$_G['setting']['mail']['auth_password'] = $smtp['auth_password'];
 		}
 	}
-	$message = preg_replace("/href\=\"(?!(http|https)\:\/\/)(.+?)\"/i", 'href="'.$_G['setting']['securesiteurl'].'\\2"', $message);
 
-$message = <<<EOT
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="{$_G['charset']}" />
-<meta name="renderer" content="webkit" />
-<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-<title>$subject</title>
-</head>
-<body>
-$subject<br />
-$message
-</body>
-</html>
-EOT;
+	ob_start();
+	if(is_array($subject) && $subject['tpl']) {
+		$tpl = $subject['tpl'];
+		$var = $subject['var'];
+		$subject = lang('email/template', $tpl.'_subject', (!empty($subject['svar']) ? $subject['svar'] : array()));
+		include template('email/'.$tpl);
+	} else {
+		include template('email/default');
+	}
+	$message = ob_get_contents();
+	ob_end_clean();
+
+	$message = preg_replace("/href\=\"(?!(http|https)\:\/\/)(.+?)\"/i", 'href="'.$_G['setting']['securesiteurl'].'\\2"', $message);
 
 	$mailusername = isset($_G['setting']['mail']['mailusername']) ? $_G['setting']['mail']['mailusername'] : 1;
 	$_G['setting']['mail']['port'] = $_G['setting']['mail']['port'] ? $_G['setting']['mail']['port'] : 25;
@@ -212,7 +217,9 @@ EOT;
 
 function sendmail_cron($toemail, $subject, $message) {
 	global $_G;
-
+	if(preg_match("/^wechat_[\w]{10}@null.null$/i", $toemail)){
+		return false;
+	}
 	$toemail = addslashes($toemail);
 
 	$value = C::t('common_mailcron')->fetch_all_by_email($toemail, 0, 1);

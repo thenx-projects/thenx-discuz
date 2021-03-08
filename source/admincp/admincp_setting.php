@@ -279,6 +279,12 @@ if(!submitcheck('settingsubmit')) {
 			array(2, $lang['setting_home_privacy_self']),
 			array(3, $lang['setting_home_privacy_register'])
 		)), $setting['privacy']['view']['index'], 'select');
+		showsetting('setting_home_privacy_view_profile', array('settingnew[privacy][view][profile]', array(
+			array(0, $lang['setting_home_privacy_alluser']),
+			array(1, $lang['setting_home_privacy_friend']),
+			array(2, $lang['setting_home_privacy_self']),
+			array(3, $lang['setting_home_privacy_register'])
+		)), $setting['privacy']['view']['profile'], 'select');
 		showsetting('setting_home_privacy_view_friend', array('settingnew[privacy][view][friend]', array(
 			array(0, $lang['setting_home_privacy_alluser']),
 			array(1, $lang['setting_home_privacy_friend']),
@@ -1284,7 +1290,6 @@ EOF;
 		/*search={"setting_functions":"action=setting&operation=functions","setting_functions_other":"action=setting&operation=functions&anchor=other"}*/
 		showtips('setting_tips', 'other_tips', $_GET['anchor'] == 'other');
 		showtableheader('', 'nobottom', 'id="other"'.($_GET['anchor'] != 'other' ? ' style="display: none"' : ''));
-		showsetting('setting_functions_other_pwdsafety', 'settingnew[pwdsafety]', $setting['pwdsafety'], 'radio');
 		showsetting('setting_functions_other_uidlogin', 'settingnew[uidlogin]', $setting['uidlogin'], 'radio');
 		showsetting('setting_functions_other_autoidselect', 'settingnew[autoidselect]', $setting['autoidselect'], 'radio');
 		showsetting('setting_functions_other_submitlock', 'settingnew[submitlock]', $setting['submitlock'], 'radio');
@@ -1547,9 +1552,10 @@ EOF;
 		showtableheader('', '', 'id="mailsetting"'.($_GET['anchor'] != 'setting' ? ' style="display: none"' : ''));
 
 		showsetting('setting_mail_setting_send', array('settingnew[mail][mailsend]', array(
-			array(1, $lang['setting_mail_setting_send_1'], array('hidden1' => 'none', 'hidden2' => 'none')),
-			array(2, $lang['setting_mail_setting_send_2'], array('hidden1' => 'none', 'hidden2' => '')),
-			array(3, $lang['setting_mail_setting_send_3'], array('hidden1' => '', 'hidden2' => 'none'))
+			array(1, $lang['setting_mail_setting_send_1'], array('hidden1' => 'none', 'hidden2' => 'none', 'hidden3' => 'none')),
+			array(2, $lang['setting_mail_setting_send_2'], array('hidden1' => 'none', 'hidden2' => '', 'hidden3' => 'none')),
+			array(3, $lang['setting_mail_setting_send_3'], array('hidden1' => '', 'hidden2' => 'none', 'hidden3' => 'none')),
+			array(4, $lang['setting_mail_setting_send_4'], array('hidden1' => 'none', 'hidden2' => 'none', 'hidden3' => ''))
 		)), $setting['mail']['mailsend'], 'mradio');
 		$sendtype = $setting['mail']['mailsend'] == 2 ? 0 : 1;
 		showtagheader('tbody', 'hidden1', $setting['mail']['mailsend'] == 3, 'sub');
@@ -1640,6 +1646,9 @@ EOF;
 		showtablefooter();
 		echo '</td></tr>';
 
+		showtagfooter('tbody');
+		showtagheader('tbody', 'hidden3', $setting['mail']['mailsend'] == 4, 'sub');
+		showsetting('setting_mail_setting_plugin', 'settingnew[mail][plugin]', $setting['mail']['plugin'], 'text');
 		showtagfooter('tbody');
 		showsetting('setting_mail_setting_delimiter', array('settingnew[mail][maildelimiter]', array(
 			array(1, $lang['setting_mail_setting_delimiter_crlf']),
@@ -2455,7 +2464,6 @@ EOT;
 				array(0, $lang['no'], array('mobileext' => 'none'))
 			), TRUE), $setting['mobile']['allowmobile'] ? $setting['mobile']['allowmobile'] : 0, 'mradio');
 		showtagheader('tbody', 'mobileext', $setting['mobile']['allowmobile'], 'sub');
-		showsetting('setting_mobile_allowmnew', 'settingnew[mobile][allowmnew]', $setting['mobile']['allowmnew'], 'radio');
 		showsetting('setting_mobile_mobileforward', 'settingnew[mobile][mobileforward]', $setting['mobile']['mobileforward'], 'radio');
         	showsetting('setting_mobile_otherindex', 'settingnew[mobile][otherindex]', $setting['mobile']['otherindex'], 'radio');
 		showsetting('setting_mobile_register', 'settingnew[mobile][mobileregister]', $setting['mobile']['mobileregister'], 'radio');
@@ -2471,6 +2479,7 @@ EOT;
 			)), $setting['mobile']['mobileforumview'] ? $setting['mobile']['mobileforumview'] : 0, 'mradio');
 		showsetting('setting_mobile_come_from', 'settingnew[mobile][mobilecomefrom]', $setting['mobile']['mobilecomefrom'], 'textarea');
 		showsetting('setting_mobile_wml', 'settingnew[mobile][wml]', $setting['mobile']['wml'], 'radio');
+		showsetting('setting_mobile_allowmnew', 'settingnew[mobile][allowmnew]', $setting['mobile']['allowmnew'], 'radio');
 		showtagfooter('tbody');
 		showsubmit('settingsubmit');
 		showformfooter();
@@ -2479,6 +2488,7 @@ EOT;
 		exit;
 
 	} elseif ($operation == 'antitheft'){
+		/*search={"setting_antitheft":"action=setting&operation=antitheft"}*/
 		if($_GET['anchor'] == 'iplist') {
 
 			if(submitcheck('antitheftsubmit', true)) {
@@ -2562,6 +2572,7 @@ EOT;
 			showtablefooter();
 			showsubmit('settingsubmit');
 		}
+		/*search*/
 		exit;
 
 	} else {
@@ -3319,6 +3330,11 @@ EOT;
 
 	if($operation == 'mobile') {
 		$settingnew['mobile_arr']['allowmobile'] = intval($settingnew['mobile']['allowmobile']);
+		if(!$settingnew['mobile_arr']['allowmobile']) {
+			C::t('common_nav')->update_by_navtype_type_identifier(1, 0, 'mobile', array('available' => 0));
+		} else {
+			C::t('common_nav')->update_by_navtype_type_identifier(1, 0, 'mobile', array('available' => 1));
+		}
 		$settingnew['mobile_arr']['allowmnew'] = intval($settingnew['mobile']['allowmnew']);
 		$settingnew['mobile_arr']['mobileforward'] = intval($settingnew['mobile']['mobileforward']);
         	$settingnew['mobile_arr']['otherindex'] = intval($settingnew['mobile']['otherindex']);
