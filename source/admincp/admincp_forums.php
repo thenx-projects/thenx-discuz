@@ -526,7 +526,7 @@ var rowtypedata = [
 	$allowthreadtypes = !in_array('threadtypes', $dactionarray);
 
 
-	$forumkeys = C::t('common_setting')->fetch('forumkeys', true);
+	$forumkeys = C::t('common_setting')->fetch_setting('forumkeys', true);
 
 	$rules = array();
 	foreach(C::t('common_credit_rule')->fetch_all_by_action(array('reply', 'post', 'digest', 'postattach', 'getattach')) as $value) {
@@ -754,6 +754,7 @@ var rowtypedata = [
 				$forum['formulapermusers'] = $forum['formulaperm']['users'];
 				$forum['formulaperm'] = $forum['formulaperm'][0];
 				$forum['extra'] = dunserialize($forum['extra']);
+				$forum['threadsorts'] = is_array($forum['threadsorts']) ? $forum['threadsorts'] : array();
 				$forum['threadsorts']['default'] = $forum['threadsorts']['defaultshow'] ? 1 : 0;
 
 				$_G['multisetting'] = $multiset ? 1 : 0;
@@ -1837,7 +1838,7 @@ EOT;
 
 			if($forumkeys[$fid] != $_GET['keysnew'] && preg_match('/^\w*$/', $_GET['keysnew']) && !preg_match('/^\d+$/', $_GET['keysnew'])) {
 				$forumkeys[$fid] = $_GET['keysnew'];
-				C::t('common_setting')->update('forumkeys', $forumkeys);
+				C::t('common_setting')->update_setting('forumkeys', $forumkeys);
 			}
 
 		}

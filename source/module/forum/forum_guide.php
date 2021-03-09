@@ -173,7 +173,7 @@ function get_guide_list($view, $start = 0, $num = 50, $again = 0) {
 			if($_GET['fid']) {
 				$sofa = C::t('forum_sofa')->fetch_all_by_fid($_GET['fid'], $start, $num);
 			} else {
-				$sofa = C::t('forum_sofa')->range($start, $num);
+				$sofa = C::t('forum_sofa')->range_sofa($start, $num);
 				foreach($sofa as $sofatid => $sofathread) {
 					if(!in_array($sofathread, $fids)) {
 						unset($sofathread[$sofatid]);
@@ -209,8 +209,8 @@ function get_guide_list($view, $start = 0, $num = 50, $again = 0) {
 		$forumnames = C::t('forum_forum')->fetch_all_name_by_fid($fids);
 	}
 	$threadlist = array();
-	$threadids = array();
 	if($tids) {
+		$threadids = array();
 		foreach($tids as $key => $tid) {
 			if($list[$tid]) {
 				$threadlist[$key] = $list[$tid];
@@ -222,6 +222,7 @@ function get_guide_list($view, $start = 0, $num = 50, $again = 0) {
 	}
 	unset($list);
 	if($updatecache) {
+		$threadids = is_array($threadids) ? $threadids : array();
 		$threadcount = count($threadids);
 		$data = array('cachetime' => TIMESTAMP, 'data' => $threadids);
 		$_G['cache']['forum_guide'][$view.($view=='sofa' && $_G['fid'] ? $_G['fid'] : '')] = $data;
@@ -279,7 +280,7 @@ function get_my_threads($viewtype, $fid = 0, $filter = '', $searchkey = '', $sta
 			$pids[] = $value['pid'];
 			$tids[] = $value['tid'];
 		}
-		$pids = C::t('forum_post')->fetch_all(0, $pids);
+		$pids = C::t('forum_post')->fetch_all_post(0, $pids);
 		$tids = C::t('forum_thread')->fetch_all($tids);
 
 		$list = $fids = array();

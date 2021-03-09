@@ -25,7 +25,6 @@ function feed_add($icon, $title_template='', $title_data=array(), $body_template
 	}
 
 	$feedarr = array(
-		'appid' => $appid,
 		'icon' => $icon,
 		'uid' => $uid ? intval($uid) : $_G['uid'],
 		'username' => $username ? $username : $_G['username'],
@@ -241,12 +240,12 @@ function feed_publish($id, $idtype, $add=0) {
 
 		$feedid = 0;
 		if(!$add && $setarr['id']) {
-			$feedid = C::t('home_feed')->fetch($id, $idtype);
+			$feedid = C::t('home_feed')->fetch_feed($id, $idtype);
 			$feedid = $feedid['feedid'];
 		}
 		if($status == 0) {
 			if($feedid) {
-				C::t('home_feed')->update('', $setarr, '', '', $feedid);
+				C::t('home_feed')->update_feed('', $setarr, '', '', $feedid);
 			} else {
 				C::t('home_feed')->insert($setarr);
 			}
