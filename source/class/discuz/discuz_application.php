@@ -104,6 +104,14 @@ class discuz_application extends discuz_base{
 			}
 		}
 
+		if(!defined('APPTYPEID')) {
+			define('APPTYPEID', 0);
+		}
+
+		if(!defined('CURSCRIPT')) {
+			define('CURSCRIPT', null);
+		}
+
 		global $_G;
 		$_G = array(
 			'uid' => 0,
@@ -655,7 +663,7 @@ class discuz_application extends discuz_base{
 			if($this->var['uid'] && ($this->var['group']['allowvisit'] == 2 || $this->var['groupid'] == 1)) {
 			} elseif(in_array(CURSCRIPT, array('admin', 'member', 'api')) || defined('ALLOWGUEST') && ALLOWGUEST) {
 			} else {
-				$closedreason = C::t('common_setting')->fetch('closedreason');
+				$closedreason = C::t('common_setting')->fetch_setting('closedreason');
 				$closedreason = str_replace(':', '&#58;', $closedreason);
 				if(!defined('IN_MOBILE_API')) {
 					showmessage($closedreason ? $closedreason : 'board_closed', NULL, array('adminemail' => $this->var['setting']['adminemail']), array('login' => 1));

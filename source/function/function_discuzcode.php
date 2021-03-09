@@ -241,7 +241,7 @@ function discuzcode($message, $smileyoff = false, $bbcodeoff = false, $htmlon = 
 				if($authorreplyexist === null) {
 					if(!$_G['forum']['ismoderator']) {
 						if($_G['uid']) {
-							$_post = C::t('forum_post')->fetch('tid:'.$_G['tid'], $pid);
+							$_post = C::t('forum_post')->fetch_post('tid:'.$_G['tid'], $pid);
 							$authorreplyexist = $_post['tid'] == $_G['tid'] ? C::t('forum_post')->fetch_pid_by_tid_authorid($_G['tid'], $_G['uid']) : FALSE;
 						}
 					} else {
@@ -594,7 +594,7 @@ function parseflv($url, $width = 0, $height = 0) {
 }
 
 function parseimg($width, $height, $src, $lazyload, $pid, $extra = '') {
-	global $_G;
+	global $_G, $aimgs;
 	static $styleoutput = null;
 	if($_G['setting']['domainwhitelist_affectimg']) {
 		$tmp = parse_url($src);
@@ -616,7 +616,7 @@ function parseimg($width, $height, $src, $lazyload, $pid, $extra = '') {
 	}
 	$attrsrc = !IS_ROBOT && $lazyload ? 'file' : 'src';
 	$rimg_id = random(5);
-	$GLOBALS['aimgs'][$pid][] = $rimg_id;
+	$aimgs[$pid][] = $rimg_id;
 	$guestviewthumb = !empty($_G['setting']['guestviewthumb']['flag']) && empty($_G['uid']);
 	$img = '';
 	if($guestviewthumb) {
