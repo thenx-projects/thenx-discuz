@@ -1375,6 +1375,8 @@ EOF;
 		showtagfooter('tbody');
 		showsetting('setting_permissions_allowmoderatingthread', 'settingnew[allowmoderatingthread]', $setting['allowmoderatingthread'], 'radio');
 		showsetting('setting_permissions_memliststatus', 'settingnew[memliststatus]', $setting['memliststatus'], 'radio');
+		showsetting('setting_permissions_minsubjectsize', 'settingnew[minsubjectsize]', $setting['minsubjectsize'], 'text');
+		showsetting('setting_permissions_maxsubjectsize', 'settingnew[maxsubjectsize]', $setting['maxsubjectsize'], 'text');
 		showsetting('setting_permissions_minpostsize', 'settingnew[minpostsize]', $setting['minpostsize'], 'text');
 		showsetting('setting_permissions_minpostsize_mobile', 'settingnew[minpostsize_mobile]', $setting['minpostsize_mobile'], 'text');
 		showsetting('setting_permissions_maxpostsize', 'settingnew[maxpostsize]', $setting['maxpostsize'], 'text');
@@ -2480,6 +2482,7 @@ EOT;
 				array(0, $lang['unwind'])
 			)), $setting['mobile']['mobileforumview'] ? $setting['mobile']['mobileforumview'] : 0, 'mradio');
 		showsetting('setting_mobile_come_from', 'settingnew[mobile][mobilecomefrom]', $setting['mobile']['mobilecomefrom'], 'textarea');
+		showsetting('setting_mobile_legacy', 'settingnew[mobile][legacy]', $setting['mobile']['legacy'], 'radio');
 		showsetting('setting_mobile_wml', 'settingnew[mobile][wml]', $setting['mobile']['wml'], 'radio');
 		showsetting('setting_mobile_allowmnew', 'settingnew[mobile][allowmnew]', $setting['mobile']['allowmnew'], 'radio');
 		showtagfooter('tbody');
@@ -3353,6 +3356,7 @@ EOT;
 		$settingnew['mobile_arr']['mobileforumview'] = intval($settingnew['mobile']['mobileforumview']);
 		$settingnew['mobile_arr']['mobilecomefrom'] = preg_replace(array("/\son(.*)=[\'\"](.*?)[\'\"]/i"), '', strip_tags($settingnew['mobile']['mobilecomefrom'], '<a><font><img><span><strong><b>'));
 		$settingnew['mobile_arr']['mobilepreview'] = intval($settingnew['mobile']['mobilepreview']);
+		$settingnew['mobile_arr']['legacy'] = intval($settingnew['mobile']['legacy']);
 		$settingnew['mobile_arr']['wml'] = intval($settingnew['mobile']['wml']);
 		$settingnew['mobile'] = $settingnew['mobile_arr'];
 		unset($settingnew['mobile_arr']);
@@ -3505,7 +3509,7 @@ EOT;
 				'feedtargetblank', 'updatestat', 'namechange', 'namecheck', 'networkpage', 'maxreward', 'groupnum', 'starlevelnum', 'friendgroupnum',
 				'pollforumid', 'tradeforumid', 'rewardforumid', 'activityforumid', 'debateforumid', 'maxpage',
 				'starcredit', 'topcachetime', 'newspacerealname', 'newspaceavatar', 'newspacenum', 'shownewuser',
-				'feedhotnum', 'showallfriendnum', 'feedread',
+				'feedhotnum', 'showallfriendnum', 'feedread', 'maxsubjectsize', 'minsubjectsize',
 				'need_friendnum', 'need_avatar', 'uniqueemail', 'need_email', 'allowquickviewprofile', 'preventrefresh',
 				'jscachelife', 'maxmodworksmonths', 'maxonlinelist'))) {
 				$val = (float)$val;
@@ -3521,6 +3525,10 @@ EOT;
 				foreach($val['feed'] as $var => $value) {
 					$val['feed'][$var] = 1;
 				}
+			}
+
+			if($key == 'maxsubjectsize' && $val > 255) {
+				cpmsg('maxsubjectsize_no_more', '', 'error');
 			}
 
 			$settings[$key] = $val;
