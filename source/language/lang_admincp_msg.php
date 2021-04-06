@@ -118,6 +118,7 @@ $lang = array (
   'members_verify_succeed' => '资料审核成功 ',
   'members_verify_update_succeed' => '认证设置更新成功 ',
   'action_noaccess' => '抱歉，您无权使用此功能',
+  'maxsubjectsize_no_more' => '标题最大字数不得超过 255 字符',
   'members_delete_confirm' => '本操作不可恢复，您确定要删除符合条件的 {membernum} 个用户吗？',
   'members_unarchive_confirm' => '本操作不可恢复，您确定要将 {membernum} 个用户移出存档表么？',
   'cloudaddons_check_write_error' => '"data/download/" 或 "data/addonmd5/" 目录无法创建或写入，这将会导致应用无法安装，请检查服务器环境',
@@ -649,6 +650,8 @@ $lang = array (
   'admincp_makehtml_cleanhtml_succeed' => '清理HTML文件成功。',
   'admincp_makehtml_cleanhtml_choose_item' => '对不起，请选择需要清理HTML文件。',
   'attach_readmod_error' => '抱歉，当前的本地文件读取模式会导致部分浏览器下视频播放异常，如需开启附件URL地址、媒体附件播放，请在 config_global.php 内修改本地文件读取模式为 1 或 4 后再试',
+  'optimizer_dos8p3_optimizer' => '请您根据您底层的情况正确选择技术路线和解决方案, 通过对底层的正确配置以关闭 DOS 8.3 文件名支持',
+  'optimizer_httphost_optimizer' => '请您根据您底层的情况正确选择技术路线和解决方案, 通过对底层的正确配置以关闭空 HOST 头支持',
 );
 
 ?>
