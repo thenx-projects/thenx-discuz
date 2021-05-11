@@ -63,6 +63,7 @@ function feed_add($icon, $title_template='', $title_data=array(), $body_template
 
 function mkfeed($feed, $actors=array()) {
 	global $_G;
+	require_once libfile('function/discuzcode');
 	$feed['title_data'] = empty($feed['title_data'])?array():(is_array($feed['title_data'])?$feed['title_data']:@dunserialize($feed['title_data']));
 	if(!is_array($feed['title_data'])) $feed['title_data'] = array();
 
@@ -90,7 +91,17 @@ function mkfeed($feed, $actors=array()) {
 			$replaces[] = $feed['body_data'][$key];
 		}
 	}
-
+	
+	if($feed['body_data']['flashvar']){
+		$feed['body_data']['player'] = parseflv($feed['body_data']['data'], '500', '373');
+	}
+	if($feed['body_data']['musicvar']){
+		$feed['body_data']['player'] = parseaudio($feed['body_data']['data']);
+	}
+	if($feed['body_data']['videovar']){
+		$feed['body_data']['player'] = parsemedia('x,500,373', $feed['body_data']['data']);
+	}
+	
 	$feed['magic_class'] = '';
 	if(!empty($feed['body_data']['magic_thunder'])) {
 		$feed['magic_class'] = 'magicthunder';
