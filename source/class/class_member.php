@@ -154,7 +154,7 @@ class logging_ctl {
 				}
 
 				if($_G['member']['adminid'] != 1) {
-					if($this->setting['accountguard']['loginoutofdate'] && $_G['member']['lastvisit'] && TIMESTAMP - $_G['member']['lastvisit'] > 90 * 86400 && $_G['member']['freeze'] != -1) {
+					if($this->setting['accountguard']['loginoutofdate'] && $_G['member']['lastvisit'] && TIMESTAMP - $_G['member']['lastvisit'] > ($this->setting['accountguard']['loginoutofdatenum'] >= 1 ? (int)$this->setting['accountguard']['loginoutofdatenum'] : 90) * 86400 && $_G['member']['freeze'] != -1) {
 						C::t('common_member')->update($_G['uid'], array('freeze' => 2));
 						showmessage('location_login_outofdate', 'home.php?mod=spacecp&ac=profile&op=password&resend=1', array('type' => 1), array('showdialog' => true, 'striptags' => false, 'locationtime' => true));
 					}
@@ -183,7 +183,7 @@ class logging_ctl {
 					if(!$seccodecheck && $seccheckrule['outofday'] && $_G['member']['lastvisit'] && TIMESTAMP - $_G['member']['lastvisit'] > $seccheckrule['outofday'] * 86400) {
 						$seccodecheck = true;
 					}
-					if(!$seccodecheck && $_G['member_loginperm'] < 4) {
+					if(!$seccodecheck && $_G['member_loginperm'] != -1 && $_G['member_loginperm'] < 4) {
 						$seccodecheck = true;
 					}
 					if(!$seccodecheck && $seccheckrule['numiptry']) {
@@ -887,22 +887,9 @@ class register_ctl {
 			$refreshtime = 3000;
 			switch($this->setting['regverify']) {
 				case 1:
-					$idstring = random(6);
-					$authstr = $this->setting['regverify'] == 1 ? "{$_G['timestamp']}\t2\t$idstring" : '';
-					C::t('common_member_field_forum')->update($_G['uid'], array('authstr' => $authstr));
-					$verifyurl = $_G['setting']['securesiteurl']."member.php?mod=activate&amp;uid={$_G['uid']}&amp;id=$idstring";
-					$email_verify_message = array(
-						'tpl' => 'email_verify',
-						'var' => array(
-							'username' => $_G['member']['username'],
-							'bbname' => $this->setting['bbname'],
-							'siteurl' => $_G['setting']['securesiteurl'],
-							'url' => $verifyurl
-						)
-					);
-					if(!sendmail("$username <$email>", $email_verify_message)) {
-						runlog('sendmail', "$email sendmail failed.");
-					}
+					require_once libfile('function/spacecp');
+					emailcheck_send($_G['uid'], $email);
+					dsetcookie('resendemail', TIMESTAMP);
 					$message = 'register_email_verify';
 					$locationmessage = 'register_email_verify_location';
 					$refreshtime = 10000;

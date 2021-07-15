@@ -699,6 +699,7 @@ $lang = array (
   'search_threadtype_invalid' => '抱歉，您尚未输入要搜索的分类信息项目',
 
   'home_no_privilege' => '抱歉，您需要登录后才能查看',
+  'no_privilege_profile' => '抱歉，您没有权限查看个人资料',
 
   'member_nonexistence' => '抱歉，指定的用户不存在或被冻结',
 
@@ -706,6 +707,7 @@ $lang = array (
   'no_privilege_album_edit' => '抱歉，您没有权限编辑此相册',
   'album_name_errors' => '抱歉，您尚未正确设置相册名',
   'spacecp_edit_ok' => '设置保存成功 ',
+  'no_privilege_upload_avatar' => '抱歉，您目前没有权限上传头像',
   'no_privilege_album_del' => '抱歉，您没有权限删除此相册',
   'no_privilege_album_delother' => '抱歉，您没有权限删除其他人的相册',
   'no_privilege_pic_edit' => '抱歉，您没有权限编辑此相册中的图片',
@@ -779,6 +781,7 @@ $lang = array (
   'no_privilege_feed_del' => '抱歉，您没有权限删除此动态',
 
   'follow_not_follow_self' => '不能关注自己',
+  'follow_not_follow_others' => '您当前用户组不允许收听他人',
   'follow_other_unfollow' => '对方不允许您关注TA',
   'follow_followed_ta' => '您已经收听了TA',
   'follow_add_succeed' => '成功收听',
@@ -891,6 +894,7 @@ $lang = array (
   'usergroups_join_succeed' => '您已加入用户组 {group}',
   'usergroups_exit_succeed' => '您已退出用户组 {group}',
   'usergroup_switch_not_allow' => '您当前的用户组未到期，无法切换到其他用户组',
+  'usergroup_switch_not_allowvisit' => '抱歉，您无法切换到不能访问论坛的用户组',
   'usergroups_switch_succeed' => '您已切换到用户组 {group}',
 
   'no_privilege_banpost' => '抱歉，您没有权限屏蔽主题',

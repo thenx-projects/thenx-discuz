@@ -24,7 +24,7 @@ $sortid = intval(getgpc('sortid'));
 $typeid = intval(getgpc('typeid'));
 $special = intval(getgpc('special'));
 
-parse_str($_GET['extra'], $_GET['extra']);
+parse_str(getgpc('extra'), $_GET['extra']);
 $_GET['extra'] = http_build_query($_GET['extra']);
 
 $postinfo = array('subject' => '');
@@ -160,7 +160,7 @@ if(empty($_G['forum']['allowview'])) {
 
 formulaperm($_G['forum']['formulaperm']);
 
-if(in_array($_G['adminid'], array(0, -1)) && $_G['setting']['newbiespan'] && (!getuserprofile('lastpost') || TIMESTAMP - getuserprofile('lastpost') < $_G['setting']['newbiespan'] * 60) && TIMESTAMP - $_G['member']['regdate'] < $_G['setting']['newbiespan'] * 60) {
+if(in_array($_G['adminid'], array(0, -1)) && $_G['setting']['newbiespan'] && (!getuserprofile('lastpost') || TIMESTAMP - getuserprofile('lastpost') < $_G['setting']['newbiespan'] * 60) && TIMESTAMP - getglobal('member/regdate') < $_G['setting']['newbiespan'] * 60) {
 	showmessage('post_newbie_span', '', array('newbiespan' => $_G['setting']['newbiespan']));
 }
 
@@ -203,9 +203,9 @@ $notifycheck = empty($emailnotify) ? '' : 'checked="checked"';
 $stickcheck = empty($sticktopic) ? '' : 'checked="checked"';
 $digestcheck = empty($addtodigest) ? '' : 'checked="checked"';
 
-$subject = isset($_GET['subject']) ? dhtmlspecialchars(censor(trim($_GET['subject']))) : '';
+$subject = isset($_GET['subject']) ? dhtmlspecialchars(censor(trim($_GET['subject']), NULL, FALSE, FALSE)) : '';
 $subject = !empty($subject) ? str_replace("\t", ' ', $subject) : $subject;
-$message = isset($_GET['message']) ? censor($_GET['message']) : '';
+$message = isset($_GET['message']) ? censor($_GET['message'], NULL, FALSE, FALSE) : '';
 $polloptions = isset($polloptions) ? censor(trim($polloptions)) : '';
 $readperm = isset($_GET['readperm']) ? intval($_GET['readperm']) : 0;
 $price = isset($_GET['price']) ? intval($_GET['price']) : 0;
@@ -303,7 +303,7 @@ if($_GET['action'] == 'newthread') {
 	$policykey = '';
 }
 if($policykey) {
-	$postcredits = $_G['forum'][$policykey.'credits'] ? $_G['forum'][$policykey.'credits'] : $_G['setting']['creditspolicy'][$policykey];
+	$postcredits = getglobal('forum/'.$policykey.'credits') ? getglobal('forum/'.$policykey.'credits') : $_G['setting']['creditspolicy'][$policykey];
 }
 
 $albumlist = array();

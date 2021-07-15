@@ -23,7 +23,7 @@ class table_forum_post extends discuz_table
 	}
 
 	public static function get_tablename($tableid, $primary = 0) {
-		list($type, $tid) = explode(':', $tableid);
+		list($type, $tid) = explode(':', $tableid.':');
 		if(!isset(self::$_tableid_tablename[$tableid])) {
 			if($type == 'tid') {
 				self::$_tableid_tablename[$tableid] = self::getposttablebytid($tid, $primary);
@@ -434,6 +434,10 @@ class table_forum_post extends discuz_table
 	public function fetch_all_visiblepost_by_tid_groupby_authorid($tableid, $tid) {
 		return DB::fetch_all('SELECT pid, tid, authorid, subject, dateline FROM %t WHERE tid=%d AND invisible=0 GROUP BY authorid ORDER BY dateline',
 				array(self::get_tablename($tableid), $tid));
+	}
+
+	public function fetch_all_visiblepost_by_tid($tableid, $tid) {
+		return DB::fetch_all('SELECT * FROM %t WHERE tid=%d AND invisible=0', array(self::get_tablename($tableid), $tid));
 	}
 
 	public function fetch_all_pid_by_invisible_dateline($tableid, $invisible, $dateline, $start, $limit) {

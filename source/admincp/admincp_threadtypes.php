@@ -1173,8 +1173,8 @@ EOT;
 		$option['type'],
 		"<input class=\"checkbox\" type=\"checkbox\" name=\"required[{$option['optionid']}]\" value=\"1\" ".($option['required'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
 		"<input class=\"checkbox\" type=\"checkbox\" name=\"unchangeable[{$option['optionid']}]\" value=\"1\" ".($option['unchangeable'] ? 'checked' : '').">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}]['form']\" value=\"1\" ".(getstatus($option['search'], 1) == 1 ? 'checked' : '').">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}]['font']\" value=\"1\" ".(getstatus($option['search'], 2) == 1 ? 'checked' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}][form]\" value=\"1\" ".(getstatus($option['search'], 1) == 1 ? 'checked' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}][font]\" value=\"1\" ".(getstatus($option['search'], 2) == 1 ? 'checked' : '').">",
 		"<input class=\"checkbox\" type=\"checkbox\" name=\"subjectshow[{$option['optionid']}]\" value=\"1\" ".($option['subjectshow'] ? 'checked' : '').">",
 		"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid={$option['optionid']}\" class=\"act\">".$lang['edit']."</a>"
 	));
@@ -1197,7 +1197,7 @@ EOT;
 					$decline = '_';
 					while(!$findname) {
 						if(C::t('forum_threadtype')->checkname($tmpnewname1)) {
-							$tmpnewname1 = $newname1.$decline;
+							$tmpnewname1 = $newname1.$decline.random(6);
 							$decline .= '_';
 						} else {
 							$findname = 1;
@@ -1229,16 +1229,19 @@ EOT;
 				'rules' => $value['rules'],
 				'permprompt' => $value['permprompt'],
 			);
-			if(strlen($value['identifier']) > 34) {
-				cpmsg('threadtype_infotypes_optionvariable_invalid', 'action=threadtypes', 'error');
-			}
 
 			$findidentifier = 0;
-			$tmpidentifier = $value['identifier'];
+			$tmpidentifier = trim($value['identifier']);
+			if(strlen($tmpidentifier) > 40 || !ispluginkey($tmpidentifier)) {
+				cpmsg('threadtype_infotypes_optionvariable_invalid', 'action=threadtypes', 'error');
+			}
 			$decline = '_';
 			while(!$findidentifier) {
-				if(C::t('forum_typeoption')->fetch_all_by_identifier($tmpidentifier, 0, 1) || !ispluginkey($tmpidentifier) || in_array(strtoupper($tmpidentifier), $mysql_keywords)) {
+				if(C::t('forum_typeoption')->fetch_all_by_identifier($tmpidentifier, 0, 1) || in_array(strtoupper($tmpidentifier), $mysql_keywords)) {
 					$tmpidentifier = $value['identifier'].$decline.$sortid;
+					if(strlen($tmpidentifier) > 40) {
+						cpmsg('threadtype_infotypes_optionvariable_invalid', 'action=threadtypes', 'error');
+					}
 					$decline .= '_';
 				} else {
 					$findidentifier = 1;
