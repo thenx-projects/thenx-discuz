@@ -305,7 +305,7 @@ $languages = array(
 	'setting_pmfloodctrl' => '发短消息灌水预防',
 	'setting_pmfloodctrl_comment' => '两次发短消息间隔小于此时间，单位秒，0 为不限制，此举为了限制通过机器批量发广告',
 	'setting_addappbyurl' => '启用通过 URL 添加应用功能',
-	'setting_addappbyurl_comment' => '是否启用通过 URL 添加应用功能，建议只有必须通过 URL 添加应用时开启',
+	'setting_addappbyurl_comment' => '是否启用通过 URL 添加应用功能，建议只在需要通过 URL 添加应用时开启',
 	'setting_insecureuserdelete' => '启用不安全的删除用户接口',
 	'setting_insecureuserdelete_comment' => '是否启用不安全的删除用户接口，建议只有必须使用此接口且无法改造应用时开启',
 	'setting_passwordalgo' => 'UCenter 密码算法',
@@ -314,7 +314,7 @@ $languages = array(
 	'setting_passwordoptions_comment' => '取值为密码散列算法的配置信息，以一行 JSON 数组的形式存储，请自行确认相关配置是否正确。当配置本项时, UCenter 密码算法不能为空。默认值为空。',
 
 	'setting_user_failedtime' => '允许用户登录失败次数',
-	'setting_user_failedtime_comment' => '用户登录失败超过设置的数据，将在15分钟内无法登录，0为不限制次数',
+	'setting_user_failedtime_comment' => '用户登录失败超过设置的次数，将在 15 分钟内无法登录，0 为使用默认设置，负数为不限制次数（不安全）',
 
 	'setting_register' => '注册设置',
 	'setting_register_tips' => '允许/禁止的 Email 地址只需填写 Email 的域名部分，每行一个域名，例如 @hotmail.com',

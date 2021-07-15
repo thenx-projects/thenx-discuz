@@ -1006,7 +1006,6 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		// 在请求主机名并非一个合法 IP 地址, 且 PHP 版本 >= 5.5.0 时, 使用 CURLOPT_RESOLVE 设置固定的 IP 地址与域名关系
 		// 在不支持的 PHP 版本下, 继续采用原有不支持 SNI 的流程
 		if(!filter_var($host, FILTER_VALIDATE_IP) && version_compare(PHP_VERSION, '5.5.0', 'ge')) {
-			curl_setopt($ch, CURLOPT_DNS_USE_GLOBAL_CACHE, false);
 			curl_setopt($ch, CURLOPT_RESOLVE, array("$host:$port:$ip"));
 			curl_setopt($ch, CURLOPT_URL, $scheme.'://'.$host.':'.$port.$path);
 		} else {
@@ -1956,19 +1955,26 @@ function send_mime_type_header($type = 'application/xml') {
 }
 
 function is_https() {
-	if (isset($_SERVER["HTTPS"]) && strtolower($_SERVER["HTTPS"]) != "off") {
+	// PHP 标准服务器变量
+	if(isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) != 'off') {
 		return true;
 	}
-	if (isset($_SERVER["HTTP_X_FORWARDED_PROTO"]) && strtolower($_SERVER["HTTP_X_FORWARDED_PROTO"]) == "https") {
+	// X-Forwarded-Proto 事实标准头部, 用于反代透传 HTTPS 状态
+	if(isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https') {
 		return true;
 	}
-	if (isset($_SERVER["HTTP_SCHEME"]) && strtolower($_SERVER["HTTP_SCHEME"]) == "https") {
+	// 阿里云全站加速私有 HTTPS 状态头部
+	// Git 意见反馈 https://gitee.com/Discuz/DiscuzX/issues/I3W5GP
+	if(isset($_SERVER['HTTP_X_CLIENT_SCHEME']) && strtolower($_SERVER['HTTP_X_CLIENT_SCHEME']) == 'https') {
 		return true;
 	}
-	if (isset($_SERVER["HTTP_FROM_HTTPS"]) && strtolower($_SERVER["HTTP_FROM_HTTPS"]) != "off") {
+	// 西部数码建站助手私有 HTTPS 状态头部
+	// 官网意见反馈 https://www.discuz.net/thread-3849819-1-1.html
+	if(isset($_SERVER['HTTP_FROM_HTTPS']) && strtolower($_SERVER['HTTP_FROM_HTTPS']) != 'off') {
 		return true;
 	}
-	if (isset($_SERVER["SERVER_PORT"]) && $_SERVER["SERVER_PORT"] == 443) {
+	// 服务器端口号兜底判断
+	if(isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443) {
 		return true;
 	}
 	return false;

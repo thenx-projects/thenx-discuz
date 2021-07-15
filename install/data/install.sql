@@ -1449,6 +1449,7 @@ CREATE TABLE pre_common_usergroup (
   allowsendpm tinyint(1) NOT NULL DEFAULT '1',
   allowinvite tinyint(1) NOT NULL DEFAULT '0',
   allowmailinvite tinyint(1) NOT NULL DEFAULT '0',
+  allowfollow tinyint(1) NOT NULL DEFAULT '0',
   maxinvitenum tinyint(3) unsigned NOT NULL DEFAULT '0',
   inviteprice smallint(6) unsigned NOT NULL DEFAULT '0',
   maxinviteday smallint(6) unsigned NOT NULL DEFAULT '0',
@@ -1512,7 +1513,9 @@ CREATE TABLE pre_common_usergroup_field (
   maxfriendnum smallint(6) unsigned NOT NULL DEFAULT '0',
   maxspacesize int(10) unsigned NOT NULL DEFAULT '0',
   allowcomment tinyint(1) NOT NULL DEFAULT '0',
+  allowcommentmod tinyint(1) unsigned NOT NULL DEFAULT '0',
   allowcommentarticle smallint(6) NOT NULL DEFAULT '0',
+  allowcommentarticlemod tinyint(1) unsigned NOT NULL DEFAULT '0',
   searchinterval smallint(6) unsigned NOT NULL DEFAULT '0',
   searchignore tinyint(1) NOT NULL DEFAULT '0',
   allowblog tinyint(1) NOT NULL DEFAULT '0',
@@ -1568,6 +1571,8 @@ CREATE TABLE pre_common_usergroup_field (
   closead tinyint(1) unsigned NOT NULL DEFAULT '0',
   buildgroupcredits smallint(6) unsigned NOT NULL DEFAULT '0',
   allowimgcontent tinyint(1) unsigned NOT NULL DEFAULT '0',
+  allowavatarupload tinyint(1) unsigned NOT NULL DEFAULT '0',
+  allowviewprofile tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (groupid)
 ) ENGINE=InnoDB;
 

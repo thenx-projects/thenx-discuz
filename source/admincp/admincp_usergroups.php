@@ -28,11 +28,11 @@ if(!$operation) {
 
 				$membergroup .= showtablerow('', array('class="td25"', '', 'class="td23 lightfont"', 'class="td28"', 'class=td28'), array(
 					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[{$group['groupid']}]\" value=\"{$group['groupid']}\">",
-					"<input type=\"text\" class=\"txt\" size=\"12\" name=\"groupnew[{$group['groupid']}]['grouptitle']\" value=\"{$group['grouptitle']}\">",
+					"<input type=\"text\" class=\"txt\" size=\"12\" name=\"groupnew[{$group['groupid']}][grouptitle]\" value=\"{$group['grouptitle']}\">",
 					"(groupid:{$group['groupid']})",
-					"<input type=\"text\" class=\"txt\" size=\"6\" name=\"groupnew[{$group['groupid']}]['creditshigher']\" value=\"{$group['creditshigher']}\" /> ~ <input type=\"text\" class=\"txt\" size=\"6\" name=\"groupnew[{$group['groupid']}]['creditslower']\" value=\"{$group['creditslower']}\" disabled />",
-					"<input type=\"text\" class=\"txt\" size=\"2\" name=\"groupnew[{$group['groupid']}]['stars']\" value=\"{$group['stars']}\">",
-					"<input type=\"text\" id=\"group_color_{$group['groupid']}_v\" class=\"left txt\" size=\"6\" name=\"groupnew[{$group['groupid']}]['color']\" value=\"{$group['color']}\" onchange=\"updatecolorpreview('group_color_{$group['groupid']}')\"><input type=\"button\" id=\"group_color_{$group['groupid']}\"  class=\"colorwd\" onclick=\"group_color_{$group['groupid']}_frame.location='static/image/admincp/getcolor.htm?group_color_{$group['groupid']}|group_color_{$group['groupid']}_v';showMenu({'ctrlid':'group_color_{$group['groupid']}'})\" /><span id=\"group_color_{$group['groupid']}_menu\" style=\"display: none\"><iframe name=\"group_color_{$group['groupid']}_frame\" src=\"\" frameborder=\"0\" width=\"210\" height=\"148\" scrolling=\"no\"></iframe></span>",
+					"<input type=\"text\" class=\"txt\" size=\"6\" name=\"groupnew[{$group['groupid']}][creditshigher]\" value=\"{$group['creditshigher']}\" /> ~ <input type=\"text\" class=\"txt\" size=\"6\" name=\"groupnew[{$group['groupid']}][creditslower]\" value=\"{$group['creditslower']}\" disabled />",
+					"<input type=\"text\" class=\"txt\" size=\"2\" name=\"groupnew[{$group['groupid']}][stars]\" value=\"{$group['stars']}\">",
+					"<input type=\"text\" id=\"group_color_{$group['groupid']}_v\" class=\"left txt\" size=\"6\" name=\"groupnew[{$group['groupid']}][color]\" value=\"{$group['color']}\" onchange=\"updatecolorpreview('group_color_{$group['groupid']}')\"><input type=\"button\" id=\"group_color_{$group['groupid']}\"  class=\"colorwd\" onclick=\"group_color_{$group['groupid']}_frame.location='static/image/admincp/getcolor.htm?group_color_{$group['groupid']}|group_color_{$group['groupid']}_v';showMenu({'ctrlid':'group_color_{$group['groupid']}'})\" /><span id=\"group_color_{$group['groupid']}_menu\" style=\"display: none\"><iframe name=\"group_color_{$group['groupid']}_frame\" src=\"\" frameborder=\"0\" width=\"210\" height=\"148\" scrolling=\"no\"></iframe></span>",
 					"<input class=\"checkbox\" type=\"checkbox\" chkvalue=\"gmember\" value=\"{$group['groupid']}\" onclick=\"multiupdate(this)\" /><a href=\"".ADMINSCRIPT."?action=usergroups&operation=edit&id={$group['groupid']}\" class=\"act\">{$lang['edit']}</a>".
 						"<a href=\"".ADMINSCRIPT."?action=usergroups&operation=copy&source={$group['groupid']}\" title=\"{$lang['usergroups_copy_comment']}\" class=\"act\">{$lang['usergroups_copy']}</a>".
 						"<a href=\"".ADMINSCRIPT."?action=usergroups&operation=merge&source={$group['groupid']}\" title=\"{$lang['usergroups_merge_comment']}\" class=\"act\">{$lang['usergroups_merge_link']}</a>"
@@ -579,6 +579,7 @@ EOT;
 		showsetting('usergroups_edit_basic_domain_length', 'domainlengthnew', $group['domainlength'], 'text');
 		showsetting('usergroups_edit_basic_invisible', 'allowinvisiblenew', $group['allowinvisible'], 'radio');
 		showsetting('usergroups_edit_basic_allowtransfer', 'allowtransfernew', $group['allowtransfer'], 'radio');
+		showsetting('usergroups_edit_basic_allowfollow', 'allowfollownew', $group['allowfollow'], 'radio', 0, 1);
 		showsetting('usergroups_edit_basic_allowsendpm', 'allowsendpmnew', $group['allowsendpm'], 'radio', 0, 1);
 		showsetting('usergroups_edit_pm_sendpmmaxnum', 'allowsendpmmaxnumnew', $group['allowsendpmmaxnum'], 'text');
 		showsetting('usergroups_edit_pm_sendallpm', 'allowsendallpmnew', $group['allowsendallpm'], 'radio');
@@ -591,6 +592,8 @@ EOT;
 			array(3, $lang['usergroups_edit_post_url_enable'])
 		)), $group['allowposturl'], 'mradio');
 		showsetting('usergroups_edit_basic_allow_statdata', 'allowstatdatanew', $group['allowstatdata'], 'radio');
+		showsetting('usergroups_edit_basic_allowavatarupload', 'allowavataruploadnew', $group['allowavatarupload'], 'radio');
+		showsetting('usergroups_edit_basic_allowviewprofile', 'allowviewprofilenew', $group['allowviewprofile'], 'radio');
 		showsetting('usergroups_edit_basic_search_post', 'allowfulltextnew', $group['allowsearch'] & 32, 'radio');
 		$group['allowsearch'] = $group['allowsearch'] > 128 ? $group['allowsearch'] - 128 : $group['allowsearch'];
 		showsetting('usergroups_edit_basic_search', array('allowsearchnew', array(
@@ -861,10 +864,12 @@ EOT;
 		showsetting('usergroups_edit_home_allow_share', 'allowsharenew', $group['allowshare'], 'radio', '', 1);
 		showsetting('usergroups_edit_home_allow_share_mod', 'allowsharemodnew', $group['allowsharemod'], 'radio');
 		showtagfooter('tbody');
+		showsetting('usergroups_edit_home_allow_comment', 'allowcommentnew', $group['allowcomment'], 'radio', '', 1);
+		showsetting('usergroups_edit_home_allow_comment_mod', 'allowcommentmodnew', $group['allowcommentmod'], 'radio');
+		showtagfooter('tbody');
 		showsetting('usergroups_edit_home_allow_poke', 'allowpokenew', $group['allowpoke'], 'radio');
 		showsetting('usergroups_edit_home_allow_friend', 'allowfriendnew', $group['allowfriend'], 'radio');
 		showsetting('usergroups_edit_home_allow_click', 'allowclicknew', $group['allowclick'], 'radio');
-		showsetting('usergroups_edit_home_allow_comment', 'allowcommentnew', $group['allowcomment'], 'radio');
 		showsetting('usergroups_edit_home_allow_space_diy_html', 'allowspacediyhtmlnew', $group['allowspacediyhtml'], 'radio');
 		showsetting('usergroups_edit_home_allow_space_diy_bbcode', 'allowspacediybbcodenew', $group['allowspacediybbcode'], 'radio');
 		showsetting('usergroups_edit_home_allow_space_diy_imgcode', 'allowspacediyimgcodenew', $group['allowspacediyimgcode'], 'radio');
@@ -899,6 +904,8 @@ EOT;
 		showtableheader();
 		showtitle('usergroups_edit_portal');
 		showsetting('usergroups_edit_portal_allow_comment_article', 'allowcommentarticlenew', $group['allowcommentarticle'], 'text');
+		showsetting('usergroups_edit_portal_allow_comment_article_mod', 'allowcommentarticlemodnew', $group['allowcommentarticlemod'], 'radio');
+		showtagfooter('tbody');
 		showsetting('usergroups_edit_portal_allow_post_article', 'allowpostarticlenew', $group['allowpostarticle'], 'radio', '', 1);
 		showsetting('usergroups_edit_portal_allow_down_local_img', 'allowdownlocalimgnew', $group['allowdownlocalimg'], 'radio');
 		showsetting('usergroups_edit_portal_allow_post_article_moderate', 'allowpostarticlemodnew', $group['allowpostarticlemod'], 'radio');
@@ -1029,6 +1036,7 @@ EOT;
 			'grouptitle' => $_GET['grouptitlenew'],
 			'radminid' => $radminidnew,
 			'allowvisit' => $_GET['allowvisitnew'],
+			'allowfollow' => $_GET['allowfollownew'],
 			'allowsendpm' => $_GET['allowsendpmnew'],
 			'maxinvitenum' => $_GET['maxinvitenumnew'],
 			'maxinviteday' => $maxinvitedaynew,
@@ -1136,12 +1144,16 @@ EOT;
 			'allowfriend' => $_GET['allowfriendnew'],
 			'allowclick' => $_GET['allowclicknew'],
 			'allowcomment' => $_GET['allowcommentnew'],
+			'allowcommentmod' => $_GET['allowcommentmodnew'],
 			'allowcommentarticle' => intval($_GET['allowcommentarticlenew']),
+			'allowcommentarticlemod' => $_GET['allowcommentarticlemodnew'],
 			'allowcommentpost' => bindec(intval($_GET['allowcommentpostnew'][2]).intval($_GET['allowcommentpostnew'][1])),
 			'allowspacediyhtml' => $_GET['allowspacediyhtmlnew'],
 			'allowspacediybbcode' => $_GET['allowspacediybbcodenew'],
 			'allowspacediyimgcode' => $_GET['allowspacediyimgcodenew'],
 			'allowstatdata' => $_GET['allowstatdatanew'],
+			'allowavatarupload' => $_GET['allowavataruploadnew'],
+			'allowviewprofile' => $_GET['allowviewprofilenew'],
 			'allowpostarticle' => $_GET['allowpostarticlenew'],
 			'allowpostarticlemod' => $_GET['allowpostarticlemodnew'],
 			'allowbuildgroup' => $_GET['allowbuildgroupnew'],

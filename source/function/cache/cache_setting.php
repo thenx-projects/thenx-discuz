@@ -516,6 +516,12 @@ function build_cache_setting() {
 
 	$data['minsubjectsize'] = empty($data['minsubjectsize']) ? 1 : $data['minsubjectsize'];
 
+	// 如果站点做过用户分表, 需要在更新缓存时判定一下用户分表是否存在, 不存在的话需要加上.
+	// 修复因站点自身问题导致用户分表丢失导致程序出错的问题.
+	if($data['membersplit']) {
+		C::t('common_member_archive')->check_table();
+	}
+
 	savecache('setting', $data);
 	$_G['setting'] = $data;
 }
@@ -557,7 +563,7 @@ function get_cachedata_setting_plugin($method = '') {
 			unset($plugin['modules']['extra']);
 			foreach($plugin['modules'] as $k => $module) {
 				if($available && isset($module['name'])) {
-					$module['displayorder'] = $plugin['modules']['system'] ? ($module['displayorder'] < 1000 ? $module['displayorder'] : 999) : $module['displayorder'] + 1000;
+					$module['displayorder'] = $plugin['modules']['system'] ? ($module['displayorder'] < 1000 ? (int)$module['displayorder'] : 999) : (int)$module['displayorder'] + 1000;
 					$k = '';
 					switch($module['type']) {
 						case 1:

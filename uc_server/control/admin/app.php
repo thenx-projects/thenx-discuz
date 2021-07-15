@@ -119,7 +119,7 @@ class control extends adminbase {
 		$appid = intval(getgpc('appid'));
 		$app = $_ENV['app']->get_app_by_appid($appid);
 		$status = '';
-		if($app['extra']['apppath'] && $this->detectescape($app['extra']['apppath'].'./api/', $app['apifilename']) && substr(strrchr($app['apifilename'], '.'), 1, 10) == 'php' && @include $app['extra']['apppath'].'./api/'.$app['apifilename']) {
+		if(!empty($app['extra']['apppath']) && $this->detectescape($app['extra']['apppath'].'./api/', $app['apifilename']) && substr(strrchr($app['apifilename'], '.'), 1, 10) == 'php' && @include $app['extra']['apppath'].'./api/'.$app['apifilename']) {
 			$uc_note = new uc_note();
 			$status = $uc_note->test($note['getdata'], $note['postdata']);
 		} else {
@@ -154,7 +154,7 @@ class control extends adminbase {
 			$extraurl = getgpc('extraurl', 'P');
 			if(getgpc('apppath', 'P')) {
 				$app['extra']['apppath'] = $this->_realpath(getgpc('apppath', 'P'));
-				if($app['extra']['apppath']) {
+				if(!empty($app['extra']['apppath'])) {
 					$apifile = $app['extra']['apppath'].'./api/uc.php';
 					if(!file_exists($apifile)) {
 						$this->message('app_apifile_not_exists', 'BACK', 0, array('$apifile' => $apifile));

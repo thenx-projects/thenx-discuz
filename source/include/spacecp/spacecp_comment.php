@@ -85,13 +85,15 @@ if($_GET['op'] == 'edit') {
 
 		$message = getstr($_POST['message'], 0, 0, 0, 2);
 		if(strlen($message) < 2) showmessage('content_is_too_short');
-		$message = censor($message);
-		if(censormod($message)) {
+		$message = censor($message, NULL, FALSE, FALSE);
+		if(censormod($message) || $_G['group']['allowcommentmod']) {
 			$comment_status = 1;
 		} else {
 			$comment_status = 0;
 		}
 		if($comment_status == 1) {
+			$idtype = $comment['idtype'];
+			updatemoderate($idtype.'_cid', $cid);            
 			manage_addnotify('verifycommontes');
 		}
 		C::t('home_comment')->update_comment($comment['cid'], array('message'=>$message, 'status'=>$comment_status));
