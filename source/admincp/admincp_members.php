@@ -106,7 +106,7 @@ EOF;
 					$freezeshow = $member['freeze'] ? '<em class="lightnum">['.cplang('freeze').']</em>' : '';
 					$members .= showtablerow('', array('class="td25"', '', 'title="'.implode("\n", $memberextcredits).'"'), array(
 						"<input type=\"checkbox\" name=\"uidarray[]\" value=\"{$member['uid']}\"".($member['adminid'] == 1 ? 'disabled' : '')." class=\"checkbox\">",
-						($_G['setting']['connect']['allow'] && $member['conisbind'] ? '<img class="vmiddle" src="static/image/common/connect_qq.gif" /> ' : '')."<a href=\"home.php?mod=space&uid={$member['uid']}\" target=\"_blank\">{$member['username']}</a>",
+						($_G['setting']['connect']['allow'] && $member['conisbind'] ? '<img class="vmiddle" src="'.STATICURL.'/image/common/connect_qq.gif" /> ' : '')."<a href=\"home.php?mod=space&uid={$member['uid']}\" target=\"_blank\">{$member['username']}</a>",
 						$member['credits'],
 						$member['posts'],
 						$usergroups[$member['adminid']]['grouptitle'],
@@ -885,9 +885,10 @@ EOF;
 
 	$medals = '';
 	foreach(C::t('forum_medal')->fetch_all_data(1) as $medal) {
+		$image = preg_match('/^https?:\/\//is', $medal['image']) ? $medal['image'] : STATICURL . 'image/common/' . $medal['image'];
 		$medals .= showtablerow('', array('class="td25"', 'class="td23"'), array(
 			"<input class=\"checkbox\" type=\"checkbox\" name=\"medals[{$medal['medalid']}]\" value=\"1\" />",
-			"<img src=\"static/image/common/{$medal['image']}\" />",
+			"<img src=\"$image\" />",
 			$medal['name']
 		), TRUE);
 	}
@@ -1200,7 +1201,7 @@ EOF;
 		/*search={"members_group":"action=members&operation=group"}*/
 		shownav('user', 'members_group');
 		showsubmenu('members_group_member', array(), '', array('username' => $member['username']));
-		echo '<script src="static/js/calendar.js" type="text/javascript"></script>';
+		echo '<script src="'.STATICURL.'/js/calendar.js" type="text/javascript"></script>';
 		showformheader("members&operation=group&uid={$member['uid']}");
 		showtableheader('usergroup', 'nobottom');
 		showsetting('members_group_group', '', '', '<select name="groupidnew" onchange="if(in_array(this.value, ['.$radmingids.'])) {$(\'relatedadminid\').style.display = \'\';$(\'adminidnew\').name=\'adminidnew[\' + this.value + \']\';} else {$(\'relatedadminid\').style.display = \'none\';$(\'adminidnew\').name=\'adminidnew[0]\';}"><optgroup label="'.$lang['usergroups_system'].'">'.$groups['system'].'<optgroup label="'.$lang['usergroups_special'].'">'.$groups['special'].'<optgroup label="'.$lang['usergroups_specialadmin'].'">'.$groups['specialadmin'].'<optgroup label="'.$lang['usergroups_member'].'">'.$groups['member'].'</select>');
@@ -1428,9 +1429,10 @@ EOT;
 		}
 
 		foreach(C::t('forum_medal')->fetch_all_data(1) as $medal) {
+			$image = preg_match('/^https?:\/\//is', $medal['image']) ? $medal['image'] : STATICURL . 'image/common/' . $medal['image'];
 			$medals .= showtablerow('', array('class="td25"', 'class="td23"'), array(
 				"<input class=\"checkbox\" type=\"checkbox\" name=\"medals[{$medal['medalid']}]\" value=\"1\" ".(in_array($medal['medalid'], $membermedals) ? 'checked' : '')." />",
-				"<img src=\"static/image/common/{$medal['image']}\" />",
+				"<img src=\"$image\" />",
 				$medal['name']
 
 			), TRUE);
@@ -1536,7 +1538,7 @@ EOT;
 
 	if(!submitcheck('bansubmit')) {
 
-		echo '<script src="static/js/calendar.js" type="text/javascript"></script>';
+		echo '<script src="'.STATICURL.'js/calendar.js" type="text/javascript"></script>';
 		shownav('user', 'members_ban_user');
 		showsubmenu($lang['members_ban_user'].($member['username'] ? ' - '.$member['username'] : ''));
 		showtips('members_ban_tips');
@@ -1578,7 +1580,7 @@ EOT;
 			<tr>
 				<td colspan="2">
 					<ul class="dblist" onmouseover="altStyle(this);">
-						<li style="width: 100%;"><input type="checkbox" name="chkall" onclick="checkAll('prefix', this.form, 'clear')" class="checkbox">&nbsp;{$lang['select_all']}</li>
+						<li style="width: 100%;"><input type="checkbox" name="chkall" onclick="checkAll('prefix', this.form, 'clear', 'chkall', true)" class="checkbox">&nbsp;{$lang['select_all']}</li>
 						<li style="width: 8%;"><input type="checkbox" value="post" name="clear[post]" class="checkbox">&nbsp;{$lang['members_ban_delpost']}</li>
 						<li style="width: 8%;"><input type="checkbox" value="follow" name="clear[follow]" class="checkbox">&nbsp;{$lang['members_ban_delfollow']}</li>
 						<li style="width: 8%;"><input type="checkbox" value="postcomment" name="clear[postcomment]" class="checkbox">&nbsp;{$lang['members_ban_postcomment']}</li>
@@ -1588,7 +1590,7 @@ EOT;
 						<li style="width: 8%;"><input type="checkbox" value="share" name="clear[share]" class="checkbox">&nbsp;{$lang['members_ban_delshare']}</li>
 						<li style="width: 8%;"><input type="checkbox" value="avatar" name="clear[avatar]" class="checkbox">&nbsp;{$lang['members_ban_delavatar']}</li>
 						<li style="width: 8%;"><input type="checkbox" value="comment" name="clear[comment]" class="checkbox">&nbsp;{$lang['members_ban_delcomment']}</li>
-						<li style="width: 8%;"><input type="checkbox" value="follower" name="clear[follower]" class="checkbox">&nbsp;{$lang['members_ban_delfollower']}</li>
+						<li style="width: 8%;"><input type="checkbox" value="others" name="clear[others]" class="checkbox">&nbsp;{$lang['members_ban_delothers']}</li>
 						<li style="width: 8%;"><input type="checkbox" value="profile" name="clear[profile]" class="checkbox">&nbsp;{$lang['members_ban_delprofile']}</li>
 					</ul>
 				</td>
@@ -1880,9 +1882,25 @@ EOF;
 				C::t('common_member_field_home'.$tableext)->update($member['uid'], array('spacename' => '', 'spacedescription' => ''));
 			}
 
-			if(in_array('follower', $_GET['clear'])) {
+			if(in_array('others', $_GET['clear'])) {
+				// 家园访客记录清理
+				C::t('home_clickuser')->delete_by_uid($member['uid']);
+				C::t('home_visitor')->delete_by_uid_or_vuid($member['uid']);
+				// 家园关注关系清理
 				C::t('home_follow')->delete_by_uid($member['uid']);
 				C::t('home_follow')->delete_by_followuid($member['uid']);
+				// 好友关系以及好友请求清理
+				C::t('home_friend')->delete_by_uid_fuid($member['uid']);
+				C::t('home_friend_request')->delete_by_uid_or_fuid($member['uid']);
+				// 动态清理
+				C::t('home_feed')->delete_by_uid($member['uid']);
+				// 通知清理
+				C::t('home_notification')->delete_by_uid($member['uid']);
+				// 打招呼清理
+				C::t('home_poke')->delete_by_uid_or_fromuid($member['uid']);
+				C::t('home_pokearchive')->delete_by_uid_or_fromuid($member['uid']);
+				// 论坛推广清理
+				C::t('forum_promotion')->delete_by_uid($member['uid']);
 			}
 
 			if($membercount) {
@@ -1998,7 +2016,7 @@ EOF;
 	}
 
 } elseif($operation == 'edit') {
-	echo '<script type="text/javascript" src="static/js/home.js"></script>';
+	echo '<script type="text/javascript" src="'.STATICURL.'js/home.js"></script>';
 	$uid = $member['uid'];
 	if(!empty($_G['setting']['connect']['allow']) && $do == 'bindlog') {
 		$member = array_merge($member, C::t('#qqconnect#common_member_connect')->fetch($uid));
@@ -2089,7 +2107,7 @@ EOF;
 		showtableheader();
 		$status = array($member['status'] => ' checked');
 		$freeze = array($member['freeze'] => ' checked');
-		showsetting('members_edit_username', '', '', ($_G['setting']['connect']['allow'] && $member['conisbind'] ? ' <img class="vmiddle" src="static/image/common/connect_qq.gif" />' : '').' '.$member['username']);
+		showsetting('members_edit_username', '', '', ($_G['setting']['connect']['allow'] && $member['conisbind'] ? ' <img class="vmiddle" src="'.STATICURL.'image/common/connect_qq.gif" />' : '').' '.$member['username']);
 		showsetting('members_edit_avatar', '', '', ' <img src="'.avatar($uid, 'middle', true, false, true).'?random='.random(2).'" onerror="this.onerror=null;this.src=\''.$_G['setting']['ucenterurl'].'/images/noavatar.svg\'" /><br /><br /><input name="clearavatar" class="checkbox" type="checkbox" value="1" /> '.$lang['members_edit_avatar_clear']);
 		$hrefext = "&detail=1&users={$member['username']}&searchsubmit=1&perpage=50&fromumanage=1";
 		showsetting('members_edit_statistics', '', '', "<a href=\"".ADMINSCRIPT."?action=prune$hrefext\" class=\"act\">{$lang['posts']}({$member['posts']})</a>".
@@ -2958,7 +2976,7 @@ function showsearchform($operation = '') {
 
 	/*search={"nav_members":"action=members&operation=search"}*/
 	showtagheader('div', 'searchmembers', !$_GET['submit']);
-	echo '<script src="static/js/calendar.js" type="text/javascript"></script>';
+	echo '<script src="'.STATICURL.'js/calendar.js" type="text/javascript"></script>';
 	echo '<style type="text/css">#residedistrictbox select, #birthdistrictbox select{width: auto;}</style>';
 	$formurl = "members&operation=$operation".(($_GET['do'] == 'mobile' || $_GET['do'] == 'sms') ? '&do=' . $_GET['do'] : '');
 	showformheader($formurl, "onSubmit=\"if($('updatecredittype1') && $('updatecredittype1').checked && !window.confirm('{$lang['members_reward_clean_alarm']}')){return false;} else {return true;}\"");
@@ -3516,8 +3534,8 @@ function selectday($varname, $dayarray) {
 }
 
 function accessimg($access) {
-	return $access == -1 ? '<img src="static/image/common/access_disallow.gif" />' :
-		($access == 1 ? '<img src="static/image/common/access_allow.gif" />' : '<img src="static/image/common/access_normal.gif" />');
+	return $access == -1 ? '<img src="'.STATICURL.'image/common/access_disallow.gif" />' :
+		($access == 1 ? '<img src="'.STATICURL.'image/common/access_allow.gif" />' : '<img src="'.STATICURL.'image/common/access_normal.gif" />');
 }
 
 function connectunbind($member) {

@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install -j$(nproc) gd
 
 
-ENV DZ_URL https://www.discuz.net/daily/?dl=DZX-SC_UTF8-v3.5-202102010500-34d24c9b.zip
+ENV DZ_URL https://www.discuz.net/daily/?dl=DZX-SC_UTF8-v3.5-202110160500-938620be.zip
 ENV DZ_WWW_ROOT /var/www/html
 
 ADD ${DZ_URL} /tmp/discuz.zip

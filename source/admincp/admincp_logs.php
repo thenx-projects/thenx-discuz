@@ -18,7 +18,7 @@ $checklpp = array();
 $checklpp[$lpp] = 'selected="selected"';
 $extrainput = '';
 
-$operation = in_array($operation, array('illegal', 'rate', 'credit', 'mods', 'medal', 'ban', 'cp', 'magic', 'error', 'invite', 'payment', 'warn', 'crime', 'sendmail')) ? $operation : 'illegal';
+$operation = in_array($operation, array('illegal', 'rate', 'credit', 'mods', 'medal', 'ban', 'cp', 'magic', 'error', 'invite', 'payment', 'pmt', 'warn', 'crime', 'sendmail')) ? $operation : 'illegal';
 $logdir = DISCUZ_ROOT.'./data/log/';
 $logfiles = get_log_files($logdir, $operation.($operation == 'sendmail' ? '' : 'log'));
 $logs = array();
@@ -103,7 +103,8 @@ showsubmenu('nav_logs', array(
 		array('nav_logs_medal', 'logs&operation=medal'),
 		array('nav_logs_invite', 'logs&operation=invite'),
 		array('nav_logs_payment', 'logs&operation=payment'),
-	)), '', in_array($operation, array('rate', 'credit', 'magic', 'medal', 'invite', 'payment'))),
+		array('nav_logs_pmt', 'logs&operation=pmt'),
+	)), '', in_array($operation, array('rate', 'credit', 'magic', 'medal', 'invite', 'payment', 'pmt'))),
 	array(array('menu' => 'nav_logs_crime', 'submenu' => array(
 		array('nav_logs_crime_delpost', 'logs&operation=crime&crimeactions=crime_delpost'),
 		array('nav_logs_crime_warnpost', 'logs&operation=crime&crimeactions=crime_warnpost'),
@@ -273,8 +274,9 @@ if($operation == 'illegal') {
 	foreach(crime('actions') as $key => $value) {
 		$crimeactionselect .= '<option value="'.$key.'"'.($key == $crimeaction ? ' selected' : '').'>'.$lang[$value].'</option>';
 	}
+	$staticurl = STATICURL;
 	print <<<SEARCH
-		<script src="static/js/calendar.js"></script>
+		<script src="{$staticurl}js/calendar.js"></script>
 		<input type="hidden" name="operation" value="$operation">
 		<input type="hidden" name="action" value="$action">
 		<table cellspacing="3" cellpadding="3">
@@ -413,7 +415,7 @@ SEARCH;
 	);
 	showtablerow('', array('colspan="4"'), array('<input type="submit" name="srchlogbtn" class="btn" value="'.$lang['search'].'" />'));
 	showtablefooter();
-	echo '<script src="static/js/calendar.js" type="text/javascript"></script>';
+	echo '<script src="' . STATICURL . 'js/calendar.js" type="text/javascript"></script>';
 	showtableheader('', 'fixpadding');
 	showtablerow('class="header"', array('class="td23"','class="td23"','class="td23"','class="td24"','class="td24"'), array(
 		cplang('username'),
@@ -758,7 +760,7 @@ EOD;
 		);
 		showtablerow('', array('colspan="4"'), array('<input type="submit" name="srchlogbtn" class="btn" value="'.$lang['search'].'" />'));
 		showtablefooter();
-		echo '<script src="static/js/calendar.js" type="text/javascript"></script>';
+		echo '<script src="' . STATICURL . 'js/calendar.js" type="text/javascript"></script>';
 		showtableheader('', 'fixpadding');
 		showtablerow('class="header"', array('width="35"','class="td23"','class="td24"','class="td24"','class="td23"','class="td24"','class="td24"'), array(
 			'',
@@ -1030,7 +1032,47 @@ EOD;
 			));
 		}
 	}
+} elseif($operation == 'pmt') {
+	showtablerow('class="header"', array('class="td23"','class="td23"','class="td23"','class="td24"','class="td24"','class="td31"', ''), array(
+		cplang('time'),
+		cplang('logs_payment_channel'),
+		cplang('logs_payment_status'),
+		cplang('logs_payment_order'),
+		cplang('operator'),
+		cplang('ip'),
+		cplang('logs_payment_error'),
+	));
+
+	echo <<<EOD
+<script type="text/javascript">
+function togglecplog(k) {
+	var cplogobj = $('cplog_'+k);
+	if(cplogobj.style.display == 'none') {
+		cplogobj.style.display = '';
+	} else {
+		cplogobj.style.display = 'none';
+	}
 }
+</script>
+EOD;
+	$channels = payment::channels();
+
+	foreach($logs as $k => $logrow) {
+		$log = explode("\t", $logrow);
+		$log[1] = dgmdate($log[1], 'y-n-j H:i');
+		$log[2] = $channels[$log[2]]['title'];
+		$log[3] = cplang('logs_payment_status_' . $log[3]);
+		$log[6] = $log[6] . ':' . $log[7];
+		$log[8] = cplang('payment_error_' . $log[8]);
+
+		showtablerow('', array('class="bold"'), array($log[1], $log[2], $log[3], $log[4], $log[5], $log[6], '<a href="javascript:;" onclick="togglecplog('.$k.')">'.$log[8].'</a>'));
+		echo '<tbody id="cplog_'.$k.'" style="display:none;">';
+		echo '<tr><td colspan="6">'.$log[9].'</td></tr>';
+		echo '</tbody>';
+	}
+}
+
+
 function getactionarray() {
 	$isfounder = true;
 	require './source/admincp/admincp_menu.php';
