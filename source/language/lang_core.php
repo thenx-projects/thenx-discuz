@@ -159,6 +159,7 @@ $lang = array
 	'title_memcp_avatar' => '修改头像',
 	'title_memcp_profile' => '个人资料',
 	'title_memcp_credit' => '积分',
+	'title_memcp_payment' => '订单',
 	'title_memcp_friend' => '好友',
 	'title_memcp_usergroup' => '用户组',
 	'title_memcp_album' => '编辑相册',
@@ -212,13 +213,6 @@ $lang = array
 	'page' => '第{page}页',
 
 	'close' => '关闭',
-
-	'attackevasive_1_subject' => '频繁刷新限制',
-	'attackevasive_1_message' => '您访问本站速度过快或者刷新间隔时间小于两秒！请等待页面自动跳转 ...',
-	'attackevasive_2_subject' => '代理服务器访问限制',
-	'attackevasive_2_message' => '本站现在限制使用代理服务器访问，请去除您的代理设置，直接访问本站。',
-	'attackevasive_4_subject' => '页面重载开启',
-	'attackevasive_4_message' => '欢迎光临本站，页面正在重新载入，请稍候 ...',
 );
 
 ?>

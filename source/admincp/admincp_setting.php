@@ -79,12 +79,15 @@ if(!submitcheck('settingsubmit')) {
 	} elseif($operation == 'ec') {
 		showsubmenu('nav_ec', array(
 			array('nav_ec_config', 'setting&operation=ec', 1),
-			array('nav_ec_tenpay', 'ec&operation=tenpay', 0),
+			array('nav_ec_qpay', 'ec&operation=qpay', 0),
+			array('nav_ec_wechat', 'ec&operation=wechat', 0),
 			array('nav_ec_alipay', 'ec&operation=alipay', 0),
 			array('nav_ec_credit', 'ec&operation=credit', 0),
 			array('nav_ec_orders', 'ec&operation=orders', 0),
 			array('nav_ec_tradelog', 'tradelog&mod=forum', 0),
-			array('nav_ec_inviteorders', 'ec&operation=inviteorders', 0)
+			array('nav_ec_inviteorders', 'ec&operation=inviteorders', 0),
+			array('nav_ec_paymentorders', 'ec&operation=paymentorders', 0),
+			array('nav_ec_transferorders', 'ec&operation=transferorders', 0)
 		));
 	} elseif($operation == 'access') {
 		$_GET['anchor'] = in_array($_GET['anchor'], array('register', 'access')) ? $_GET['anchor'] : 'register';
@@ -957,8 +960,9 @@ if(!submitcheck('settingsubmit')) {
 				$jscodenames .= "codenames['{$key}_{$code}'] = '{$cname}';\r\n";
 			}
 		}
+		$staticurl = STATICURL;
 		print <<<EOF
-		<div id="codediv" style="display:none; top: 707px;background: url('./static/image/common/mdly.png') no-repeat scroll 0 0 transparent; height: 100px; line-height: 32px; margin-top: -16px; overflow: hidden; padding: 10px 25px; position: absolute; left: 500px; width: 250px;">
+		<div id="codediv" style="display:none; top: 707px;background: url('{$staticurl}image/common/mdly.png') no-repeat scroll 0 0 transparent; height: 100px; line-height: 32px; margin-top: -16px; overflow: hidden; padding: 10px 25px; position: absolute; left: 500px; width: 250px;">
 		<p>
 EOF;
 		echo cplang('setting_seo_insallowcode');
@@ -970,7 +974,7 @@ EOF;
 		<a onclick="insertcode('forum');return false;" href="javascript:;">{forum}</a>
 		</p>
 		</div>
-		<script src="static/js/home.js" type="text/javascript"></script>
+		<script src="{$staticurl}js/home.js" type="text/javascript"></script>
 		<script language="javascript">
 		var codediv = $('codediv');
 		var codetypes = new Array(), codenames = new Array();
@@ -1392,6 +1396,7 @@ EOF;
 			cplang('thread_debate')
 		)), $setting['alloweditpost'], 'binmcheckbox');
 		showsetting('setting_permissions_post_append', 'settingnew[postappend]', $setting['postappend'], 'radio');
+		showsetting('setting_permissions_mailinterval', 'settingnew[mailinterval]', $setting['mailinterval'], 'text');
 		showsetting('setting_permissions_maxpolloptions', 'settingnew[maxpolloptions]', $setting['maxpolloptions'], 'text');
 		showsetting('setting_permissions_editby', 'settingnew[editedby]', $setting['editedby'], 'radio');
 		showsetting('setting_permissions_nsprofiles', 'settingnew[nsprofiles]', $setting['nsprofiles'], 'radio');
@@ -1533,7 +1538,6 @@ EOF;
 		showhiddenfields(array('settingnew[creditstrans][4]' => 0));
 		showsetting('setting_credits_trans5', '', '' ,'<select name="settingnew[creditstrans][5]"><option value="-1">'.$lang['setting_credits_trans5_none'].'</option>'.$_G['setting']['creditstrans'][5].'</select>');
 		showsetting('setting_credits_trans6', '', '' ,'<select name="settingnew[creditstrans][6]">'.$_G['setting']['creditstrans'][6].'</select>');
-		showsetting('setting_credits_trans7', '', '' ,'<select name="settingnew[creditstrans][7]">'.$_G['setting']['creditstrans'][7].'</select>');
 		$setting['report_reward'] = dunserialize($setting['report_reward']);
 		showsetting('setting_credits_trans10', '', '' ,'<select name="settingnew[creditstrans][10]">'.$_G['setting']['creditstrans'][10].'</select>');
 		showsetting('setting_credits_trans8', '', '' ,'<select name="settingnew[creditstrans][8]">'.$_G['setting']['creditstrans'][8].'</select><br \><br \>'.cplang('report_reward_min').': <input type="text" size="3" name="settingnew[report_reward][min]" value="'.$setting['report_reward']['min'].'">&nbsp;&nbsp;'.cplang('report_reward_max').': <input type="text" size="3" name="settingnew[report_reward][max]" value="'.$setting['report_reward']['max'].'">&nbsp;&nbsp;<br \>'.cplang('report_reward_comment'));
@@ -2427,6 +2431,9 @@ EOT;
 		showsetting('setting_ranklist_index_cache_time', 'settingnew[ranklist][cache_time]', $setting['ranklist']['cache_time'], 'text');
 		showsetting('setting_ranklist_index_select', array('settingnew[ranklist][index_select]', array(array('all',cplang('dateline_all')), array('thismonth',cplang('thismonth')), array('thisweek',cplang('thisweek')), array('today',cplang('today')))), $setting['ranklist']['index_select'], 'select');
 		showsetting('setting_ranklist_ignorefid', 'settingnew[ranklist][ignorefid]', $setting['ranklist']['ignorefid'], 'text');
+		// 新增 竞价排名开关和公告信息
+		showsetting('setting_ranklist_member_show', 'settingnew[ranklist][membershow]', $setting['ranklist']['membershow'], 'radio', 0, 1);
+		showsetting('setting_ranklist_member_show_announcement', 'settingnew[ranklist][membershowannouncement]', $setting['ranklist']['membershowannouncement'], 'textarea');
 		showtablefooter();
 
 		showtableheader('setting_ranklist_block_set', 'fixpadding', 'id="other"');

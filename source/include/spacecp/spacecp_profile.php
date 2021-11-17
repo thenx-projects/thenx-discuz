@@ -414,9 +414,10 @@ if(submitcheck('profilesubmit')) {
 
 	$authstr = false;
 	if($emailnew != $_G['member']['email']) {
-		$authstr = true;
-		emailcheck_send($space['uid'], $emailnew);
-		dsetcookie('newemail', "{$space['uid']}\t$emailnew\t{$_G['timestamp']}", 31536000);
+		if(emailcheck_send($space['uid'], $emailnew)) {
+			$authstr = true;
+			dsetcookie('newemail', "{$space['uid']}\t$emailnew\t{$_G['timestamp']}", 31536000);
+		}
 	}
 	// 如果开启了短信验证, 输入了手机号却没有输入验证码, 就尝试发送验证码
 	if($_G['setting']['smsstatus'] && (strcmp($secmobiccnew, $_G['member']['secmobicc']) != 0 || strcmp($secmobilenew, $_G['member']['secmobile']) != 0) && empty($secmobileseccode)) {
@@ -468,8 +469,9 @@ if(submitcheck('profilesubmit')) {
 
 if($operation == 'password') {
 
+	$interval = $_G['setting']['mailinterval'] > 0 ? (int)$_G['setting']['mailinterval'] : 300;
 	$resend = getcookie('resendemail');
-	$resend = empty($resend) ? true : (TIMESTAMP - $resend) > 300;
+	$resend = empty($resend) ? true : (TIMESTAMP - $resend) > $interval;
 	$newemail = getcookie('newemail');
 	$space['newemail'] = !$space['emailstatus'] ? $space['email'] : '';
 	if(!empty($newemail)) {
@@ -484,17 +486,20 @@ if($operation == 'password') {
 		}
 	}
 
-	if(getgpc('resend') && $resend) {
+	if(getgpc('resend') && $resend && $_GET['formhash'] == FORMHASH) {
 		$toemail = $space['newemail'] ? $space['newemail'] : $space['email'];
-		emailcheck_send($space['uid'], $toemail);
-		dsetcookie('newemail', "{$space['uid']}\t$toemail\t{$_G['timestamp']}", 31536000);
-		dsetcookie('resendemail', TIMESTAMP);
-		showmessage('send_activate_mail_succeed', "home.php?mod=spacecp&ac=profile&op=password");
+		if(emailcheck_send($space['uid'], $toemail)) {
+			dsetcookie('newemail', "{$space['uid']}\t$toemail\t{$_G['timestamp']}", 31536000);
+			dsetcookie('resendemail', TIMESTAMP);
+			showmessage('send_activate_mail_succeed', "home.php?mod=spacecp&ac=profile&op=password");
+		} else {
+			showmessage('send_activate_mail_error', 'home.php?mod=spacecp&ac=profile&op=password', array('interval' => $interval));
+		}
 	} elseif (getgpc('resend')) {
-		showmessage('send_activate_mail_error', "home.php?mod=spacecp&ac=profile&op=password");
+		showmessage('send_activate_mail_error', 'home.php?mod=spacecp&ac=profile&op=password', array('interval' => $interval));
 	}
 	if(!empty($space['newemail'])) {
-		$acitvemessage = lang('spacecp', 'email_acitve_message', array('newemail' => $space['newemail'], 'imgdir' => $_G['style']['imgdir']));
+		$acitvemessage = lang('spacecp', 'email_acitve_message', array('newemail' => $space['newemail'], 'imgdir' => $_G['style']['imgdir'], 'formhash' => FORMHASH));
 	}
 	$actives = array('password' =>' class="a"');
 	$navtitle = lang('core', 'title_password_security');
