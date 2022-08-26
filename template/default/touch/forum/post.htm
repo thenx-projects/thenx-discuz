@@ -1,0 +1,370 @@
+<!--{template common/header}-->
+<!--{if $special != 2 && $special != 4 && !($isfirstpost && $sortid)}-->
+<!--{eval $adveditor = $isfirstpost && $special && ($_GET['action'] == 'newthread' || $_GET['action'] == 'reply' && !empty($_GET['addtrade']) || $_GET['action'] == 'edit' );}-->
+<form method="post" id="postform" 
+			{if $_GET['action'] == 'newthread'}action="forum.php?mod=post&action={if $special != 2}newthread{else}newtrade{/if}&fid=$_G['fid']&extra=$extra&topicsubmit=yes&mobile=2"
+			{elseif $_GET['action'] == 'reply'}action="forum.php?mod=post&action=reply&fid=$_G['fid']&tid=$_G['tid']&extra=$extra&replysubmit=yes&mobile=2"
+			{elseif $_GET['action'] == 'edit'}action="forum.php?mod=post&action=edit&extra=$extra&editsubmit=yes&mobile=2" $enctype
+			{/if}>
+<input type="hidden" name="formhash" id="formhash" value="{FORMHASH}" />
+<input type="hidden" name="posttime" id="posttime" value="{TIMESTAMP}" />
+<!--{if !empty($_GET['modthreadkey'])}--><input type="hidden" name="modthreadkey" id="modthreadkey" value="$_GET['modthreadkey']" /><!--{/if}-->
+<!--{if $_GET['action'] == 'reply'}-->
+	<input type="hidden" name="noticeauthor" value="$noticeauthor" />
+	<input type="hidden" name="noticetrimstr" value="$noticetrimstr" />
+	<input type="hidden" name="noticeauthormsg" value="$noticeauthormsg" />
+	<!--{if $reppid}-->
+		<input type="hidden" name="reppid" value="$reppid" />
+	<!--{/if}-->
+	<!--{if $_GET['reppost']}-->
+		<input type="hidden" name="reppost" value="$_GET['reppost']" />
+	<!--{elseif $_GET['repquote']}-->
+		<input type="hidden" name="reppost" value="$_GET['repquote']" />
+	<!--{/if}-->
+<!--{/if}-->
+<!--{if $_GET['action'] == 'edit'}-->
+	<input type="hidden" name="fid" id="fid" value="$_G['fid']" />
+	<input type="hidden" name="tid" value="$_G['tid']" />
+	<input type="hidden" name="pid" value="$pid" />
+	<input type="hidden" name="page" value="$_GET['page']" />
+<!--{/if}-->
+<!--{if $special}-->
+	<input type="hidden" name="special" value="$special" />
+<!--{/if}-->
+<!--{if $specialextra}-->
+	<input type="hidden" name="specialextra" value="$specialextra" />
+<!--{/if}-->
+<div class="header cl">
+	<div class="mz"><a href="javascript:history.back();"><i class="dm-c-left"></i></a></div>
+	<h2><!--{if $_GET['action'] == 'edit'}-->{lang edit}<!--{else}-->{lang send_threads}<!--{/if}--></h2>
+	<div class="my"></div>
+</div>
+<div class="post_from post_box">
+	<ul class="cl">
+		<!--{if $_GET['action'] != 'reply'}-->
+		<li class="mli"><input type="text" tabindex="1" class="px" id="needsubject" autocomplete="off" value="$postinfo['subject']" name="subject" placeholder="{lang posts}{lang thread_subject}" fwin="login"></li>
+		<!--{else}-->
+		<li class="mtext">
+			RE: $thread['subject']
+			<!--{if $quotemessage}-->$quotemessage<!--{/if}-->
+		</li>
+		<!--{/if}-->		
+		<!--{if $isfirstpost && !empty($_G['forum']['threadtypes']['types'])}-->
+		<li class="mli">			
+			<select id="typeid" name="typeid" class="sort_sel">	
+				<i class="dm-c-down sort_jt"></i>
+				<option value="0" selected="selected">{lang threadtype}</option>
+				<!--{loop $_G['forum']['threadtypes']['types'] $typeid $name}-->
+				<!--{if empty($_G['forum']['threadtypes']['moderators'][$typeid]) || $_G['forum']['ismoderator']}-->
+				<option value="$typeid"{if $thread['typeid'] == $typeid || $_GET['typeid'] == $typeid} selected="selected"{/if}><!--{echo strip_tags($name);}--></option>
+				<!--{/if}-->
+				<!--{/loop}-->
+			</select>
+		</li>
+		<!--{/if}-->
+		<!--{if $_GET['action'] == 'edit' && $isorigauthor && ($isfirstpost && $thread['replies'] < 1 || !$isfirstpost) && !$rushreply && $_G['setting']['editperdel']}-->
+		<li class="mli">
+			<input type="checkbox" name="delete" id="delete" class="pc" value="1" title="{lang post_delpost}{if $thread['special'] == 3}{lang reward_price_back}{/if}"> {lang post_delpost}?
+		</li>
+		<!--{/if}-->
+		<li class="mtext">
+			<textarea class="pt" id="needmessage" tabindex="3" autocomplete="off" id="{$editorid}_textarea" name="$editor['textarea']" placeholder="<!--{if $_GET['action'] != 'reply'}-->{lang posts}<!--{/if}-->{lang thread_content}" fwin="reply">$postinfo['message']</textarea>
+			<div class="mimg cl">
+				<a href="javascript:;" class="post_imgbtn"><i class="dm-image"></i>{lang e_img_attach}<input type="file" name="Filedata" id="filedata" multiple="multiple" accept=".jpg,.jpeg,.gif,.png,.bmp,image/jpeg,image/gif,image/png,image/bmp" /></a>
+				<a href="javascript:;" class="post_attbtn"><i class="dm-star-fill"></i>{lang upload_attach}<input type="file" name="Filedata" id="attfiledata" /></a>
+			</div>
+			<div class="cl">
+				<ul id="imglist" class="post_imglist cl">
+				<!--{loop $imgattachs['used'] $temp}-->
+					<li><span aid="$temp['aid']" class="del" up="1"><a href="javascript:;"><i class="dm-error"></i></a></span><span class="p_img"><a href="javascript:;"><img style="height:54px;width:54px;" id="aimg_$temp['aid']" title="$temp['filename']" src="{$temp['url']}/$temp['attachment']" /></a></span><input type="hidden" name="attachnew[{$temp['aid']}]['description']" /></li>	
+				<!--{/loop}-->
+				</ul>
+			</div>
+			<div class="cl">
+				<ul id="attlist" class="post_attlist setbox cl">
+				<!--{loop $imgattachs['used'] $temp}-->
+					<li><span aid="$temp['aid']" class="del" up="1"><a href="javascript:;"><i class="dm-error"></i></a></span><span class="p_img"><a href="javascript:;"><img style="height:54px;width:54px;" id="aimg_$temp['aid']" title="$temp['filename']" src="{$temp['url']}/$temp['attachment']" /></a></span><input type="hidden" name="attachnew[{$temp['aid']}]['description']" /></li>	
+				<!--{/loop}-->
+				</ul>
+			</div>
+		</li>
+		<!--{hook/post_middle_mobile}-->
+		<!--{subtemplate forum/post_editor_attribute}-->
+	</ul>
+	<!--{if $_GET['action'] != 'edit' && ($secqaacheck || $seccodecheck)}-->
+	<ul class="cl">
+		<!--{subtemplate common/seccheck}-->
+	</ul>
+	<!--{/if}-->
+	<!--{hook/post_bottom_mobile}-->
+</div>
+<div class="post_btn"><button id="postsubmit" class="btn_pn <!--{if $_GET['action'] == 'edit'}-->btn_pn_blue" disable="false"<!--{else}-->btn_pn_grey" disable="true"<!--{/if}-->><!--{if $_GET['action'] == 'newthread'}-->{lang send_thread}<!--{elseif $_GET['action'] == 'reply'}-->{lang join_thread}<!--{elseif $_GET['action'] == 'edit'}-->{lang edit_save}<!--{/if}--></button></div>
+<input type="hidden" name="{if $_GET['action'] == 'newthread'}topicsubmit{elseif $_GET['action'] == 'reply'}replysubmit{elseif $_GET['action'] == 'edit'}editsubmit{/if}" value="yes">
+</form>
+<!--{else}-->
+	<div class="box xg1">
+	<!--{if $special == '2'}-->
+	{lang send_special_trade_error}
+    <!--{elseif $special == '4'}-->
+	{lang send_special_activity_error}
+	<!--{elseif $isfirstpost && $sortid}-->
+	{lang threadsort_error}
+    <!--{/if}-->
+    </div>
+<!--{/if}-->
+<script type="text/javascript">
+	(function() {
+		var needsubject = needmessage = false;
+		<!--{if $_GET['action'] == 'reply'}-->
+			needsubject = true;
+		<!--{elseif $_GET['action'] == 'edit'}-->
+			needsubject = needmessage = true;
+		<!--{/if}-->
+		<!--{if $_GET['action'] == 'newthread' || ($_GET['action'] == 'edit' && $isfirstpost)}-->
+		$('#needsubject').on('keyup input', function() {
+			var obj = $(this);
+			if(obj.val()) {
+				needsubject = true;
+				if(needmessage == true) {
+					$('.btn_pn').removeClass('btn_pn_grey').addClass('btn_pn_blue');
+					$('.btn_pn').attr('disable', 'false');
+				}
+			} else {
+				needsubject = false;
+				$('.btn_pn').removeClass('btn_pn_blue').addClass('btn_pn_grey');
+				$('.btn_pn').attr('disable', 'true');
+			}
+		});
+		<!--{/if}-->
+		$('#needmessage').on('keyup input', function() {
+			var obj = $(this);
+			if(obj.val()) {
+				needmessage = true;
+				if(needsubject == true) {
+					$('.btn_pn').removeClass('btn_pn_grey').addClass('btn_pn_blue');
+					$('.btn_pn').attr('disable', 'false');
+				}
+			} else {
+				needmessage = false;
+				$('.btn_pn').removeClass('btn_pn_blue').addClass('btn_pn_grey');
+				$('.btn_pn').attr('disable', 'true');
+			}
+		});
+		$('#needmessage').on('scroll', function() {
+			var obj = $(this);
+			if(obj.scrollTop() > 0) {
+				obj.attr('rows', parseInt(obj.attr('rows'))+2);
+			}
+		}).scrollTop($(document).height());
+	 })();
+	(function($){
+        $.fn.extend({
+            insertAtCaret: function(myValue){
+                var t = $(this)[0];
+                if (document.selection) {
+                    this.focus();
+                    sel = document.selection.createRange();
+                    sel.text = myValue;
+                    this.focus();
+                }
+                else
+                if (t.selectionStart || t.selectionStart == '0') {
+                    var startPos = t.selectionStart;
+                    var endPos = t.selectionEnd;
+                    var scrollTop = t.scrollTop;
+                    t.value = t.value.substring(0, startPos) + myValue + t.value.substring(endPos, t.value.length);
+                    this.focus();
+                    t.selectionStart = startPos + myValue.length;
+                    t.selectionEnd = startPos + myValue.length;
+                    t.scrollTop = scrollTop;
+                }
+                else {
+                    this.value += myValue;
+                    this.focus();
+                }
+            }
+        })
+    })(jQuery);
+	function addsmilies(a){
+		$('#needmessage').insertAtCaret(a);
+	}
+</script>
+<script type="text/javascript" src="{STATICURL}js/mobile/ajaxfileupload.js?{VERHASH}"></script>
+<script type="text/javascript" src="{STATICURL}js/mobile/buildfileupload.js?{VERHASH}"></script>
+<script type="text/javascript">
+	var imgexts = typeof imgexts == 'undefined' ? 'jpg, jpeg, gif, png' : imgexts;
+	var STATUSMSG = {
+		'-1' : '{lang uploadstatusmsgnag1}',
+		'0' : '{lang uploadstatusmsg0}',
+		'1' : '{lang uploadstatusmsg1}',
+		'2' : '{lang uploadstatusmsg2}',
+		'3' : '{lang uploadstatusmsg3}',
+		'4' : '{lang uploadstatusmsg4}',
+		'5' : '{lang uploadstatusmsg5}',
+		'6' : '{lang uploadstatusmsg6}',
+		'7' : '{lang uploadstatusmsg7}(' + imgexts + ')',
+		'8' : '{lang uploadstatusmsg8}',
+		'9' : '{lang uploadstatusmsg9}',
+		'10' : '{lang uploadstatusmsg10}',
+		'11' : '{lang uploadstatusmsg11}',
+		'12' : '{lang uploadstatusmsg12}',
+		'13' : '{lang uploadstatusmsg13}'
+	};
+	var form = $('#postform');
+	$(document).on('change', '#filedata', function() {
+			popup.open('<img src="' + IMGDIR + '/imageloading.gif">');
+			uploadsuccess = function(data) {
+				if(data == '') {
+					popup.open('{lang uploadpicfailed}', 'alert');
+				}
+				var dataarr = data.split('|');
+				if(dataarr[0] == 'DISCUZUPLOAD' && dataarr[2] == 0) {
+					popup.close();
+					$('#imglist').append('<li><div><span aid="'+dataarr[3]+'" class="del"><a href="javascript:;"><i class="dm-error"></i></a></span><span class="p_img"><a href="javascript:;" onclick="addsmilies(\'[attachimg]'+dataarr[3]+'[/attachimg]\')"><img style="height:54px;width:54px;" id="aimg_'+dataarr[3]+'" title="'+dataarr[6]+'" src="{$_G['setting']['attachurl']}forum/'+dataarr[5]+'" /></a></span><input type="hidden" name="attachnew['+dataarr[3]+'][description]" /><div></li>');
+				} else {
+					var sizelimit = '';
+					if(dataarr[7] == 'ban') {
+						sizelimit = '{lang uploadpicatttypeban}';
+					} else if(dataarr[7] == 'perday') {
+						sizelimit = '{lang donotcross}'+Math.ceil(dataarr[8]/1024)+'K)';
+					} else if(dataarr[7] > 0) {
+						sizelimit = '{lang donotcross}'+Math.ceil(dataarr[7]/1024)+'K)';
+					}
+					popup.open(STATUSMSG[dataarr[2]] + sizelimit, 'alert');
+				}
+			};
+			if(typeof FileReader != 'undefined' && this.files[0]) {//note 支持html5上传新特性
+				
+				$.buildfileupload({
+					uploadurl:'misc.php?mod=swfupload&operation=upload&type=image&inajax=yes&infloat=yes&simple=2',
+					files:this.files,
+					uploadformdata:{uid:"$_G['uid']", hash:"<!--{eval echo md5(substr(md5($_G['config']['security']['authkey']), 8).$_G['uid'])}-->"},
+					uploadinputname:'Filedata',
+					maxfilesize:"$swfconfig['max']",
+					success:uploadsuccess,
+					error:function() {
+						popup.open('{lang uploadpicfailed}', 'alert');
+					}
+				});
+			} else {
+				$.ajaxfileupload({
+					url:'misc.php?mod=swfupload&operation=upload&type=image&inajax=yes&infloat=yes&simple=2',
+					data:{uid:"$_G['uid']", hash:"<!--{eval echo md5(substr(md5($_G['config']['security']['authkey']), 8).$_G['uid'])}-->"},
+					dataType:'text',
+					fileElementId:'filedata',
+					success:uploadsuccess,
+					error: function() {
+						popup.open('{lang uploadpicfailed}', 'alert');
+					}
+				});
+			}
+	});
+	$(document).on('change', '#attfiledata', function() {
+			popup.open('<img src="' + IMGDIR + '/imageloading.gif">');
+			uploadsuccess = function(data) {
+				if(data == '') {
+					popup.open('{lang uploadpicfailed}', 'alert');
+				}
+				var dataarr = data.split('|');
+				if(dataarr[0] == 'DISCUZUPLOAD' && dataarr[2] == 0) {
+					popup.close();
+					var video_file = '';
+					var file_ex = 'unknown.gif';
+					if (/bittorrent$|torrent$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'torrent.gif';
+					} else if (/pdf$|pdf$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'pdf.gif';
+					} else if (/(jpg|gif|png|bmp)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'image.gif';
+					} else if (/(swf|fla|flv|swi)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'flash.gif';
+					} else if (/(wav|mid|mp3|m3u|wma|asf|asx|vqf|mpg|mpeg|avi|wmv|mp4|ogv|webm|ogg)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'av.gif';
+					} else if (/(ra|rm|rv)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'real.gif';
+					} else if (/(php|js|pl|cgi|asp|htm|html|xml)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'html.gif';
+					} else if (/(txt|rtf|wri|chm)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'text.gif';
+					} else if (/(doc|ppt)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'msoffice.gif';
+					} else if (/rar$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'rar.gif';
+					} else if (/(zip|arj|arc|cab|lzh|lha|tar|gz)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'zip.gif';
+					} else if (/(exe|com|bat|dll)$/.test(dataarr[6].toLowerCase())) {
+						file_ex = 'binary.gif';
+					} else {
+						file_ex = 'unknown.gif';
+					}
+					if (/mp3$/.test(dataarr[6].toLowerCase())) {
+						video_file = '<span class="kmbtn bg_a f_f" onclick="addsmilies(\'[audio]attach://' + dataarr[3] + '.mp3[/audio]\')">{lang forum_post_insert}音乐</span>';
+					} else if (/(mp4)$/.test(dataarr[6].toLowerCase())) {
+						video_file = '<span class="kmbtn bg_a f_f" onclick="addsmilies(\'[media=x,500,375]attach://' + dataarr[3] + '.mp4[/media]\')">{lang forum_post_insert}视频</span>';
+					}
+					$('#attlist').append('<li class="b_t"><div class="tit"><span aid="'+dataarr[3]+'" up="1" class="del btn f_f"><a href="javascript:;"><i class="dm-trash z"></i></a></span>'+video_file+'<span class="btn" onclick="addsmilies(\'[attach]'+dataarr[3]+'[/attach]\')">{lang forum_post_insert}</span><img src="static/image/filetype/'+file_ex+'" border="0" class="vm mimg" alt=""><span class="link">'+dataarr[6]+'</span></div><!--{if $_GET['result'] != 'simple'}--><div class="minput"><div class="attms flex-box"><span class="f_c">{lang description}</span><input type="text" name="attachnew['+dataarr[3]+'][description]" value="" class="input flex"></div></div><div class="minput"><!--{if $_G['group']['allowsetattachperm']}--><!--{if $_G['cache']['groupreadaccess']}--><div class="attqx flex-box"><span>{lang forum_post_perm}</span><div class="flex"><div class="select" style="padding:0 3px 0 6px;border-radius:4px"><span class="inner" style="font-size:13px"><span class="y dm-c-right"></span><span class="z"><span class="question" id="readperm'+dataarr[3]+'_name">{lang unlimited}</span></span></span><select name="attachnew['+dataarr[3]+'][readperm]" id="readperm'+dataarr[3]+'" class="sort_sel"><option value="" selected="selected">{lang unlimited}</option><!--{loop $_G['cache']['groupreadaccess'] $val}--><option value="$val[readaccess]" title="{lang readperm}: $val[readaccess]">$val[grouptitle]</option><!--{/loop}--><option value="255"{if $temp[readperm] == 255} selected{/if}>{lang highest_right}</option></select></div></div></div><!--{/if}--><!--{/if}--><!--{if $_G['group']['maxprice']}--><div class="attjg flex-box"><span>{lang price}</span><input type="text" name="attachnew['+dataarr[3]+'][price]" value="0" class="input price flex"><em>{$_G['setting']['extcredits'][$_G['setting']['creditstransextra'][1]][title]}</em></div><!--{/if}--></div><!--{/if}--></li>');
+				} else {
+					var sizelimit = '';
+					if(dataarr[7] == 'ban') {
+						sizelimit = '{lang uploadpicatttypeban}';
+					} else if(dataarr[7] == 'perday') {
+						sizelimit = '{lang donotcross}'+Math.ceil(dataarr[8]/1024)+'K)';
+					} else if(dataarr[7] > 0) {
+						sizelimit = '{lang donotcross}'+Math.ceil(dataarr[7]/1024)+'K)';
+					}
+					popup.open(STATUSMSG[dataarr[2]] + sizelimit, 'alert');
+				}
+			};
+			$.ajaxfileupload({
+				url:'misc.php?mod=swfupload&operation=upload&fid={$_G['fid']}&inajax=yes&infloat=yes&simple=2',
+				data:{uid:"$_G['uid']", hash:"<!--{eval echo md5(substr(md5($_G['config']['security']['authkey']), 8).$_G['uid'])}-->"},
+				dataType:'text',
+				fileElementId:'attfiledata',
+				success:uploadsuccess,
+				error: function() {
+					popup.open('{lang uploadpicfailed}', 'alert');
+				}
+			});
+	});
+	$('#postsubmit').on('click', function() {
+		var obj = $(this);
+		if(obj.attr('disable') == 'true') {
+			return false;
+		}
+		obj.attr('disable', 'true').removeClass('btn_pn_blue').addClass('btn_pn_grey');
+		popup.open('<img src="' + IMGDIR + '/imageloading.gif">');
+		var postlocation = '';
+		if(geo.errmsg === '' && geo.loc) {
+			postlocation = geo.longitude + '|' + geo.latitude + '|' + geo.loc;
+		}
+		$.ajax({
+			type:'POST',
+			url:form.attr('action') + '&geoloc=' + postlocation + '&handlekey='+form.attr('id')+'&inajax=1',
+			data:form.serialize(),
+			dataType:'xml'
+		})
+		.success(function(s) {
+			popup.open(s.lastChild.firstChild.nodeValue);
+		})
+		.error(function() {
+			popup.open('{lang networkerror}', 'alert');
+		});
+		return false;
+	});
+	$(document).on('click', '.del', function() {
+		var obj = $(this);
+		$.ajax({
+			type:'GET',
+			url:'forum.php?mod=ajax&action=deleteattach&inajax=yes&aids[]=' + obj.attr('aid') + (obj.attr('up') == 1 ? '&tid={$postinfo['tid']}&pid={$postinfo['pid']}' : ''),
+		})
+		.success(function(s) {
+			obj.parent().parent().remove();
+		})
+		.error(function() {
+			popup.open('{lang networkerror}', 'alert');
+		});
+		return false;
+	});
+</script>
+<!--{eval $nofooter = true;}-->
+<!--{template common/footer}-->

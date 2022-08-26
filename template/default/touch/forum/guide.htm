@@ -1,0 +1,34 @@
+<!--{template common/header}-->
+<!--{if $_G['setting']['mobile']['mobilehotthread']}-->
+	<!--{if !empty($_G['setting']['grid']['showgrid'])}-->
+	<div class="header cl">
+		<div class="mz"><a href="javascript:history.back();"><i class="dm-c-left"></i></a></div><h2></h2><div class="my"></div>
+	</div>
+	<div class="header_toplogo"><img src="{IMGDIR}/logo_m.svg" /><p>{$_G['setting']['navs'][2]['navname']}{lang guide}</p></div>
+	<!--{else}-->
+	<div class="header cl"></div>
+	<div class="header_toplogo guide_index">
+		<img src="{IMGDIR}/logo_m.svg" />
+		<div class="mtop_ss"><a href="search.php?mod=forum"><i class="dm-search"></i>{lang mobsearchtxt}</a></div>
+	</div>
+	<!--{/if}-->
+<!--{else}-->
+	<div class="header cl">
+		<div class="mz"><a href="javascript:history.back();"><i class="dm-c-left"></i></a></div><h2></h2><div class="my"></div>
+	</div>
+	<div class="header_toplogo"><img src="{IMGDIR}/logo_m.svg" /><p>{$_G['setting']['navs'][2]['navname']}{lang guide}</p></div>
+<!--{/if}-->
+<div class="dhnv flex-box cl">
+	<a href="forum.php?mod=guide&view=newthread" class="flex<!--{if $currentview['newthread']}--> mon<!--{/if}-->">{lang latest}</a>
+	<a href="forum.php?mod=guide&view=hot" class="flex<!--{if $currentview['hot']}--> mon<!--{/if}-->">{lang order_heats}</a>
+	<a href="forum.php?mod=guide&view=digest" class="flex<!--{if $currentview['digest'] }--> mon<!--{/if}-->">{lang digest}</a>
+	<a href="forum.php?mod=guide&view=new" class="flex<!--{if $currentview['new']}--> mon<!--{/if}-->">{lang join_thread}</a>	
+	<a href="forum.php?mod=guide&view=sofa" class="flex<!--{if $currentview['sofa']}--> mon<!--{/if}-->">{lang guide_sofa}</a>
+	<a href="forum.php?forumlist=1" class="flex">{lang guide_forumlist}</a>
+</div>
+<!--{loop $data $key $list}-->
+	<!--{subtemplate forum/guide_list_row}-->
+<!--{/loop}-->
+</div>
+$multipage
+<!--{template common/footer}-->
