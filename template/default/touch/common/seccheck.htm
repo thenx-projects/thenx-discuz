@@ -1,0 +1,56 @@
+{eval
+	$sechash = 'S'.random(4);
+	$sectpl = !empty($sectpl) ? explode("<sec>", $sectpl) : array('<br />',': ','<br />','');	
+}
+<!--{if $secqaacheck}-->
+<!--{eval
+	$message = '';
+	$question = make_secqaa();
+	$secqaa = lang('core', 'secqaa_tips').$question;
+}-->
+<!--{/if}-->
+<!--{if $sectpl}-->
+	<!--{if $secqaacheck}-->
+		<li class="sec_txt">
+			{lang secqaa}:
+			<span class="xg2">$secqaa</span>
+			<input name="secqaahash" type="hidden" value="$sechash" />
+			<input name="secanswer" id="secqaaverify_$sechash" type="text" class="txt" />
+		</li>
+	<!--{/if}-->
+	<!--{if $seccodecheck}-->
+		<script type="text/javascript">
+			//Todo: 抽函数到文件中
+			var seccheck_tpl = new Array();
+			var seccheck_modid = new Array();
+			function updateseccode(idhash, tpl, modid) {
+				if(!document.getElementById('seccode_' + idhash)) {
+					return;
+				}
+				if(tpl) {
+					seccheck_tpl[idhash] = tpl;
+				}
+				if(modid) {
+					seccheck_modid[idhash] = modid;
+				} else {
+					modid = seccheck_modid[idhash];
+				}
+				var id = 'seccodejs_' + idhash;
+				var src = 'misc.php?mod=seccode&action=update&mobile=2&idhash=' + idhash + '&' + Math.random() + '&modid=' + modid;
+				if(document.getElementById(id)) {
+					document.getElementsByTagName('head')[0].appendChild(document.getElementById(id));
+				}
+				var scriptNode = document.createElement("script");
+				scriptNode.type = "text/javascript";
+				scriptNode.id = id;
+				scriptNode.src = src;
+				document.getElementsByTagName('head')[0].appendChild(scriptNode);
+			}
+		</script>
+		<li class="sec_code vm">
+			<input name="seccodehash" type="hidden" value="$sechash" />
+			<span id="seccode_c$sechash" class="flex-box"></span>
+			<script type="text/javascript" reload="1">updateseccode('c$sechash', '$sectpl', '{$_G['basescript']}::{CURMODULE}');</script>
+		</li>
+	<!--{/if}-->
+<!--{/if}-->
