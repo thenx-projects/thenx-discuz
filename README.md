@@ -24,7 +24,7 @@
 
 ### 基于 Docker 的使用
 
-**镜像拉取****：`$ docker pull tencentci/discuz`
+**镜像拉取**：`$ docker pull tencentci/discuz`
 
 **镜像运行**：DiscuzX v3.5 的项目代码位于容器中 `/var/www/html` ，可将此目录中的代码 Copy 到宿主机后再映射至容器中完成容器的持久化挂载，如下代码所示：
 
