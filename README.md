@@ -34,10 +34,10 @@ $ docker run --rm --name discuz -it -p 80:80 -d tencentci/discuz
 
 
 # 2. copy 容器中的 discuz 代码到宿主机，其中 $PWD 表示当前目录。随后可根据上述步骤销毁临时容器
-docker cp discuz:/var/www/html/ $PWD/
+$ docker cp discuz:/var/www/html/ $PWD/
 
 # 3. 运行并使用容器
-docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ -d tencentci/discuz
+$ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ -d tencentci/discuz
 ```
 
 ### **3.5版本说明**
