@@ -355,6 +355,16 @@ var admincpfilename = '$basescript', IMGDIR = '$IMGDIR', STYLEID = '$STYLEID', V
 if(ISFRAME && !parent.document.getElementById('leftmenu') && !parent.parent.document.getElementById('leftmenu')) {
 	redirect(admincpfilename + '?frames=yes&' + document.URL.substr(document.URL.indexOf(admincpfilename) + admincpfilename.length + 1));
 }
+setTimeout(function() {
+	document.querySelectorAll('.tb').forEach(function(e){
+		var e1 = e.querySelector('.tips2');
+		var e2 = e.querySelector('.tipsblock');
+		if(!e1 && !e2) {
+			document.body.style.minWidth = '1000px';
+		}
+	})
+},
+1000);
 </script>
 <div id="append_parent"></div><div id="ajaxwaitid"></div>
 <div class="container" id="cpcontainer">
