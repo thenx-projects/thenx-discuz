@@ -4,6 +4,12 @@
 		if (!key || !$('header_' + key)) {
 			return;
 		}
+		if (prevnav == key) {
+			$('header_' + prevnav).className = '';
+			$('lm_' + prevnav).className = '';
+			prevnav = '';
+			return;
+		}
 		if (prevnav && $('header_' + prevnav)) {
 			$('header_' + prevnav).className = '';
 			$('lm_' + prevnav).className = '';
@@ -15,6 +21,12 @@
 		} else {
 			$('header_' + key).className = 'active';
 			$('lm_' + key).className = 'active';
+			href = $('lm_' + key).childNodes[1].childNodes[0].childNodes[0].href;
+			if (key != 'cloudaddons' && key != 'uc') {
+				parent.main.location = href;
+			} else {
+				window.open(href);
+			}
 			prevnav = key;
 		}
 	}
