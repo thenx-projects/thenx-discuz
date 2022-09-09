@@ -70,7 +70,7 @@
 			openinnewwindow(this);
 		});
 	});
-	switchnav('index');
+	switchnav(typeof defaultNav != 'undefined' ? defaultNav : 'index');
 	switchtab(document.querySelector('nav ul ul a'));
 	$('cpsetting').addEventListener('click', function(){
 		$('bdcontainer').classList.toggle('oldlayout');
