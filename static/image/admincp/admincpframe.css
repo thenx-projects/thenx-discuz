@@ -52,6 +52,7 @@ button::-moz-focus-inner { border: none; padding: 0; }
 /* .mainhd form input.txt:focus:valid {background: transparent;} */
 .mainhd form button { position: absolute; width: 24px; height: 28px; background: none; border: 0; cursor: pointer; }
 .mainhd form button:focus { outline: 0; }
+#cpsetting {cursor: pointer;}
 /* start oldlayout */
 @media (min-width: 1200px) {
 	.oldlayout nav>ul, .widelayout nav>ul { background-color: #163e69; }
