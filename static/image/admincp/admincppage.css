@@ -51,7 +51,7 @@ textarea {font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 	.popupmenu_dropmenu { cursor: pointer; }
 		.popupmenu_dropmenu em { margin-left:3px; background:url(bg_repno.gif) no-repeat 0 -145px; }
 
-.infobox { background: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.infobox { background: #fff; padding: 40px; display: flex; flex-direction: column; align-items: center; text-align: center; }
 .infotitle1 { margin-bottom: 10px; color: #09C; font-size: 14px; font-weight: 700; }
 .infotitle2 { margin-bottom: 10px; color: #090; font-size: 14px; font-weight: 700; }
 .infotitle3 { margin-bottom: 10px; color: #C00; font-size: 14px; font-weight: 700; }
