@@ -4,12 +4,6 @@
 		if (!key || !$('header_' + key)) {
 			return;
 		}
-		if (prevnav == key) {
-			$('header_' + prevnav).className = '';
-			$('lm_' + prevnav).className = '';
-			prevnav = '';
-			return;
-		}
 		if (prevnav && $('header_' + prevnav)) {
 			$('header_' + prevnav).className = '';
 			$('lm_' + prevnav).className = '';
@@ -19,7 +13,7 @@
 			window.open(href);
 			doane();
 		} else {
-			if (prevnav == key) {
+			if (prevnav == key && !getcookie('admincp_oldlayout')) {
 				$('header_' + prevnav).className = '';
 				$('lm_' + prevnav).className = '';
 				prevnav = null;
