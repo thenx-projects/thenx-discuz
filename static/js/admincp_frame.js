@@ -73,6 +73,7 @@
 	switchtab(document.querySelector('nav ul ul a'));
 	$('cpsetting').addEventListener('click', function(){
 		$('bdcontainer').classList.toggle('oldlayout');
+		setcookie('admincp_oldlayout', 1, getcookie('admincp_oldlayout') ? -2592000 : 2592000);
 	});
 	document.querySelector('#frameuinfo > img').addEventListener('click', function(){
 		document.querySelector('.mainhd').classList.toggle('toggle');
