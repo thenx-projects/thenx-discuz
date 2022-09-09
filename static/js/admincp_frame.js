@@ -14,20 +14,21 @@
 			$('header_' + prevnav).className = '';
 			$('lm_' + prevnav).className = '';
 		}
-		if (prevnav == key) {
-			$('header_' + prevnav).className = '';
-			$('lm_' + prevnav).className = '';
-			prevnav = null;
+		href = $('lm_' + key).childNodes[1].childNodes[0].childNodes[0].href;
+		if (key == 'cloudaddons' || key == 'uc') {
+			window.open(href);
+			doane();
 		} else {
-			$('header_' + key).className = 'active';
-			$('lm_' + key).className = 'active';
-			href = $('lm_' + key).childNodes[1].childNodes[0].childNodes[0].href;
-			if (key != 'cloudaddons' && key != 'uc') {
-				parent.main.location = href;
+			if (prevnav == key) {
+				$('header_' + prevnav).className = '';
+				$('lm_' + prevnav).className = '';
+				prevnav = null;
 			} else {
-				window.open(href);
+				$('header_' + key).className = 'active';
+				$('lm_' + key).className = 'active';
+				parent.main.location = href;
+				prevnav = key;
 			}
-			prevnav = key;
 		}
 	}
 	function switchtab(key) {
