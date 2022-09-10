@@ -8,14 +8,21 @@
 			$('header_' + prevnav).className = '';
 			$('lm_' + prevnav).className = '';
 		}
-		if (prevnav == key) {
-			$('header_' + prevnav).className = '';
-			$('lm_' + prevnav).className = '';
-			prevnav = null;
+		href = $('lm_' + key).childNodes[1].childNodes[0].childNodes[0].href;
+		if (key == 'cloudaddons' || key == 'uc') {
+			window.open(href);
+			doane();
 		} else {
-			$('header_' + key).className = 'active';
-			$('lm_' + key).className = 'active';
-			prevnav = key;
+			if (prevnav == key && !getcookie('admincp_oldlayout')) {
+				$('header_' + prevnav).className = '';
+				$('lm_' + prevnav).className = '';
+				prevnav = null;
+			} else {
+				$('header_' + key).className = 'active';
+				$('lm_' + key).className = 'active';
+				parent.main.location = href;
+				prevnav = key;
+			}
 		}
 	}
 	function switchtab(key) {
@@ -57,10 +64,11 @@
 			openinnewwindow(this);
 		});
 	});
-	switchnav('index');
+	switchnav(typeof defaultNav != 'undefined' ? defaultNav : 'index');
 	switchtab(document.querySelector('nav ul ul a'));
 	$('cpsetting').addEventListener('click', function(){
 		$('bdcontainer').classList.toggle('oldlayout');
+		setcookie('admincp_oldlayout', 1, getcookie('admincp_oldlayout') ? -2592000 : 2592000);
 	});
 	document.querySelector('#frameuinfo > img').addEventListener('click', function(){
 		document.querySelector('.mainhd').classList.toggle('toggle');

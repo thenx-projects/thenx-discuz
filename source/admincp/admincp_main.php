@@ -33,6 +33,7 @@ if(isfounder()) {
 require './source/admincp/admincp_menu.php';
 $basescript = ADMINSCRIPT;
 $staticurl = STATICURL;
+$oldlayout = !empty($_G['cookie']['admincp_oldlayout']) ? ' class="oldlayout"' : '';
 
 echo <<<EOT
 <!DOCTYPE html>
@@ -51,7 +52,7 @@ echo <<<EOT
 <body>
 <div id="append_parent"></div>
 $shownotice
-<div id="bdcontainer"><!-- class="oldlayout" -->
+<div id="bdcontainer"$oldlayout>
 	<div id="navcontainer" class="navcontainer">
 		<nav>
 			<a href="$basescript?frames=yes&action=index" class="logo">
@@ -105,7 +106,7 @@ foreach($topmenu as $k => $v) {
 		$v = is_array($menu[$k]) ? array_keys($menu[$k]) : array();
 		$v = $menu[$k][$v[0]][1];
 	}
-	showheader($k, $v, 1);
+	showheader($k, $v);
 }
 unset($menu);
 
