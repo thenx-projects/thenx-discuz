@@ -1,0 +1,15 @@
+<div class="header cl">
+	<div class="mz"><a href="javascript:history.back();"><i class="dm-c-left"></i></a></div>
+	<h2>{lang mobfind}</h2>
+	<div class="my"></div>
+</div>
+<div class="findbox cl">
+	<ul>
+		<!--{loop $_G['setting']['mfindnavs'] $nav}-->
+			<!--{if is_array($nav) && $nav['available'] && ($nav['type'] && (!$nav['level'] || ($nav['level'] == 1 && $_G['uid']) || ($nav['level'] == 2 && $_G['adminid'] > 0) || ($nav['level'] == 3 && $_G['adminid'] == 1)) || !$nav['type'])}-->
+				<li><a href="$nav[url]"><i class="dm-c-right"></i>$nav[name]</a></li>
+			<!--{/if}-->
+		<!--{/loop}-->
+		<!--{hook/index_find_extra_mobile}-->
+	</ul>
+</div>
