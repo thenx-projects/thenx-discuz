@@ -67,7 +67,6 @@ class control extends adminbase {
 			$ip = getgpc('ip', 'P');
 			$viewprourl = getgpc('viewprourl', 'P');
 			$authkey = getgpc('authkey', 'P');
-			$authkey = $this->authcode($authkey, 'ENCODE', UC_MYKEY);
 			$synlogin = getgpc('synlogin', 'P');
 			$recvnote = getgpc('recvnote', 'P');
 			$apifilename = trim(getgpc('apifilename', 'P'));
@@ -108,8 +107,8 @@ class control extends adminbase {
 			$_ENV['cache']->updatedata('apps');
 
 			$_ENV['app']->alter_app_table($appid, 'ADD');
-			$this->writelog('app_add', "appid=$appid; appname=$_POST[name]");
-			header("location: admin.php?m=app&a=detail&appid=$appid&addapp=yes&sid=".$this->view->sid);
+			$this->writelog('app_add', "appid=$appid; appname={$_POST['name']}");
+			header("location: ". UC_ADMINSCRIPT . "?m=app&a=detail&appid=$appid&addapp=yes&sid=".$this->view->sid);
 		}
 	}
 
@@ -119,7 +118,7 @@ class control extends adminbase {
 		$appid = intval(getgpc('appid'));
 		$app = $_ENV['app']->get_app_by_appid($appid);
 		$status = '';
-		if($app['extra']['apppath'] && $this->detectescape($app['extra']['apppath'].'./api/', $app['apifilename']) && substr(strrchr($app['apifilename'], '.'), 1, 10) == 'php' && @include $app['extra']['apppath'].'./api/'.$app['apifilename']) {
+		if(!empty($app['extra']['apppath']) && $this->detectescape($app['extra']['apppath'].'./api/', $app['apifilename']) && substr(strrchr($app['apifilename'], '.'), 1, 10) == 'php' && @include $app['extra']['apppath'].'./api/'.$app['apifilename']) {
 			$uc_note = new uc_note();
 			$status = $uc_note->test($note['getdata'], $note['postdata']);
 		} else {
@@ -154,13 +153,12 @@ class control extends adminbase {
 			$viewprourl = getgpc('viewprourl', 'P');
 			$apifilename = trim(getgpc('apifilename', 'P'));
 			$authkey = getgpc('authkey', 'P');
-			$authkey = $this->authcode($authkey, 'ENCODE', UC_MYKEY);
 			$synlogin = getgpc('synlogin', 'P');
 			$recvnote = getgpc('recvnote', 'P');
 			$extraurl = getgpc('extraurl', 'P');
 			if(getgpc('apppath', 'P')) {
 				$app['extra']['apppath'] = $this->_realpath(getgpc('apppath', 'P'));
-				if($app['extra']['apppath']) {
+				if(!empty($app['extra']['apppath'])) {
 					$apifile = $app['extra']['apppath'].'./api/uc.php';
 					if(!file_exists($apifile)) {
 						$this->message('app_apifile_not_exists', 'BACK', 0, array('$apifile' => $apifile));
@@ -186,7 +184,7 @@ class control extends adminbase {
 				}
 			}
 			$tagtemplates = array();
-			$tagtemplates['template'] = MAGIC_QUOTES_GPC ? stripslashes(getgpc('tagtemplates', 'P')) : getgpc('tagtemplates', 'P');
+			$tagtemplates['template'] = getgpc('tagtemplates', 'P');
 			$tagfields = explode("\n", getgpc('tagfields', 'P'));
 			foreach($tagfields as $field) {
 				$field = trim($field);
@@ -213,6 +211,7 @@ class control extends adminbase {
 			$app = $_ENV['app']->get_app_by_appid($appid);
 		}
 		$tagtemplates = $this->unserialize($app['tagtemplates']);
+		$tagtemplates = is_array($tagtemplates) ? $tagtemplates : array();
 		$template = dhtmlspecialchars($tagtemplates['template']);
 		$tmp = '';
 		if(is_array($tagtemplates['fields'])) {
@@ -220,7 +219,9 @@ class control extends adminbase {
 				$tmp .= $field.','.$memo."\n";
 			}
 		}
-		$tagtemplates['fields'] = $tmp;
+		if(!empty($tmp)) {
+			$tagtemplates['fields'] = $tmp;
+		}
 		$a = getgpc('a');
 		$this->view->assign('a', $a);
 		$app = $_ENV['app']->get_app_by_appid($appid);
@@ -245,7 +246,7 @@ class control extends adminbase {
 		$this->view->assign('updated', $updated);
 		$addapp = getgpc('addapp');
 		$this->view->assign('addapp', $addapp);
-		$this->view->assign('extraurl', implode("\n", $app['extra']['extraurl']));
+		$this->view->assign('extraurl', is_array($app['extra']['extraurl']) ? implode("\n", $app['extra']['extraurl']) : (string)$app['extra']['extraurl']);
 		$this->view->assign('apppath', $app['extra']['apppath']);
 		$this->view->assign('tagtemplates', $tagtemplates);
 		$this->view->display('admin_app');

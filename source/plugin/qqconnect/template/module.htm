@@ -4,7 +4,7 @@ global $_G;
 }
 <!--{block return}-->
 	<div class="fastlg_fm y" style="margin-right: 10px; padding-right: 10px">
-		<p><a href="$_G[connect][login_url]&statfrom=login_simple"><img src="{IMGDIR}/qq_login.gif" class="vm" alt="{lang qqconnect:connect_header_login}" /></a></p>
+		<p><a href="{$_G['connect']['login_url']}&statfrom=login_simple"><img src="{IMGDIR}/qq_login.gif" class="vm" alt="{lang qqconnect:connect_header_login}" /></a></p>
 		<p class="hm xg1" style="padding-top: 2px;">{lang qqconnect:connect_header_login_tip}</p>
 	</div>
 <!--{/block}-->
@@ -33,7 +33,7 @@ global $_G;
 }
 <!--{block return}-->
 	<!--{if !$_G['connectguest']}-->
-	<a href="$_G[connect][login_url]&statfrom=login" target="_top" rel="nofollow"><img src="{IMGDIR}/qq_login.gif" class="vm" /></a>
+	<a href="{$_G['connect']['login_url']}&statfrom=login" target="_top" rel="nofollow"><img src="{IMGDIR}/qq_login.gif" class="vm" /></a>
 	<!--{/if}-->
 <!--{/block}-->
 <!--{eval return $return;}-->
@@ -46,7 +46,7 @@ if (!$_G['setting']['connect']['allow']) return;
 $connect_thread_subject = addslashes(strip_tags($_G['thread']['subject']));
 }
 <!--{block return}-->
-	<a href="{$_G[connect][qq_share_url]}" id="k_share_to_qq" title="{lang qqconnect:connect_viewthread_share_to_qq}" target="_blank"><i><img src="{IMGDIR}/qq_share.png" alt="{lang qqconnect:connect_viewthread_share_to_qq}" />{lang qqconnect:connect_viewthread_share_to_qq}</i></a>
+	<a href="{$_G['connect']['qq_share_url']}" id="k_share_to_qq" title="{lang qqconnect:connect_viewthread_share_to_qq}" target="_blank"><i><img src="{IMGDIR}/qq_share.png" alt="{lang qqconnect:connect_viewthread_share_to_qq}" />{lang qqconnect:connect_viewthread_share_to_qq}</i></a>
 	<a href="#" id="k_qqshare" onclick="postToQzone();return false;" title="{lang qqconnect:connect_viewthread_share_to_qzone}"><i><img src="{IMGDIR}/qzone.gif" alt="{lang qqconnect:connect_viewthread_share_to_qzone}" />{lang qqconnect:connect_viewthread_share_to_qzone}</i></a>
 <!--{/block}-->
 <!--{eval return $return;}-->
@@ -74,7 +74,7 @@ global $_G;
 				<div style="font-size:14px; margin:10px 0;">{lang qqconnect:connect_post_unbind}</div>
 				<div><a href="connect.php?mod=config&connect_autoshare=1" target="_blank"><img src="{IMGDIR}/qq_bind.gif" align="absmiddle" style="margin-top:5px;" /></a></div>
 			</div>
-			<input type="hidden" id="connect_thread_title" name="connect_thread_title" value="$_G[forum_thread][subject]" />
+			<input type="hidden" id="connect_thread_title" name="connect_thread_title" value="{$_G['forum_thread']['subject']}" />
 		</div>
 	<!--{/if}-->
 	<!--{if $jsurl}-->
@@ -162,6 +162,7 @@ $js2 = str_replace(array("'", "\r", "\n"), array("\'", '', ''), $js2);
 										<option value="username">{lang username}</option>
 										<option value="uid">{lang uid}</option>
 										<option value="email">{lang email}</option>
+										<option value="secmobile">{lang secmobile}</option>
 									</select>
 								</span>
 							<!--{/if}-->

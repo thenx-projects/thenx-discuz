@@ -36,6 +36,7 @@ if($operation == 'app') {
 		/*search*/
 
 		showformheader('domain&operation=app');
+		showboxheader();
 		showtableheader();
 		showsubtitle(array('name', 'setting_domain_app_domain'));
 		$app = array();
@@ -52,6 +53,7 @@ if($operation == 'app') {
 		}
 		showsubmit('submit');
 		showtablefooter();
+		showboxfooter();
 		showhiddenfields($hiddenarr);
 		showformfooter();
 	} else {
@@ -79,7 +81,7 @@ if($operation == 'app') {
 			C::t('common_nav')->update_by_identifier('mobile', array('url' => (!$_GET['appnew']['mobile'] ? 'forum.php?mobile=yes' : $_G['scheme'].'://'.$_GET['appnew']['mobile'])));
 		}
 
-		C::t('common_setting')->update('domain',$_G['setting']['domain']);
+		C::t('common_setting')->update_setting('domain',$_G['setting']['domain']);
 		updatecache('setting');
 		cpmsg('setting_update_succeed', 'action=domain&operation=app', 'succeed');
 	}
@@ -98,6 +100,7 @@ if($operation == 'app') {
 		showtips('setting_domain_root_tips');
 		/*search*/
 		showformheader('domain&operation=root');
+		showboxheader();
 		showtableheader();
 		showsubtitle(array('name', 'setting_domain_app_domain'));
 		$hiddenarr = array();
@@ -114,6 +117,7 @@ if($operation == 'app') {
 		}
 		showsubmit('submit');
 		showtablefooter();
+		showboxfooter();
 		showhiddenfields($hiddenarr);
 		showformfooter();
 	} else {
@@ -131,7 +135,7 @@ if($operation == 'app') {
 			$_G['setting']['domain']['root'][$idtype] = $domain;
 
 		}
-		C::t('common_setting')->update('domain', $_G['setting']['domain']);
+		C::t('common_setting')->update_setting('domain', $_G['setting']['domain']);
 		updatecache('setting');
 		cpmsg('setting_update_succeed', 'action=domain&operation=root', 'succeed');
 	}

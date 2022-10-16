@@ -26,12 +26,18 @@ ckstart($start, $perpage);
 
 checkusergroup();
 
-$operation = in_array($_GET['op'], array('base', 'buy', 'transfer', 'exchange', 'log', 'rule')) ? trim($_GET['op']) : 'base';
+$operation = in_array(getgpc('op'), array('base', 'buy', 'transfer', 'exchange', 'log', 'rule')) ? trim($_GET['op']) : 'base';
 $opactives = array($operation =>' class="a"');
 if(in_array($operation, array('base', 'buy', 'transfer', 'exchange', 'rule'))) {
 	$operation = 'base';
 }
-include_once libfile('spacecp/credit_'.$operation, 'include');
 
+if($_G['setting']['ec_ratio']) {
+	$is_enable_pay = payment::enable();
+} else {
+	$is_enable_pay = false;
+}
+
+include_once libfile('spacecp/credit_'.$operation, 'include');
 
 ?>

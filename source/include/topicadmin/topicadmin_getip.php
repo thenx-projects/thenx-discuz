@@ -17,7 +17,7 @@ if(!$_G['group']['allowviewip']) {
 
 $pid = $_GET['pid'];
 $member = array();
-$post = C::t('forum_post')->fetch('tid:'.$_G['tid'], $pid, false);
+$post = C::t('forum_post')->fetch_post('tid:'.$_G['tid'], $pid, false);
 if($post && $post['tid'] == $_G['tid']) {
 	$member = getuserbyuid($post['authorid']);
 	$member = array_merge($post, $member);
@@ -29,6 +29,8 @@ if(!$member) {
 }
 
 $member['iplocation'] = convertip($member['useip']);
+
+$member['useip'] = ip::to_display($member['useip']);
 
 include template('forum/topicadmin_getip');
 

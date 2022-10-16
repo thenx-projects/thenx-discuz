@@ -11,7 +11,7 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 $defaultop = '';
-	$profilegroup = C::t('common_setting')->fetch('profilegroup', true);
+	$profilegroup = C::t('common_setting')->fetch_setting('profilegroup', true);
 	foreach($profilegroup as $key => $value) {
 		if($value['available']) {
 			$defaultop = $key;
@@ -19,7 +19,7 @@ $defaultop = '';
 		}
 	}
 
-$operation = in_array($_GET['op'], array('base', 'contact', 'edu', 'work', 'info', 'password', 'verify')) ? trim($_GET['op']) : $defaultop;
+$operation = in_array(getgpc('op'), array('base', 'contact', 'edu', 'work', 'info', 'password', 'verify')) ? trim($_GET['op']) : $defaultop;
 $space = getuserbyuid($_G['uid']);
 space_merge($space, 'field_home');
 space_merge($space, 'profile');
@@ -27,7 +27,7 @@ space_merge($space, 'profile');
 list($seccodecheck, $secqaacheck) = seccheck('password');
 @include_once DISCUZ_ROOT.'./data/cache/cache_domain.php';
 $spacedomain = isset($rootdomain['home']) && $rootdomain['home'] ? $rootdomain['home'] : array();
-$_GET['id'] = $_GET['id'] ? preg_replace("/[^A-Za-z0-9_:]/", '', $_GET['id']) : '';
+$_GET['id'] = getgpc('id') ? preg_replace("/[^A-Za-z0-9_:]/", '', $_GET['id']) : '';
 if($operation != 'password') {
 
 	include_once libfile('function/profile');
@@ -61,7 +61,7 @@ if($_G['setting']['regverify'] == 2 && $_G['groupid'] == 8) {
 		$validate = array();
 	}
 }
-if($_G['setting']['connect']['allow']) {
+if(getglobal('setting/connect/allow')) {
 	$connect = C::t('#qqconnect#common_member_connect')->fetch($_G['uid']);
 	$conisregister = $operation == 'password' && $connect['conisregister'];
 }
@@ -109,14 +109,14 @@ if(submitcheck('profilesubmit')) {
 			$verifyconfig = array();
 		}
 	}
-	if(isset($_POST['birthprovince'])) {
-		$initcity = array('birthprovince', 'birthcity', 'birthdist', 'birthcommunity');
+	if(isset($_POST['birthcountry'])) {
+		$initcity = array('birthcountry', 'birthprovince', 'birthcity', 'birthdist', 'birthcommunity');
 		foreach($initcity as $key) {
 			$_GET[''.$key] = $_POST[$key] = !empty($_POST[$key]) ? $_POST[$key] : '';
 		}
 	}
-	if(isset($_POST['resideprovince'])) {
-		$initcity = array('resideprovince', 'residecity', 'residedist', 'residecommunity');
+	if(isset($_POST['residecountry'])) {
+		$initcity = array('residecountry', 'resideprovince', 'residecity', 'residedist', 'residecommunity');
 		foreach($initcity as $key) {
 			$_GET[''.$key] = $_POST[$key] = !empty($_POST[$key]) ? $_POST[$key] : '';
 		}
@@ -165,9 +165,9 @@ if(submitcheck('profilesubmit')) {
 		} elseif(profile_check($key, $value, $space)) {
 			$setarr[$key] = dhtmlspecialchars(trim($value));
 		} else {
-			if($key=='birthprovince') {
+			if($key=='birthcountry' || $key=='birthprovince') {
 				$key = 'birthcity';
-			} elseif($key=='resideprovince' || $key=='residecommunity'||$key=='residedist') {
+			} elseif($key=='residecountry' || $key=='resideprovince' || $key=='residecommunity'||$key=='residedist') {
 				$key = 'residecity';
 			} elseif($key=='birthyear' || $key=='birthmonth') {
 				$key = 'birthday';
@@ -272,6 +272,10 @@ if(submitcheck('profilesubmit')) {
 		$setarr['zodiac'] = get_zodiac($_POST['birthyear']);
 	}
 	if($setarr) {
+		// 用户信息变更记录
+		if($_G['setting']['profilehistory']) {
+			C::t('common_member_profile_history')->insert(array_merge(C::t('common_member_profile')->fetch($_G['uid']), array('dateline' => time())));
+		}
 		C::t('common_member_profile')->update($_G['uid'], $setarr);
 	}
 
@@ -303,8 +307,6 @@ if(submitcheck('profilesubmit')) {
 		C::t('common_member_field_home')->update($space['uid'], array('privacy'=>serialize($space['privacy'])));
 	}
 
-	manyoulog('user', $_G['uid'], 'update');
-
 	include_once libfile('function/feed');
 	feed_add('profile', 'feed_profile_update_'.$operation, array('hash_data'=>'profile'));
 	countprofileprogress();
@@ -316,6 +318,9 @@ if(submitcheck('profilesubmit')) {
 	$membersql = $memberfieldsql = $authstradd1 = $authstradd2 = $newpasswdadd = '';
 	$setarr = array();
 	$emailnew = dhtmlspecialchars($_GET['emailnew']);
+	$secmobiccnew = intval($_GET['secmobiccnew']);
+	$secmobilenew = intval($_GET['secmobilenew']);
+	$secmobseccode = intval($_GET['secmobseccodenew']);
 	$ignorepassword = 0;
 	if($_G['setting']['connect']['allow']) {
 		$connect = C::t('#qqconnect#common_member_connect')->fetch($_G['uid']);
@@ -367,12 +372,20 @@ if(submitcheck('profilesubmit')) {
 		showmessage('profile_passwd_notmatch', '', array(), array('return' => true));
 	}
 
+	if($emailnew != $_G['member']['email'] && $_G['setting']['change_email']) {
+		showmessage('profile_email_not_change', '', array(), array('return' => true));
+	}
+
+	if((strcmp($secmobiccnew, $_G['member']['secmobicc']) != 0 || strcmp($secmobilenew, $_G['member']['secmobile']) != 0) && $_G['setting']['change_secmobile']) {
+		showmessage('profile_secmobile_not_change', '', array(), array('return' => true));
+	}
+
 	loaducenter();
 	if($emailnew != $_G['member']['email']) {
 		include_once libfile('function/member');
 		checkemail($emailnew);
 	}
-	$ucresult = uc_user_edit(addslashes($_G['username']), $_GET['oldpassword'], $_GET['newpassword'], '', $ignorepassword, $_GET['questionidnew'], $_GET['answernew']);
+	$ucresult = uc_user_edit(addslashes($_G['username']), $_GET['oldpassword'], $_GET['newpassword'], '', $ignorepassword, $_GET['questionidnew'], $_GET['answernew'], $secmobiccnew, $secmobilenew);
 	if($ucresult == -1) {
 		showmessage('profile_passwd_wrong', '', array(), array('return' => true));
 	} elseif($ucresult == -4) {
@@ -381,6 +394,8 @@ if(submitcheck('profilesubmit')) {
 		showmessage('profile_email_domain_illegal', '', array(), array('return' => true));
 	} elseif($ucresult == -6) {
 		showmessage('profile_email_duplicate', '', array(), array('return' => true));
+	} elseif($ucresult == -8) {
+		showmessage('profile_secmobile_duplicate', '', array(), array('return' => true));
 	}
 
 	if(!empty($_GET['newpassword']) || $secquesnew) {
@@ -401,6 +416,17 @@ if(submitcheck('profilesubmit')) {
 			dsetcookie('newemail', "{$space['uid']}\t$emailnew\t{$_G['timestamp']}", 31536000);
 		}
 	}
+	// 如果开启了短信验证, 输入了手机号却没有输入验证码, 就尝试发送验证码
+	if($_G['setting']['smsstatus'] && (strcmp($secmobiccnew, $_G['member']['secmobicc']) != 0 || strcmp($secmobilenew, $_G['member']['secmobile']) != 0) && empty($secmobseccode)) {
+		$length = $_G['setting']['smsdefaultlength'] ? $_G['setting']['smsdefaultlength'] : 4;
+		// 用户 UID : $_G['uid'], 短信类型: 验证类短信, 服务类型: 系统级手机号码验证业务
+		// 国家代码: $secmobiccnew, 手机号: $secmobilenew, 内容: $secmobseccode, 强制发送: false
+		sms::send($_G['uid'], 0, 1, $secmobiccnew, $secmobilenew, random($length, 1), 0);
+	}
+	// 如果保存时未输入验证码就把用户切换至未验证状态, 下次提交验证通过后才能切回正常状态
+	$setarr['secmobicc'] = $secmobiccnew;
+	$setarr['secmobile'] = $secmobilenew;
+	$setarr['secmobilestatus'] = sms::verify($_G['uid'], 1, $secmobiccnew, $secmobilenew, $secmobseccode);
 	if($setarr) {
 		if($_G['member']['freeze'] == 1) {
 			$setarr['freeze'] = 0;
@@ -457,7 +483,7 @@ if($operation == 'password') {
 		}
 	}
 
-	if($_GET['resend'] && $resend && $_GET['formhash'] == FORMHASH) {
+	if(getgpc('resend') && $resend && $_GET['formhash'] == FORMHASH) {
 		$toemail = $space['newemail'] ? $space['newemail'] : $space['email'];
 		if(emailcheck_send($space['uid'], $toemail)) {
 			dsetcookie('newemail', "{$space['uid']}\t$toemail\t{$_G['timestamp']}", 31536000);
@@ -466,7 +492,7 @@ if($operation == 'password') {
 		} else {
 			showmessage('send_activate_mail_error', 'home.php?mod=spacecp&ac=profile&op=password', array('interval' => $interval));
 		}
-	} elseif ($_GET['resend']) {
+	} elseif (getgpc('resend')) {
 		showmessage('send_activate_mail_error', 'home.php?mod=spacecp&ac=profile&op=password', array('interval' => $interval));
 	}
 	if(!empty($space['newemail'])) {
@@ -491,7 +517,7 @@ if($operation == 'password') {
 	require_once libfile('function/editor');
 	$space['sightml'] = html2bbcode($space['sightml']);
 
-	$vid = $_GET['vid'] ? intval($_GET['vid']) : 0;
+	$vid = getgpc('vid') ? intval($_GET['vid']) : 0;
 
 	$privacy = $space['privacy']['profile'] ? $space['privacy']['profile'] : array();
 	$_G['setting']['privacy'] = $_G['setting']['privacy'] ? $_G['setting']['privacy'] : array();
@@ -521,6 +547,18 @@ if($operation == 'password') {
 		}
 	}
 	$showbtn = ($vid && $verify['verify'.$vid] != 1) || empty($vid);
+	if(!empty($verify) && is_array($verify)) {
+		foreach($verify as $key => $flag) {
+			if(in_array($key, array('verify1', 'verify2', 'verify3', 'verify4', 'verify5', 'verify6')) && $flag == 1) {
+				$verifyid = intval(substr($key, -1, 1));
+				if($_G['setting']['verify'][$verifyid]['available']) {
+					foreach($_G['setting']['verify'][$verifyid]['field'] as $field) {
+						$_G['cache']['profilesetting'][$field]['unchangeable'] = 1;
+					}
+				}
+			}
+		}
+	}
 	if($vid) {
 		if($value = C::t('common_member_verify_info')->fetch_by_uid_verifytype($_G['uid'], $vid)) {
 			$field = dunserialize($value['field']);

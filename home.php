@@ -28,7 +28,7 @@ $space = array();
 $mod = getgpc('mod');
 if(!in_array($mod, array('space', 'spacecp', 'misc', 'magic', 'editor', 'invite', 'task', 'medal', 'rss', 'follow'))) {
 	$mod = 'space';
-	$_GET['do'] = 'home';
+	$_GET['do'] = $_G['setting']['feedstatus'] ? 'home' : 'profile';
 }
 
 if($mod == 'space' && ((empty($_GET['do']) || $_GET['do'] == 'index') && ($_G['inajax']))) {
@@ -36,7 +36,7 @@ if($mod == 'space' && ((empty($_GET['do']) || $_GET['do'] == 'index') && ($_G['i
 }
 $curmod = !empty($_G['setting']['followstatus']) && (empty($_GET['diy']) && empty($_GET['do']) && $mod == 'space' || $_GET['do'] == 'follow') ? 'follow' : $mod;
 define('CURMODULE', $curmod);
-runhooks($_GET['do'] == 'profile' && $_G['inajax'] ? 'card' : $_GET['do']);
+runhooks(getgpc('do') == 'profile' && $_G['inajax'] ? 'card' : getgpc('do'));
 
 require_once libfile('home/'.$mod, 'module');
 

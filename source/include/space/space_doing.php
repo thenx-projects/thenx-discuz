@@ -11,6 +11,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['doingstatus']) {
+	showmessage('doing_status_off');
+}
+
 $perpage = 20;
 $perpage = mob_perpage($perpage);
 
@@ -23,9 +27,7 @@ ckstart($start, $perpage);
 $dolist = array();
 $count = 0;
 
-if(empty($_GET['view'])) {
-	$_GET['view'] = 'we';
-}
+$_GET['view'] = in_array($_GET['view'], array('we', 'me', 'all')) ? $_GET['view'] : 'we';
 
 $gets = array(
 	'mod' => 'space',
@@ -81,6 +83,9 @@ if(empty($count)) {
 if($count) {
 	$query = C::t('home_doing')->fetch_all_search($start, $perpage, 1, $uids, '', $searchkey, '', '' ,'', 1, $doid, $f_index);
 	foreach($query as $value) {
+		if(!empty($value['ip'])) {
+			$value['ip'] = ip::to_display($value['ip']);
+		}
 		if($value['status'] == 0 || $value['uid'] == $_G['uid'] || $_G['adminid'] == 1) {
 			$doids[] = $value['doid'];
 			$dolist[] = $value;
@@ -110,7 +115,10 @@ if($doids) {
 	foreach(C::t('home_docomment')->fetch_all_by_doid($doids) as $value) {
 		$newdoids[$value['doid']] = $value['doid'];
 		if(empty($value['upid'])) {
-			$value['upid'] = "do$value[doid]";
+			$value['upid'] = "do{$value['doid']}";
+		}
+		if(!empty($value['ip'])) {
+			$value['ip'] = ip::to_display($value['ip']);
 		}
 		$tree->setNode($value['id'], $value['upid'], $value);
 	}

@@ -41,16 +41,16 @@ function show_msg($error_no, $error_msg = 'ok', $success = 1, $quit = TRUE) {
 		}
 
 		if($step > 0) {
-			echo "<div class=\"desc\"><b>$title</b><ul>$comment</ul>";
+			echo "<div class=\"box warnbox\"><h3>$title</h3><ul>$comment</ul>";
 		} else {
-			echo "</div><div class=\"main\" style=\"margin-top: -123px;\"><b>$title</b><ul style=\"line-height: 200%; margin-left: 30px;\">$comment</ul>";
+			echo "</div><div class=\"main\"><div class=\"box warnbox\"><h3>$title</h3><ul>$comment</ul>";
 		}
 
 		if($quit) {
 			echo '<br /><span class="red">'.lang('error_quit_msg').'</span><br /><br /><br />';
 		}
 
-		echo '<input type="button" onclick="history.back()" value="'.lang('click_to_back').'" /><br /><br /><br />';
+		echo '<input type="button" class="btn oldbtn" onclick="history.back()" value="'.lang('click_to_back').'" />';
 
 		echo '</div>';
 
@@ -59,14 +59,17 @@ function show_msg($error_no, $error_msg = 'ok', $success = 1, $quit = TRUE) {
 }
 
 function check_db($dbhost, $dbuser, $dbpw, $dbname, $tablepre) {
-	if(!function_exists('mysql_connect') && !function_exists('mysqli_connect')) {
-		show_msg('undefine_func', 'mysql_connect', 0);
+	if(!function_exists('mysqli_connect')) {
+		show_msg('undefine_func', 'mysqli_connect', 0);
 	}
-	$mysqlmode = function_exists('mysql_connect') ? 'mysql' : 'mysqli';
-	$link = ($mysqlmode == 'mysql') ? @mysql_connect($dbhost, $dbuser, $dbpw) : new mysqli($dbhost, $dbuser, $dbpw);
-	if(($mysqlmode == 'mysql' && !$link) || ($mysqlmode != 'mysql' && $link->connect_errno)) {
-		$errno = ($mysqlmode == 'mysql') ? mysql_errno() : $link->connect_errno;
-		$error = ($mysqlmode == 'mysql') ? mysql_error() : $link->connect_error;
+	if (strpos($dbhost, ":") === FALSE) $dbhost .= ":3306";
+
+	mysqli_report(MYSQLI_REPORT_OFF);
+
+	$link = @new mysqli($dbhost, $dbuser, $dbpw);
+	if($link->connect_errno) {
+		$errno = $link->connect_errno;
+		$error = $link->connect_error;
 		if($errno == 1045) {
 			show_msg('database_errno_1045', $error, 0);
 		} elseif($errno == 2003) {
@@ -76,11 +79,11 @@ function check_db($dbhost, $dbuser, $dbpw, $dbname, $tablepre) {
 		}
 		return false;
 	} else {
-		if($query = (($mysqlmode == 'mysql') ? @mysql_query("SHOW TABLES FROM $dbname") : $link->query("SHOW TABLES FROM $dbname"))) {
+		if($query = $link->query("SHOW TABLES FROM $dbname")) {
 			if(!$query) {
 				return false;
 			}
-			while($row = (($mysqlmode == 'mysql') ? mysql_fetch_row($query) : $query->fetch_row())) {
+			while($row = $query->fetch_row()) {
 				if(preg_match("/^$tablepre/", $row[0])) {
 					return false;
 				}
@@ -129,7 +132,6 @@ function dirfile_check(&$dirfile_items) {
 }
 
 function env_check(&$env_items) {
-	global $lang;
 	foreach($env_items as $key => $item) {
 		if($key == 'php') {
 			$env_items[$key]['current'] = PHP_VERSION;
@@ -149,14 +151,16 @@ function env_check(&$env_items) {
 			$env_items[$key]['current'] = constant($item['c']);
 		} elseif($key == 'opcache') {
 			$opcache_data = function_exists('opcache_get_configuration') ? opcache_get_configuration() : array();
-			$env_items[$key]['current'] = !empty($opcache_data['directives']['opcache.enable']) ? $lang['enable'] : $lang['disable'];
+			$env_items[$key]['current'] = !empty($opcache_data['directives']['opcache.enable']) ? 'enable' : 'disable';
 		} elseif($key == 'curl') {
 			if(function_exists('curl_init') && function_exists('curl_version')){
 				$v = curl_version();
-				$env_items[$key]['current'] = $lang['enable'].' '.$v['version'];
+				$env_items[$key]['current'] = 'enable'.' '.$v['version'];
 			}else{
-				$env_items[$key]['current'] = $lang['disable'];
+				$env_items[$key]['current'] = 'disable';
 			}
+		} elseif(isset($item['f'])) {
+			$env_items[$key]['current'] = function_exists($item['f']) ? 'enable' : 'disable';
 		}
 
 		$env_items[$key]['status'] = 1;
@@ -217,13 +221,13 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 			$item['r'] = format_space($item['r']);
 		}
 		if(VIEW_OFF) {
-			$env_str .= "\t\t<runCondition name=\"$key\" status=\"$status\" Require=\"$item[r]\" Best=\"$item[b]\" Current=\"$item[current]\"/>\n";
+			$env_str .= "\t\t<runCondition name=\"$key\" status=\"$status\" Require=\"{$item['r']}\" Best=\"{$item['b']}\" Current=\"{$item['current']}\"/>\n";
 		} else {
-			$env_str .= "<tr>\n";
+			$env_str .= '<tr'.($status ? '' : ' class="nwbg"').">\n";
 			$env_str .= "<td>".lang($key)."</td>\n";
 			$env_str .= "<td class=\"padleft\">".lang($item['r'])."</td>\n";
 			$env_str .= "<td class=\"padleft\">".lang($item['b'])."</td>\n";
-			$env_str .= ($status ? "<td class=\"w pdleft1\">" : "<td class=\"nw pdleft1\">").$item['current']."</td>\n";
+			$env_str .= ($status ? "<td class=\"w pdleft1\">" : "<td class=\"nw pdleft1\">").lang($item['current'])."</td>\n";
 			$env_str .= "</tr>\n";
 		}
 	}
@@ -236,10 +240,10 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 			if($item['status'] == 0) {
 				$error_code = ENV_CHECK_ERROR;
 			}
-			$$variable .= "\t\t\t<File name=\"$item[path]\" status=\"$item[status]\" requirePermisson=\"+r+w\" currentPermisson=\"$item[current]\" />\n";
+			$$variable .= "\t\t\t<File name=\"{$item['path']}\" status=\"{$item['status']}\" requirePermisson=\"+r+w\" currentPermisson=\"{$item['current']}\" />\n";
 		} else {
-			$$variable .= "<tr>\n";
-			$$variable .= "<td>$item[path]</td><td class=\"w pdleft1\">".lang('writeable')."</td>\n";
+			$$variable .= '<tr'.($item['status'] == 1 ? '' : ' class="nwbg"').">\n";
+			$$variable .= "<td>{$item['path']}</td><td class=\"w pdleft1\">".lang('writeable')."</td>\n";
 			if($item['status'] == 1) {
 				$$variable .= "<td class=\"w pdleft1\">".lang('writeable')."</td>\n";
 			} elseif($item['status'] == -1) {
@@ -277,8 +281,8 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 
 		show_header();
 
-		echo "<h2 class=\"title\">".lang('env_check')."</h2>\n";
-		echo "<table class=\"tb\" style=\"margin:20px 0 20px 55px;\">\n";
+		echo "<div class=\"box\"><h2 class=\"title\">".lang('env_check')."</h2>\n";
+		echo "<table class=\"tb\">\n";
 		echo "<tr>\n";
 		echo "\t<th>".lang('project')."</th>\n";
 		echo "\t<th class=\"padleft\">".lang('ucenter_required')."</th>\n";
@@ -286,10 +290,10 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 		echo "\t<th class=\"padleft\">".lang('curr_server')."</th>\n";
 		echo "</tr>\n";
 		echo $env_str;
-		echo "</table>\n";
+		echo "</table></div>\n";
 
-		echo "<h2 class=\"title\">".lang('priv_check')."</h2>\n";
-		echo "<table class=\"tb\" style=\"margin:20px 0 20px 55px;width:90%;\">\n";
+		echo "<div class=\"box\"><h2 class=\"title\">".lang('priv_check')."</h2>\n";
+		echo "<table class=\"tb\">\n";
 		echo "\t<tr>\n";
 		echo "\t<th>".lang('step1_file')."</th>\n";
 		echo "\t<th class=\"padleft\">".lang('step1_need_status')."</th>\n";
@@ -297,11 +301,11 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 		echo "</tr>\n";
 		echo $file_str;
 		echo $dir_str;
-		echo "</table>\n";
+		echo "</table></div>\n";
 
 		foreach($func_items as $item) {
 			$status = function_exists($item);
-			$func_str .= "<tr>\n";
+			$func_str .= '<tr'.($status ? '' : ' class="nwbg"').">\n";
 			$func_str .= "<td>$item()</td>\n";
 			if($status) {
 				$func_str .= "<td class=\"w pdleft1\">".lang('supportted')."</td>\n";
@@ -316,7 +320,7 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 		$filesock_disabled = 0;
 		foreach($filesock_items as $item) {
 			$status = function_exists($item);
-			$func_strextra .= "<tr>\n";
+			$func_strextra .= '<tr'.($status ? '' : ' class="nwbg"').">\n";
 			$func_strextra .= "<td>$item()</td>\n";
 			if($status) {
 				$func_strextra .= "<td class=\"w pdleft1\">".lang('supportted')."</td>\n";
@@ -331,15 +335,28 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items, &$filesock_
 		if($filesock_disabled == count($filesock_items)) {
 			$error_code = ENV_CHECK_ERROR;
 		}
-		echo "<h2 class=\"title\">".lang('func_depend')."</h2>\n";
-		echo "<table class=\"tb\" style=\"margin:20px 0 20px 55px;width:90%;\">\n";
+		echo "<div class=\"box\"><h2 class=\"title\">".lang('func_depend')."</h2>\n";
+		echo "<table class=\"tb\">\n";
 		echo "<tr>\n";
 		echo "\t<th>".lang('func_name')."</th>\n";
 		echo "\t<th class=\"padleft\">".lang('check_result')."</th>\n";
 		echo "\t<th class=\"padleft\">".lang('suggestion')."</th>\n";
 		echo "</tr>\n";
 		echo $func_str.$func_strextra;
-		echo "</table>\n";
+		echo "</table></div>\n";
+
+		echo <<<EOT
+<script>
+	document.querySelectorAll('.box').forEach(function(elem){
+		if(!elem.querySelector('.nw')) {
+			elem.classList.add('valid','collapse');
+			elem.addEventListener('click',function(){
+				this.classList.contains('collapse') ? this.classList.remove('collapse') : this.classList.add('collapse');
+			});
+		}
+	});
+</script>
+EOT;
 
 		show_next_step(2, $error_code);
 
@@ -368,11 +385,11 @@ function show_next_step($step, $error_code) {
 	}
 	echo "<input type=\"hidden\" name=\"uchidden\" value=\"$uchidden\" />";
 	if($error_code == 0) {
-		$nextstep = "<input type=\"button\" onclick=\"history.back();\" value=\"".lang('old_step')."\"><input type=\"submit\" value=\"".lang('new_step')."\">\n";
+		$nextstep = "<input type=\"button\" class=\"btn oldbtn\" onclick=\"history.back();\" value=\"".lang('old_step')."\"><input type=\"submit\" class=\"btn\" value=\"".lang('new_step')."\">\n";
 	} else {
-		$nextstep = "<input type=\"button\" disabled=\"disabled\" value=\"".lang('not_continue')."\">\n";
+		$nextstep = "<input type=\"button\" class=\"btn\" disabled=\"disabled\" value=\"".lang('not_continue')."\">\n";
 	}
-	echo "<div class=\"btnbox marginbot\">".$nextstep."</div>\n";
+	echo "<div class=\"btnbox\"><div class=\"inputbox\">".$nextstep."</div></div>\n";
 	echo "</form>\n";
 }
 
@@ -389,18 +406,20 @@ function show_form(&$form_items, $error_msg) {
 	show_setting('hidden', 'step', $step);
 	show_setting('hidden', 'install_ucenter', getgpc('install_ucenter'));
 	if($step == 2) {
+		echo '<div class="box">';
 		show_tips('install_dzfull');
 		show_tips('install_dzonly');
+		echo '</div>';
 	}
 	$is_first = 1;
 	if(!empty($uchidden)) {
 		$uc_info_transfer = unserialize(urldecode($uchidden));
 	}
-	echo '<div id="form_items_'.$step.'" '.($step == 2 && !getgpc('install_ucenter') ? 'style="display:none"' : '').'><br />';
+	echo '<div id="form_items_'.$step.'" '.($step == 2 && !getgpc('install_ucenter') ? 'style="display:none"' : '').'>';
 	foreach($form_items as $key => $items) {
 		global ${'error_'.$key};
 		if($is_first == 0) {
-			echo '</table>';
+			echo '</div>';
 		}
 
 		if(!${'error_'.$key}) {
@@ -409,7 +428,7 @@ function show_form(&$form_items, $error_msg) {
 			show_error('tips_admin_config', ${'error_'.$key});
 		}
 
-		echo '<table class="tb2">';
+		echo '<div class="box">';
 		foreach($items as $k => $v) {
 			$value = '';
 			if(!empty($error_msg)) {
@@ -442,10 +461,11 @@ function show_form(&$form_items, $error_msg) {
 			$is_first = 0;
 		}
 	}
-	echo '</table>';
 	echo '</div>';
-	echo '<table class="tb2">';
+	echo '</div>';
+	echo '<div class="btnbox">';
 	show_setting('', 'submitname', 'new_step', ($step == 2 ? 'submit|oldbtn' : 'submit' ));
+	echo '</div>';
 	show_setting('end');
 	show_footer();
 }
@@ -499,7 +519,7 @@ function show_license() {
 		$lang_noutf8 = lang('no_utf8_tips').lang('next_tips');
 		$lang_unstable = lang('unstable_tips').lang('next_tips');
 
-		$is_php8 = version_compare(PHP_VERSION, '8.0.0', '>=') ? 1 : 0;
+		$is_php8 = version_compare(PHP_VERSION, '9.0.0', '>=') ? 1 : 0;
 		$is_utf8 = (strtolower(CHARSET) == 'utf-8') ? 1 : 0;
 		$is_unstable = (strlen(DISCUZ_RELEASE) != 8 || DISCUZ_RELEASE == 20180101) ? 1 : 0;
 
@@ -517,14 +537,14 @@ function show_license() {
 
 		echo <<<EOT
 </div>
-<div class="main" style="margin-top:-123px;">
+<div class="main">
 	<div class="licenseblock">$license</div>
-	<div class="btnbox marginbot">
+	<div class="btnbox">
 		<form method="get" autocomplete="off" action="index.php">
 		<input type="hidden" name="step" value="$next">
 		<input type="hidden" name="uchidden" value="$uchidden">
-		<input type="submit" name="submit" value="{$lang_agreement_yes}" style="padding: 2px" onclick="return checker();">&nbsp;
-		<input type="button" name="exit" value="{$lang_agreement_no}" style="padding: 2px" onclick="javascript: window.close(); return false;">
+		<input type="submit" class="btn oldbtn" name="submit" value="{$lang_agreement_yes}" onclick="return checker();">
+		<input type="button" class="btn oldbtn" name="exit" value="{$lang_agreement_no}"  onclick="javascript: window.close(); return false;">
 		</form>
 	</div>
 	<script type="text/javascript">
@@ -568,21 +588,13 @@ function transfer_ucinfo(&$post) {
 	}
 }
 
-if(!function_exists('file_put_contents')) {
-	function file_put_contents($filename, $s) {
-		$fp = @fopen($filename, 'w');
-		@fwrite($fp, $s);
-		@fclose($fp);
-		return TRUE;
-	}
-}
-
 function createtable($sql, $dbver) {
-
 	$type = strtoupper(preg_replace("/^\s*CREATE TABLE\s+.+\s+\(.+?\).*(ENGINE|TYPE)\s*=\s*([a-z]+?).*$/isU", "\\2", $sql));
-	$type = in_array($type, array('MYISAM', 'HEAP', 'MEMORY')) ? $type : 'MYISAM';
-	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql).
-	($dbver > '4.1' ? " ENGINE=$type DEFAULT CHARSET=".DBCHARSET : " TYPE=$type");
+	$type = in_array($type, array('INNODB', 'MYISAM', 'HEAP', 'MEMORY')) ? $type : 'INNODB';
+	return 
+		preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql) .
+		" ENGINE=$type DEFAULT CHARSET=" . DBCHARSET .
+		(DBCHARSET === 'utf8mb4' ? " COLLATE=utf8mb4_unicode_ci" : "");
 }
 
 function dir_writeable($dir) {
@@ -604,7 +616,7 @@ function dir_writeable($dir) {
 
 function dir_clear($dir) {
 	global $lang;
-	showjsmessage($lang['clear_dir'].' '.str_replace(ROOT_PATH, '', $dir));
+	showjsmessage($lang['clear_dir'] . ' ' . str_replace(ROOT_PATH, '', $dir) . "\n");
 	if($directory = @dir($dir)) {
 		while($entry = $directory->read()) {
 			$filename = $dir.'/'.$entry;
@@ -624,14 +636,19 @@ function show_header() {
 	$release = DISCUZ_RELEASE;
 	$install_lang = lang(INSTALL_LANG);
 	$title = lang('title_install');
+	$titlehtml = '<span>'.SOFT_NAME.'</span>'.lang('install_wizard');
+	$nostep = $step > 0 ? '' : ' nostep';
 	$charset = CHARSET;
+	$reldisp = is_numeric(DISCUZ_RELEASE) ? ('Release ' . DISCUZ_RELEASE) : DISCUZ_RELEASE;
 	echo <<<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=$charset" />
+<meta charset="$charset" />
+<meta name="renderer" content="webkit" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <title>$title</title>
-<link rel="stylesheet" href="images/style.css" type="text/css" media="all" />
+<link rel="stylesheet" href="static/style.css" type="text/css" media="all" />
 <script type="text/javascript">
 	function $(id) {
 		return document.getElementById(id);
@@ -643,19 +660,26 @@ function show_header() {
 </script>
 <meta content="Comsenz Inc." name="Copyright" />
 </head>
-<div class="container">
+<div class="container{$nostep}">
 	<div class="header">
-		<h1>$title</h1>
-		<span>Discuz!$version $install_lang $release</span>
+		<h1>$titlehtml</h1>
+		<span>Discuz! $version $install_lang $reldisp</span>
 EOT;
 
 	$step > 0 && show_step($step);
+	echo "\r\n";
+	echo str_repeat('  ', 1024 * 4);
+	echo "\r\n";
+	flush();
+	ob_flush();
 }
 
 function show_footer($quit = true) {
 
+	$copy = lang('copyright');
+
 	echo <<<EOT
-		<div class="footer">Copyright &copy;2001-2021, Tencent Cloud.</div>
+		<div class="footer">$copy</div>
 	</div>
 </div>
 </body>
@@ -664,31 +688,84 @@ EOT;
 	$quit && exit();
 }
 
-function loginit($logfile) {
-	global $lang;
-	showjsmessage($lang['init_log'].' '.$logfile);
-	if($fp = @fopen('./forumdata/logs/'.$logfile.'.php', 'w')) {
-		fwrite($fp, '<'.'?PHP exit(); ?'.">\n");
-		fclose($fp);
-	}
-}
-
 function showjsmessage($message) {
 	if(VIEW_OFF) return;
-	echo '<script type="text/javascript">showmessage(\''.addslashes($message).' \');</script>'."\r\n";
+	append_to_install_log_file($message);
+	echo ' ';
 	flush();
 	ob_flush();
 }
 
-function random($length) {
-	$hash = '';
-	$chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
-	$max = strlen($chars) - 1;
-	PHP_VERSION < '4.2.0' && mt_srand((double)microtime() * 1000000);
+function random($length, $numeric = 0) {
+	$seed = base_convert(md5(microtime().$_SERVER['DOCUMENT_ROOT']), 16, $numeric ? 10 : 35);
+	$seed = $numeric ? (str_replace('0', '', $seed).'012340567890') : ($seed.'zZ'.strtoupper($seed));
+	if($numeric) {
+		$hash = '';
+	} else {
+		$hash = chr(rand(1, 26) + rand(0, 1) * 32 + 64);
+		$length--;
+	}
+	$max = strlen($seed) - 1;
 	for($i = 0; $i < $length; $i++) {
-		$hash .= $chars[mt_rand(0, $max)];
+		$hash .= $seed[mt_rand(0, $max)];
 	}
 	return $hash;
+}
+
+function secrandom($length, $numeric = 0, $strong = false) {
+	// Thank you @popcorner for your strong support for the enhanced security of the function.
+	$chars = $numeric ? array('A','B','+','/','=') : array('+','/','=');
+	$num_find = str_split('CDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+	$num_repl = str_split('01234567890123456789012345678901234567890123456789');
+	$isstrong = false;
+	if(function_exists('random_bytes')) {
+		$isstrong = true;
+		$random_bytes = function($length) {
+			return random_bytes($length);
+		};
+	} elseif(extension_loaded('mcrypt') && function_exists('mcrypt_create_iv')) {
+		// for lower than PHP 7.0, Please Upgrade ASAP.
+		$isstrong = true;
+		$random_bytes = function($length) {
+			$rand = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
+			if ($rand !== false && strlen($rand) === $length) {
+				return $rand;
+			} else {
+				return false;
+			}
+		};
+	} elseif(extension_loaded('openssl') && function_exists('openssl_random_pseudo_bytes')) {
+		// for lower than PHP 7.0, Please Upgrade ASAP.
+		// openssl_random_pseudo_bytes() does not appear to cryptographically secure
+		// https://github.com/paragonie/random_compat/issues/5
+		$isstrong = true;
+		$random_bytes = function($length) {
+			$rand = openssl_random_pseudo_bytes($length, $secure);
+			if($secure === true) {
+				return $rand;
+			} else {
+				return false;
+			}
+		};
+	}
+	if(!$isstrong) {
+		return $strong ? false : random($length, $numeric);
+	}
+	$retry_times = 0;
+	$return = '';
+	while($retry_times < 128) {
+		$getlen = $length - strlen($return); // 33% extra bytes
+		$bytes = $random_bytes(max($getlen, 12));
+		if($bytes === false) {
+			return false;
+		}
+		$bytes = str_replace($chars, '', base64_encode($bytes));
+		$return .= substr($bytes, 0, $getlen);
+		if(strlen($return) == $length) {
+			return $numeric ? str_replace($num_find, $num_repl, $return) : $return;
+		}
+		$retry_times++;
+	}
 }
 
 function redirect($url) {
@@ -701,16 +778,21 @@ function redirect($url) {
 
 }
 
+function validate_ip($ip) {
+	return filter_var($ip, FILTER_VALIDATE_IP) !== false;
+}
+
 function get_onlineip() {
-	$onlineip = '';
-	if(getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-		$onlineip = getenv('HTTP_CLIENT_IP');
-	} elseif(getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-		$onlineip = getenv('HTTP_X_FORWARDED_FOR');
-	} elseif(getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-		$onlineip = getenv('REMOTE_ADDR');
-	} elseif(isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
-		$onlineip = $_SERVER['REMOTE_ADDR'];
+	$onlineip = $_SERVER['REMOTE_ADDR'];
+	if (isset($_SERVER['HTTP_CLIENT_IP']) && validate_ip($_SERVER['HTTP_CLIENT_IP'])) {
+		$onlineip = $_SERVER['HTTP_CLIENT_IP'];
+	} elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+		if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ",") > 0) {
+			$exp = explode(",", $_SERVER['HTTP_X_FORWARDED_FOR']);
+			$onlineip = validate_ip(trim($exp[0])) ? $exp[0] : $onlineip;
+		} else {
+			$onlineip = validate_ip($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $onlineip;
+		}
 	}
 	return $onlineip;
 }
@@ -749,27 +831,35 @@ function setdefault($var, $default) {
 
 function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 
+	// 动态密钥长度, 通过动态密钥可以让相同的 string 和 key 生成不同的密文, 提高安全性
 	$ckey_length = 4;
 
 	$key = md5($key ? $key : UC_KEY);
+	// a参与加解密, b参与数据验证, c进行密文随机变换
 	$keya = md5(substr($key, 0, 16));
 	$keyb = md5(substr($key, 16, 16));
 	$keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length): substr(md5(microtime()), -$ckey_length)) : '';
 
+	// 参与运算的密钥组
 	$cryptkey = $keya.md5($keya.$keyc);
 	$key_length = strlen($cryptkey);
 
+	// 前 10 位用于保存时间戳验证数据有效性, 10 - 26位保存 $keyb , 解密时通过其验证数据完整性
+	// 如果是解码的话会从第 $ckey_length 位开始, 因为密文前 $ckey_length 位保存动态密匙以保证解密正确
 	$string = $operation == 'DECODE' ? base64_decode(substr($string, $ckey_length)) : sprintf('%010d', $expiry ? $expiry + time() : 0).substr(md5($string.$keyb), 0, 16).$string;
 	$string_length = strlen($string);
 
 	$result = '';
 	$box = range(0, 255);
 
+	// 产生密钥簿
 	$rndkey = array();
 	for($i = 0; $i <= 255; $i++) {
 		$rndkey[$i] = ord($cryptkey[$i % $key_length]);
 	}
 
+	// 打乱密钥簿, 增加随机性
+	// 类似 AES 算法中的 SubBytes 步骤
 	for($j = $i = 0; $i < 256; $i++) {
 		$j = ($j + $box[$i] + $rndkey[$i]) % 256;
 		$tmp = $box[$i];
@@ -777,6 +867,7 @@ function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 		$box[$j] = $tmp;
 	}
 
+	// 从密钥簿得出密钥进行异或，再转成字符 
 	for($a = $j = $i = 0; $i < $string_length; $i++) {
 		$a = ($a + 1) % 256;
 		$j = ($j + $box[$a]) % 256;
@@ -787,32 +878,215 @@ function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 	}
 
 	if($operation == 'DECODE') {
-		if((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) === substr(md5(substr($result, 26).$keyb), 0, 16)) {
+		// 这里按照算法对数据进行验证, 保证数据有效性和完整性
+		// $result 01 - 10 位是时间, 如果小于当前时间或为 0 则通过
+		// $result 10 - 26 位是加密时的 $keyb , 需要和入参的 $keyb 做比对
+		if(((int)substr($result, 0, 10) == 0 || (int)substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) === substr(md5(substr($result, 26).$keyb), 0, 16)) {
 			return substr($result, 26);
 		} else {
 			return '';
 		}
 	} else {
+		// 把动态密钥保存在密文里, 并用 base64 编码保证传输时不被破坏
 		return $keyc.str_replace('=', '', base64_encode($result));
 	}
 
 }
 
-function show_install() {
+function show_db_install() {
 	if(VIEW_OFF) return;
+	global $dbhost, $dbuser, $dbpw, $dbname, $tablepre, $username, $password, $email, $uid;
+	$dzucfull = DZUCFULL;
+	$allinfo = base64_encode(serialize(compact('dbhost', 'dbuser', 'dbpw', 'dbname', 'tablepre', 'username', 'password', 'email', 'dzucfull', 'uid')));
+	init_install_log_file();
 ?>
-<script type="text/javascript">
-function showmessage(message) {
-	document.getElementById('notice').innerHTML += message + '<br />';
-	document.getElementById('notice').scrollTop = 100000000;
-}
-function initinput() {
-	window.location='index.php?method=ext_info';
-}
-</script>
-		<div id="notice"></div>
-		<div class="btnbox margintop marginbot">
-			<input type="button" name="submit" value="<?php echo lang('install_in_processed');?>" disabled="disabled" id="laststep" onclick="initinput()">
+		<script type="text/javascript">
+			var ajax = {};
+			ajax.x = function () {
+				if(typeof XMLHttpRequest !== 'undefined') {
+					return new XMLHttpRequest();
+				}
+				var versions = ["MSXML2.XmlHttp.6.0", "MSXML2.XmlHttp.5.0", "MSXML2.XmlHttp.4.0", "MSXML2.XmlHttp.3.0", "MSXML2.XmlHttp.2.0", "Microsoft.XmlHttp"];
+				var xhr;
+				for(var i = 0; i < versions.length; i++) {
+					try {
+						xhr = new ActiveXObject(versions[i]);
+						break;
+					} catch (e) {
+					}
+				}
+				return xhr;
+			};
+
+			ajax.send = function (url, callback, method, data, async) {
+				if(async === undefined) {
+					async = true;
+				}
+				var x = ajax.x();
+				x.open(method, url, async);
+				x.onreadystatechange = function () {
+					if((x.readyState == 4) && (typeof callback == 'function')) {
+						callback(x.responseText, x.status);
+					}
+				};
+				if(method == 'POST') {
+					x.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+				}
+				x.send(data);
+			};
+
+			ajax.get = function (url, callback) {
+				ajax.send(url, callback, 'GET', null, true);
+			};
+
+			function set_notice(str) {
+				document.getElementById('notice').innerHTML = str;
+				document.getElementById('notice').scrollTop = 100000000;
+			}
+
+			function append_notice(str) {
+				document.getElementById('notice').innerHTML += str;
+				document.getElementById('notice').scrollTop = 100000000;
+			}
+
+			function refresh_lastmsg() {
+				document.getElementById('lastmsg').innerHTML = document.querySelector('#notice>p:last-child').outerHTML;
+			}
+
+			function add_instfail() {
+				document.querySelector('.box').classList.add('instfail');
+				document.getElementById('notice').scrollTop = 100000000;
+			}
+
+			function refresh_progress() {
+				// 进度条的总数，需要跟进实际安装情况修改
+				var total = 333;
+				var percent = document.querySelectorAll('#notice>p').length * 95 / total;
+				percent = (percent > 95) ? 95 : percent;
+				document.getElementById('pgb').style.width = percent + '%';
+			}
+
+			function init_bind() {
+				document.querySelector(".progress").addEventListener("click", function () {
+					var a = document.getElementById("notice");
+					a.style.display = "block" == a.style.display ? "" : "block";
+				});
+			}
+
+			function initinput() {
+				window.location='<?php echo 'index.php?step='.($GLOBALS['step']);?>';
+			}
+
+			var old_log_data = '';
+			var log_offset = 0;
+			var stuck_times = 0;
+
+			function request_do_db_init() {
+				// 发起数据库初始化请求
+				ajax.get('index.php?<?= http_build_query(array('method' => 'do_db_init', 'allinfo' => $allinfo)) ?>', function() {
+					// 数据库初始化请求完成拉起初始化
+					request_do_initsys();
+				});
+			}
+
+			function request_log() {
+				var timest = new Date().getTime().toString().substring(5);
+				ajax.get('index.php?method=check_db_init_progress&timestamp=' + timest + '&offset=' + log_offset, function (data, status) {
+					// 新增对于 >= 400 状态的判断, 避免被服务器自带安全软件或者 CDN 拉黑地址之后不报错
+					if(status >= 400) {
+						append_notice('<p class="red">HTTP '+status+' <?= lang('failed') ?></p>');
+						append_notice('<p class="red"><?= lang('error_quit_msg') ?></p>');
+						add_instfail();
+						return;
+					}
+					log_offset = parseInt(data.substring(0,5));
+					data = data.substring(5);
+					if(stuck_times >= 120) {
+						// 如果安装程序两分钟没有响应, 则提示安装可能卡死
+						stuck_times = 0;
+						append_notice('<p class="red"><?= lang('error_stuck_msg') ?></p>');
+						setTimeout(request_log, 1000);
+						return;
+					}
+					if(data === old_log_data && stuck_times < 120) {
+						stuck_times++;
+						setTimeout(request_log, 1000);
+						return;
+					}
+					stuck_times = 0;
+					old_log_data = data;
+					append_notice(
+						data.trim().split("\n").map(function(l) {
+							if(l.indexOf('<?= lang('failed') ?>') !== -1) {
+								return '<p class="red">' + l + '</p>';
+							} else if(!l) {
+								return '';
+							} else {
+								return '<p>' + l + '</p>';
+							}
+						}).join('')
+					);
+					refresh_lastmsg();
+					refresh_progress();
+					if(data.indexOf('<?= lang('failed') ?>') !== -1) {
+						append_notice('<p class="red"><?= lang('error_quit_msg') ?></p>');
+						add_instfail();
+						return;
+					}
+					if(data.indexOf('<?= lang('initdbresult_succ') ?>') === -1) {
+						setTimeout(request_log, 200);
+					}
+				});
+			}
+
+			function request_do_initsys() {
+				var resultDiv = document.getElementById('notice');
+				// 数据库初始化失败不进行系统初始化
+				if(resultDiv.innerHTML.indexOf('<?= lang('failed') ?>') !== -1) {
+					document.getElementById('laststep').value = '<?= lang('error_quit_msg') ?>';
+					return;
+				}
+				if(resultDiv.innerHTML.indexOf('<?= lang('initdbresult_succ') ?>') !== -1) {
+					// 数据库初始化成功就进行系统初始化
+					append_notice("<p><?= lang('initsys') ?> ... </p>");
+					refresh_lastmsg();
+					ajax.get('../misc.php?mod=initsys', function(callback, status) {
+						if(status >= 400 || callback.indexOf('Access Denied') !== -1 || callback.indexOf('Discuz! Database Error') !== -1 || callback.indexOf('Discuz! System Error') !== -1) {
+							if(status >= 400) {
+								append_notice('<p class="red">HTTP '+status+' <?= lang('failed') ?></p>');
+							} else {
+								append_notice('<p class="red"><?= lang('failed') ?></p>');
+							}
+							append_notice('<p class="red"><?= lang('error_quit_msg') ?></p>');
+							document.getElementById('laststep').value = '<?= lang('error_quit_msg') ?>';
+							add_instfail();
+							return;
+						}
+						append_notice('<p><?= lang('initsys').lang('succeed') ?></p>');
+						refresh_lastmsg();
+						document.getElementById('pgb').style.width = '100%';
+						document.getElementById('pgb').className = '';
+						document.getElementById('laststep').value = '<?= lang('succeed') ?>';
+						document.getElementById('laststep').disabled = false;
+						window.setTimeout(function() {
+							window.location='index.php?method=ext_info';
+						}, 1000);
+					});
+				} else {
+					// 数据库初始化状态未知时不做初始化, 一秒钟后重新判断数据库初始化状态
+					setTimeout(request_do_initsys, 1000);
+				}
+			}
+
+			window.onload = function() {
+				request_do_db_init();
+				init_bind();
+				setTimeout(request_log, 500);
+			}
+		</script>
+		<div class="box"><div class="desc" id="lastmsg"><?= lang('install_in_processed') ?></div><div class="progress"><div class="move" id="pgb"></div></div><div id="notice"></div></div>
+		<div class="btnbox">
+			<input type="button" class="btn" name="submit" value="<?php echo lang('install_in_processed');?>" disabled="disabled" id="laststep" onclick="initinput()">
 		</div>
 <?php
 }
@@ -836,21 +1110,39 @@ function runquery($sql) {
 	}
 	unset($sql);
 
+	$oldtablename = "";
 	foreach($ret as $query) {
 		$query = trim($query);
 		if($query) {
-
 			if(substr($query, 0, 12) == 'CREATE TABLE') {
 				$name = preg_replace("/CREATE TABLE ([a-z0-9_]+) .*/is", "\\1", $query);
-				showjsmessage(lang('create_table').' '.$name.' ... '.lang('succeed'));
-				$db->query(createtable($query, $db->version()));
-			} else {
-				$db->query($query);
+				if ($db->query(createtable($query, $db->version()))) {
+					showjsmessage(lang('create_table').' '.$name.'  ... '.lang('succeed') . "\n");
+				} else {
+					showjsmessage(lang('create_table').' '.$name.'  ... '.lang('failed') . "\n");
+					return false;
+				}
+			} elseif(substr($query, 0, 6) == 'INSERT') {
+				$name = preg_replace("/INSERT\s+INTO\s+[\`]?([a-z0-9_]+)[\`]? .*/is", "\\1", $query);
+				if ($db->query($query)) {
+					if($oldtablename != $name) {
+						showjsmessage(lang('init_table_data').' '.$name.'  ... '.lang('succeed') . "\n");
+						$oldtablename = $name;
+					}
+				} else {
+					showjsmessage(lang('init_table_data').' '.$name.'  ... '.lang('failed') . "\n");
+					return false;
+				}
+			}else{
+				if (!$db->query($query)) {
+					showjsmessage(lang('failed') . "\n");
+					return false;
+				}
 			}
 
 		}
 	}
-
+	return true;
 }
 
 function runucquery($sql, $tablepre) {
@@ -877,8 +1169,8 @@ function runucquery($sql, $tablepre) {
 
 			if(substr($query, 0, 12) == 'CREATE TABLE') {
 				$name = preg_replace("/CREATE TABLE ([a-z0-9_]+) .*/is", "\\1", $query);
-				showjsmessage(lang('create_table').' '.$name.' ... '.lang('succeed'));
 				$db->query(createtable($query, $db->version()));
+				showjsmessage(lang('create_table').' '.$name.' ... '.lang('succeed') . "\n");
 			} else {
 				$db->query($query);
 			}
@@ -890,12 +1182,7 @@ function runucquery($sql, $tablepre) {
 
 
 function charcovert($string) {
-	if(!get_magic_quotes_gpc()) {
-		$string = str_replace('\'', '\\\'', $string);
-	} else {
-		$string = str_replace('\"', '"', $string);
-	}
-	return $string;
+	return str_replace('\'', '\\\'', $string);
 }
 
 function insertconfig($s, $find, $replace) {
@@ -923,7 +1210,7 @@ function var_to_hidden($k, $v) {
 	return "<input type=\"hidden\" name=\"$k\" value=\"$v\" />\n";
 }
 
-function fsocketopen($hostname, $port = 80, &$errno, &$errstr, $timeout = 15) {
+function fsocketopen($hostname, $port = 80, &$errno = null, &$errstr = null, $timeout = 15) {
 	$fp = '';
 	if(function_exists('fsockopen')) {
 		$fp = @fsockopen($hostname, $port, $errno, $errstr, $timeout);
@@ -991,7 +1278,7 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		}
 		$boundary = $encodetype == 'URLENCODE' ? '' : '; boundary='.trim(substr(trim($post), 2, strpos(trim($post), "\n") - 2));
 		$header .= $encodetype == 'URLENCODE' ? "Content-Type: application/x-www-form-urlencoded\r\n" : "Content-Type: multipart/form-data$boundary\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= 'Content-Length: '.strlen($post)."\r\n";
 		$header .= "Connection: Close\r\n";
@@ -1002,7 +1289,7 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		$out = "GET $path HTTP/1.0\r\n";
 		$header = "Accept: */*\r\n";
 		$header .= "Accept-Language: zh-cn\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= "Connection: Close\r\n";
 		$header .= "Cookie: $cookie\r\n\r\n";
@@ -1079,13 +1366,8 @@ function check_env() {
 	$errors = array('quit' => false);
 	$quit = false;
 
-	if(!function_exists('mysql_connect') && !function_exists('mysqli_connect')) {
-		$errors[] = 'mysql_unsupport';
-		$quit = true;
-	}
-
-	if(PHP_VERSION < '4.3') {
-		$errors[] = 'php_version_430';
+	if(!function_exists('mysqli_connect')) {
+		$errors[] = 'mysqli_unsupport';
 		$quit = true;
 	}
 
@@ -1142,7 +1424,7 @@ function show_error($type, $errors = '', $quit = false) {
 	if($step > 0) {
 		echo "<div class=\"desc\"><b>$title</b><ul>$comment</ul>";
 	} else {
-		echo "</div><div class=\"main\" style=\"margin-top: -123px;\"><b>$title</b><ul style=\"line-height: 200%; margin-left: 30px;\">$comment</ul>";
+		echo "</div><div class=\"main\"><b>$title</b><ul style=\"line-height: 200%; margin-left: 30px;\">$comment</ul>";
 	}
 
 	if($quit) {
@@ -1159,11 +1441,11 @@ function show_tips($tip, $title = '', $comment = '', $style = 1) {
 	$title = empty($title) ? lang($tip) : $title;
 	$comment = empty($comment) ? lang($tip.'_comment', FALSE) : $comment;
 	if($style) {
-		echo "<div class=\"desc\"><b>$title</b>";
+		echo "<div class=\"desc\">$title";
 	} else {
-		echo "</div><div class=\"main\" style=\"margin-top: -123px;\">$title<div class=\"desc1 marginbot\"><ul>";
+		echo "</div><div class=\"main\">$title<div class=\"desc1 marginbot\"><ul>";
 	}
-	$comment && print('<br>'.$comment);
+	$comment && print('<div class="comm">'.$comment.'</div>');
 	echo "</div>";
 }
 
@@ -1172,38 +1454,41 @@ function show_setting($setname, $varname = '', $value = '', $type = 'text|passwo
 		echo "<form method=\"post\" action=\"index.php\">\n";
 		return;
 	} elseif($setname == 'end') {
-		echo "\n</table>\n</form>\n";
+		echo "\n</form>\n";
 		return;
 	} elseif($setname == 'hidden') {
 		echo "<input type=\"hidden\" name=\"$varname\" value=\"$value\">\n";
 		return;
 	}
 
-	echo "\n".'<tr><th class="tbopt'.($error ? ' red' : '').'" align="left">&nbsp;'.(empty($setname) ? '' : lang($setname).':')."</th>\n<td>";
+	echo "\n".'<div class="inputbox'.($error ? ' red' : '').'">';
 	if($type == 'text' || $type == 'password') {
+		echo "\n".'<label class="tbopt" for="inst_'.$varname.'">'.(empty($setname) ? '' : lang($setname).':')."</label>\n";
 		$value = dhtmlspecialchars($value);
-		echo "<input type=\"$type\" name=\"$varname\" value=\"$value\" size=\"35\" class=\"txt\">";
+		echo "<input type=\"$type\" id=\"inst_{$varname}\" name=\"$varname\" value=\"$value\" class=\"txt\">";
 	} elseif(strpos($type, 'submit') !== FALSE) {
 		if(strpos($type, 'oldbtn') !== FALSE) {
-			echo "<input type=\"button\" name=\"oldbtn\" value=\"".lang('old_step')."\" class=\"btn\" onclick=\"history.back();\">\n";
+			echo "<input type=\"button\" name=\"oldbtn\" value=\"".lang('old_step')."\" class=\"btn oldbtn\" onclick=\"history.back();\">\n";
 		}
 		$value = empty($value) ? 'next_step' : $value;
 		echo "<input type=\"submit\" name=\"$varname\" value=\"".lang($value)."\" class=\"btn\">\n";
 	} elseif($type == 'checkbox') {
 		if(!is_array($varname) && !is_array($value)) {
-			echo "<label><input type=\"checkbox\" name=\"$varname\" value=\"1\"".($value ? 'checked="checked"' : '')."style=\"border: 0\">".lang($setname.'_check_label')."</label>\n";
+			echo "<input type=\"checkbox\" class=\"ckb\" id=\"$varname\" name=\"$varname\" value=\"1\"".($value ? 'checked="checked"' : '')."><label for=\"$varname\">".lang($setname.'_check_label')."</label>\n";
 		}
 	} else {
 		echo $value;
 	}
 
-	echo "</td>\n<td>";
 	if($error) {
-		$comment = '<span class="red">'.(is_string($error) ? lang($error) : lang($setname.'_error')).'</span>';
+		$comment = '<div class="comm red">'.(is_string($error) ? lang($error) : lang($setname.'_error')).'</div>';
 	} else {
 		$comment = lang($setname.'_comment', false);
+		if($comment) {
+			$comment = '<div class="comm">'.$comment.'</div>';
+		}
 	}
-	echo "$comment</td>\n</tr>\n";
+	echo "$comment\n</div>\n";
 	return true;
 }
 
@@ -1226,18 +1511,25 @@ function show_step($step) {
 	$stepclass[$laststep] .= ' last';
 
 	echo <<<EOT
-	<div class="setup step{$step}">
-		<h2>$title</h2>
-		<p>$comment</p>
-	</div>
-	<div class="stepstat">
-		<ul>
-			<li class="$stepclass[1]">$step_title_1</li>
-			<li class="$stepclass[2]">$step_title_2</li>
-			<li class="$stepclass[3]">$step_title_3</li>
-			<li class="$stepclass[4]">$step_title_4</li>
-		</ul>
-		<div class="stepstatbg stepstat1"></div>
+</div>
+<div class="setup">
+	<div>
+		<div class="step step{$step}">
+			<div class="stepnum">{$step}</div>
+			<div>
+				<h2>$title</h2>
+				<p>$comment</p>
+			</div>
+		</div>
+		<div class="stepstat">
+			<div class="stepstattxt">
+				<div class="$stepclass[1]">$step_title_1</div>
+				<div class="$stepclass[2]">$step_title_2</div>
+				<div class="$stepclass[3]">$step_title_3</div>
+				<div class="$stepclass[4]">$step_title_4</div>
+			</div>
+			<div class="stepstatbg stepstat{$step}"></div>
+		</div>
 	</div>
 </div>
 <div class="main">
@@ -1285,11 +1577,11 @@ function check_adminuser($username, $password, $email) {
 
 function save_uc_config($config, $file) {
 
-	$success = false;
-
 	list($appauthkey, $appid, $ucdbhost, $ucdbname, $ucdbuser, $ucdbpw, $ucdbcharset, $uctablepre, $uccharset, $ucapi, $ucip) = $config;
 
-	$link = function_exists('mysql_connect') ? mysql_connect($ucdbhost, $ucdbuser, $ucdbpw, 1) : new mysqli($ucdbhost, $ucdbuser, $ucdbpw, $ucdbname);
+	mysqli_report(MYSQLI_REPORT_OFF);
+
+	$link = new mysqli($ucdbhost, $ucdbuser, $ucdbpw, $ucdbname);
 	$uc_connnect = $link ? 'mysql' : '';
 
 	$date = gmdate("Y-m-d H:i:s", time() + 3600 * 8);
@@ -1299,6 +1591,7 @@ function save_uc_config($config, $file) {
 
 
 define('UC_CONNECT', '$uc_connnect');
+define('UC_STANDALONE', 0);
 
 define('UC_DBHOST', '$ucdbhost');
 define('UC_DBUSER', '$ucdbuser');
@@ -1307,6 +1600,9 @@ define('UC_DBNAME', '$ucdbname');
 define('UC_DBCHARSET', '$ucdbcharset');
 define('UC_DBTABLEPRE', '`$ucdbname`.$uctablepre');
 define('UC_DBCONNECT', 0);
+
+define('UC_AVTURL', '');
+define('UC_AVTPATH', '');
 
 define('UC_CHARSET', '$uccharset');
 define('UC_KEY', '$appauthkey');
@@ -1317,17 +1613,16 @@ define('UC_PPP', 20);
 ?>
 EOT;
 
-	if($fp = fopen($file, 'w')) {
-		fwrite($fp, $config);
-		fclose($fp);
-		$success = true;
+	if(file_put_contents($file, $config) !== false) {
+		return true;
 	}
-	return $success;
+
+	return false;
 }
 
 function _generate_key($length = 32) {
-	$random = random($length);
-	$info = md5($_SERVER['SERVER_SOFTWARE'].$_SERVER['SERVER_NAME'].$_SERVER['SERVER_ADDR'].$_SERVER['SERVER_PORT'].$_SERVER['HTTP_USER_AGENT'].time());
+	$random = secrandom($length);
+	$info = md5($_SERVER['SERVER_SOFTWARE'].$_SERVER['SERVER_NAME'].(isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : '').(isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : '').$_SERVER['HTTP_USER_AGENT'].time());
 	$return = '';
 	for($i=0; $i<$length; $i++) {
 		$return .= $random[$i].$info[$i];
@@ -1340,8 +1635,8 @@ function uc_write_config($config, $file, $password) {
 	$ucauthkey = _generate_key();
 	$ucsiteid = _generate_key();
 	$ucmykey = _generate_key();
-	$salt = substr(_generate_key(), 0, 6);
-	$pw = md5(md5($password).$salt);
+	$salt = '';
+	$pw = password_hash($password, PASSWORD_BCRYPT);
 	$config = "<?php \r\ndefine('UC_DBHOST', '$ucdbhost');\r\n";
 	$config .= "define('UC_DBUSER', '$ucdbuser');\r\n";
 	$config .= "define('UC_DBPW', '$ucdbpw');\r\n";
@@ -1359,10 +1654,8 @@ function uc_write_config($config, $file, $password) {
 	$config .= "define('UC_MYKEY', '$ucmykey');\r\n";
 	$config .= "define('UC_DEBUG', false);\r\n";
 	$config .= "define('UC_PPP', 20);\r\n";
-	$fp = fopen($file, 'w');
-	fwrite($fp, $config);
-	fclose($fp);
 
+	file_put_contents($file, $config);
 }
 
 function install_uc_server() {
@@ -1384,26 +1677,20 @@ function install_uc_server() {
 	$pathinfo = pathinfo($_SERVER['PHP_SELF']);
 	$pathinfo['dirname'] = substr($pathinfo['dirname'], 0, -8);
 	$isHTTPS = is_https();
-	$appurl = 'http'.($isHTTPS ? 's' : '').'://'.preg_replace("/\:\d+/", '', $_SERVER['HTTP_HOST']).($_SERVER['SERVER_PORT'] && $_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443 ? ':'.$_SERVER['SERVER_PORT'] : '').$pathinfo['dirname'];
+	$appurl = 'http'.($isHTTPS ? 's' : '').'://'. $_SERVER['HTTP_HOST'].$pathinfo['dirname'];
 	$ucapi = $appurl.'/uc_server';
 	$ucip = '';
-	$app_tagtemplates = 'apptagtemplates[template]='.urlencode('<a href="{url}" target="_blank">{subject}</a>').'&'.
-		'apptagtemplates[fields][subject]='.urlencode($lang['tagtemplates_subject']).'&'.
-		'apptagtemplates[fields][uid]='.urlencode($lang['tagtemplates_uid']).'&'.
-		'apptagtemplates[fields][username]='.urlencode($lang['tagtemplates_username']).'&'.
-		'apptagtemplates[fields][dateline]='.urlencode($lang['tagtemplates_dateline']).'&'.
-		'apptagtemplates[fields][url]='.urlencode($lang['tagtemplates_url']);
 
-	$db->query("INSERT INTO {$uctablepre}applications SET name='Discuz! Board', url='$appurl', ip='$ucip', authkey='$appauthkey', synlogin='1', charset='$charset', dbcharset='$dbcharset', type='DISCUZX', recvnote='1', tagtemplates='$apptagtemplates'", $link);
-	$appid = $db->insert_id($link);
+	$db->query("INSERT INTO {$uctablepre}applications SET name='Discuz! Board', url='$appurl', ip='$ucip', authkey='$appauthkey', synlogin='1', charset='$uccharset', dbcharset='$ucdbcharset', type='DISCUZX', recvnote='1', tagtemplates=''");
+	$appid = $db->insert_id();
 	$db->query("ALTER TABLE {$uctablepre}notelist ADD COLUMN app$appid tinyint NOT NULL");
 
 	$config = array($appauthkey,$appid,$ucdbhost,$ucdbname,$ucdbuser,$ucdbpw,$ucdbcharset,$uctablepre,$uccharset,$ucapi,$ucip);
 	save_uc_config($config, ROOT_PATH.'./config/config_ucenter.php');
 
-	$salt = substr(uniqid(rand()), -6);
-	$passwordmd5 = md5(md5($password).$salt);
-	$db->query("INSERT INTO {$uctablepre}members SET $sqladd username='$username', password='$passwordmd5', email='$email', regip='hidden', regdate='".time()."', salt='$salt'");
+	$salt = '';
+	$passwordhash = password_hash($password, PASSWORD_BCRYPT);
+	$db->query("INSERT INTO {$uctablepre}members SET username='$username', password='$passwordhash', email='$email', regip='hidden', regdate='".time()."', salt='$salt'");
 	$uid = $db->insert_id();
 	$db->query("INSERT INTO {$uctablepre}memberfields SET uid='$uid'");
 
@@ -1435,7 +1722,7 @@ function install_uc_server() {
 
 function install_data($username, $uid) {
 	global $_G, $db, $tablepre;
-	showjsmessage(lang('install_data')." ... ".lang('succeed'));
+	showjsmessage(lang('install_data')." ... " . "\n");
 
 	$_G = array('db'=>$db,'tablepre'=>$tablepre, 'uid'=>$uid, 'username'=>$username);
 
@@ -1445,11 +1732,14 @@ function install_data($username, $uid) {
 	foreach ($arr as $v) {
 		import_diy($v['importfile'], $v['primaltplname'], $v['targettplname']);
 	}
+
+	showjsmessage(lang('install_data').lang('succeed') . "\n");
 }
+
 function install_testdata($username, $uid) {
 	global $_G, $db, $tablepre;
-	showjsmessage(lang('install_test_data')." ... ".lang('succeed'));
 
+	showjsmessage(lang('install_test_data')." :  \n");
 	$sqlfile = ROOT_PATH.'./install/data/common_district_{#id}.sql';
 	for($i = 1; $i < 4; $i++) {
 		$sqlfileid = str_replace('{#id}', $i, $sqlfile);
@@ -1479,9 +1769,10 @@ function getvars($data, $type = 'VAR') {
 
 function buildarray($array, $level = 0, $pre = '$_config') {
 	static $ks;
+	$return = '';
+
 	if($level == 0) {
 		$ks = array();
-		$return = '';
 	}
 
 	foreach ($array as $key => $val) {
@@ -1497,14 +1788,17 @@ function buildarray($array, $level = 0, $pre = '$_config') {
 				$return .= "// $newline //\r\n";
 			}
 		}
-
-		$ks[$level] = $ks[$level - 1]."['$key']";
+		$ks[$level] = $level ? $ks[$level - 1] : '';
+		if(is_int($key)) {
+			$ks[$level] .= '['.$key.']';
+		} else {
+			$ks[$level] .= "['$key']";
+		}
 		if(is_array($val)) {
-			$ks[$level] = $ks[$level - 1]."['$key']";
 			$return .= buildarray($val, $level + 1, $pre);
 		} else {
-			$val =  is_string($val) || strlen($val) > 12 || !preg_match("/^\-?[1-9]\d*$/", $val) ? '\''.addcslashes($val, '\'\\').'\'' : $val;
-			$return .= $pre.$ks[$level - 1]."['$key']"." = $val;\r\n";
+			$val =  is_string($val) || strlen($val) > 12 || ($val !== 0 && !preg_match("/^\-?[1-9]\d*$/", $val)) ? '\''.addcslashes($val, '\'\\').'\'' : $val;
+			$return .= $pre.$ks[$level]." = $val;\r\n";
 		}
 	}
 	return $return;
@@ -1561,7 +1855,7 @@ function getframehtml($data = array()) {
 	global $_G;
 	$html = $style = '';
 	foreach ((array)$data as $id => $content) {
-		list($flag, $name) = explode('`', $id);
+		list($flag, $name) = explode('`', $id.'`');
 		if ($flag == 'frame') {
 			$fattr = $content['attr'];
 			$moveable = $fattr['moveable'] == 'true' ? ' move-span' : '';
@@ -1571,7 +1865,7 @@ function getframehtml($data = array()) {
 				$html .= '<div class="'.implode(' ',$fattr['titles']['className']).'"'.$style.'>'.gettitlehtml($fattr['titles'], 'frame').'</div>';
 			}
 			foreach ((array)$content as $colid => $coldata) {
-				list($colflag, $colname) = explode('`', $colid);
+				list($colflag, $colname) = explode('`', $colid.'`');
 				if ($colflag == 'column') {
 					$html .= '<div id="'.$colname.'" class="'.$coldata['attr']['className'].'">';
 					$html .= '<div id="'.$colname.'_temp" class="move-span temp"></div>';
@@ -1727,12 +2021,12 @@ function getframeblock($data) {
 	if (!isset($_G['curtplframe'])) $_G['curtplframe'] = array();
 
 	foreach ((array)$data as $id => $content) {
-		list($flag, $name) = explode('`', $id);
+		list($flag, $name) = explode('`', $id.'`');
 		if ($flag == 'frame' || $flag == 'tab') {
 			foreach ((array)$content as $colid => $coldata) {
-				list($colflag, $colname) = explode('`', $colid);
+				list($colflag, $colname) = explode('`', $colid.'`');
 				if ($colflag == 'column') {
-					getframeblock($coldata,$framename);
+					getframeblock($coldata);
 				}
 			}
 			$_G['curtplframe'][$name] = array('type'=>$flag,'name'=>$name);
@@ -1756,6 +2050,7 @@ function import_diy($importfile, $primaltplname, $targettplname) {
 	require_once ROOT_PATH.'./source/class/class_xml.php';
 	if (empty($content)) return $arr;
 	$diycontent = xml2array($content);
+	$diycontent = is_array($diycontent) ? $diycontent : array();
 
 	if ($diycontent) {
 
@@ -1807,7 +2102,7 @@ function dimplode($array) {
 function implode_field_value($array, $glue = ',') {
 	$sql = $comma = '';
 	foreach ($array as $k => $v) {
-		$sql .= $comma."`$k`='$v'";
+		$sql .= $comma."`$k`='".(is_string($v) ? $v : '')."'";
 		$comma = $glue;
 	}
 	return $sql;
@@ -1870,6 +2165,43 @@ function format_space($space) {
 		}
 	}
 	return $space;
+}
+
+function init_install_log_file() {
+	if (file_exists(INST_LOG_PATH)) {
+		append_to_install_log_file("", true);
+		unlink(INST_LOG_PATH);
+	}
+}
+
+function append_to_install_log_file($message, $close = false) {
+	static $fh = false;
+	if (!$fh) {
+		$fh = fopen(INST_LOG_PATH, "a+");
+	} 
+	if ($fh) {
+		fwrite($fh, $message);
+		fflush($fh);
+		if ($close) {
+			fclose($fh);
+		}
+	}
+}
+
+function read_install_log_file() {
+	if (file_exists(INST_LOG_PATH)) {
+		$offset = intval(getgpc('offset'));
+		echo sprintf('%05d',filesize(INST_LOG_PATH));
+		if($offset) {
+			$fp = fopen(INST_LOG_PATH, 'rb');
+			fseek($fp, $offset);
+			fpassthru($fp);
+		} else {
+			readfile(INST_LOG_PATH);
+		}
+	} else {
+		echo '00000';
+	}
 }
 
 function send_mime_type_header($type = 'application/xml') {

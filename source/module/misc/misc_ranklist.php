@@ -10,6 +10,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if(!$_G['setting']['rankliststatus']) {
+	showmessage('ranklist_status_off');
+}
+
 $page = $_G['page'];
 $type = $_GET['type'];
 
@@ -20,14 +24,13 @@ if(!in_array($type, array('index', 'member', 'thread', 'blog', 'poll', 'picture'
 }
 
 $ranklist_setting = $_G['setting']['ranklist'];
-if(!$ranklist_setting['status']) {
-	showmessage('ranklist_status_off');
-}
 
 $navtitle = lang('core', 'title_ranklist_'.$type);
 
+$allowtype = array('member' => 'ranklist', 'thread' => 'forum', 'blog' => 'blog', 'poll' => 'forum', 'picture' => 'album', 'activity' => 'forum', 'forum' => 'forum', 'group' => 'group');
+
 if($type != 'index') {
-	if(!$ranklist_setting[$type]['available']) {
+	if(!array_key_exists($type, $allowtype) || !$_G['setting'][$allowtype[$type].'status'] || !$ranklist_setting[$type]['available']) {
 		showmessage('ranklist_this_status_off');
 	}
 }
@@ -114,7 +117,7 @@ function getranklist_activity($num = 20, $view = 'heats', $orderby = 'all') {
 		$attachtables[getattachtableid($thread['tid'])][] = $thread['aid'];
 	}
 	foreach($attachtables as $attachtable => $aids) {
-		$attachs = C::t('forum_attachment_n')->fetch_all($attachtable, $aids);
+		$attachs = C::t('forum_attachment_n')->fetch_all_attachment($attachtable, $aids);
 		foreach($attachs as $attach) {
 			$attach['attachurl'] = ($attach['remote'] ? $_G['setting']['ftp']['attachurl'] : $_G['setting']['attachurl']).'forum/'.$attach['attachment'];
 			$data[$attach['tid']] = array_merge($data[$attach['tid']], $attach);
@@ -145,7 +148,7 @@ function getranklist_picture($num = 20, $view = 'hot', $orderby = 'all') {
 		++$rank;
 		$picture = array('picid' => $value['picid'], 'uid' => $value['uid'], 'username' => $value['username'], 'title' => $value['title'], 'filepath' => $value['filepath'], 'thumb' => $value['thumb'], 'remote' => $value['remote'], 'hot' => $value['hot'], 'sharetimes' => $value['sharetimes'], 'click1' => $value['click1'], 'click2' => $value['click2'], 'click3' => $value['click3'], 'click4' => $value['click4'], 'click5' => $value['click5'], 'click6' => $value['click6'], 'click7' => $value['click7'], 'click8' => $value['click8'], 'albumid' => $value['albumid'], 'albumname' => $value['albumname'], 'friend' => $value['friend']);
 		$picture['rank'] = $rank;
-		$picture['url'] = $picture['friend'] == 0 ? pic_get($picture['filepath'], 'album', $picture['thumb'], $picture['remote']) : STATICURL.'image/common/nopublish.gif';;
+		$picture['url'] = $picture['friend'] == 0 ? pic_get($picture['filepath'], 'album', $picture['thumb'], $picture['remote']) : STATICURL.'image/common/nopublish.svg';;
 		$picture['origurl'] = pic_get($picture['filepath'], 'album', 0, $picture['remote']);
 		$data[] = $picture;
 	}
@@ -158,8 +161,8 @@ function getranklist_pictures_index($num = 20, $dateline = 0, $orderby = 'hot DE
 	require_once libfile('function/home');
 	foreach($query as $value) {
 		$picture = array('picid' => $value['picid'], 'uid' => $value['uid'], 'username' => $value['username'], 'title' => $value['title'], 'filepath' => $value['filepath'], 'thumb' => $value['thumb'], 'remote' => $value['remote'], 'albumid' => $value['albumid'], 'albumname' => $value['albumname'], 'friend' => $value['friend']);
-		$picture['url'] = $picture['friend'] == 0 ? pic_get($picture['filepath'], 'album', $picture['thumb'], $picture['remote']) : STATICURL.'image/common/nopublish.gif';;
-		$picture['origurl'] = $picture['friend'] == 0 ? pic_get($picture['filepath'], 'album', 0, $picture['remote']) : STATICURL.'image/common/nopublish.gif';
+		$picture['url'] = $picture['friend'] == 0 ? pic_get($picture['filepath'], 'album', $picture['thumb'], $picture['remote']) : STATICURL.'image/common/nopublish.svg';;
+		$picture['origurl'] = $picture['friend'] == 0 ? pic_get($picture['filepath'], 'album', 0, $picture['remote']) : STATICURL.'image/common/nopublish.svg';
 		$picturelist[] = $picture;
 	}
 	return $picturelist;
@@ -192,7 +195,7 @@ function getranklist_blog($num = 20, $view = 'hot', $orderby = 'all') {
 	}
 
 	$data = array();
-	$data_blog = C::t('home_blog')->range(0, $num, 'DESC', $view, 0, 0, null, $timestamp);
+	$data_blog = C::t('home_blog')->range_blog(0, $num, 'DESC', $view, 0, 0, null, $timestamp);
 	$blogids = array_keys($data_blog);
 	$data_blogfield = C::t('home_blogfield')->fetch_all($blogids);
 
@@ -308,7 +311,6 @@ function getranklist_member_invite($num, $orderby) {
 		foreach($invitearray as $key => $var) {
 			$invite[] = $var;
 			$invite[$key]['username'] = $invitememberfield[$var['uid']]['username'];
-			$invite[$key]['videophotostatus'] = $invitememberfield[$var['uid']]['videophotostatus'];
 			$invite[$key]['groupid'] = $invitememberfield[$var['uid']]['groupid'];
 		}
 	}
@@ -336,7 +338,6 @@ function getranklist_member_onlinetime($num, $orderby) {
 		foreach($onlinetimearray as $key => $var) {
 			$var['onlinetime'] = $var[$orderby];
 			$var['username'] = $onlinetimefieldarray[$var['uid']]['username'];
-			$var['videophotostatus'] = $onlinetimefieldarray[$var['uid']]['videophotostatus'];
 			$var['groupid'] = $onlinetimefieldarray[$var['uid']]['groupid'];
 			$onlinetime[$key] = $var;
 		}
@@ -349,7 +350,7 @@ function getranklist_member_blog($num) {
 	global $_G;
 
 	$blogs = array();
-	$sql = "SELECT m.uid,m.username,m.videophotostatus,m.groupid,c.blogs FROM ".DB::table('common_member').
+	$sql = "SELECT m.uid,m.username,m.groupid,c.blogs FROM ".DB::table('common_member').
 			" m LEFT JOIN ".DB::table('common_member_count')." c ON m.uid=c.uid WHERE c.blogs>0 ORDER BY blogs DESC LIMIT 0, $num";
 
 	$query = DB::query($sql);

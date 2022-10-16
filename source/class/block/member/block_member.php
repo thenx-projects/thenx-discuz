@@ -12,7 +12,7 @@ if(!defined('IN_DISCUZ')) {
 }
 class block_member extends discuz_block {
 	var $setting = array();
-	function block_member() {
+	function __construct() {
 		$this->setting = array(
 			'uids' => array(
 				'title' => 'memberlist_uids',
@@ -46,12 +46,12 @@ class block_member extends discuz_block {
 			'birthcity' => array(
 				'title' => 'memberlist_birthcity',
 				'type' => 'district',
-				'value' => array('xbirthprovince', 'xbirthcity', 'xbirthdist', 'xbirthcommunity'),
+				'value' => array('xbirthcountry', 'xbirthprovince', 'xbirthcity', 'xbirthdist', 'xbirthcommunity'),
 			),
 			'residecity' => array(
 				'title' => 'memberlist_residecity',
 				'type' => 'district',
-				'value' => array('xresideprovince', 'xresidecity', 'xresidedist', 'xresidecommunity')
+				'value' => array('xresidecountry', 'xresideprovince', 'xresidecity', 'xresidedist', 'xresidecommunity')
 			),
 			'avatarstatus' => array(
 				'title' => 'memberlist_avatarstatus',
@@ -60,6 +60,14 @@ class block_member extends discuz_block {
 			),
 			'emailstatus' => array(
 				'title' => 'memberlist_emailstatus',
+				'type' => 'mcheckbox',
+				'value' => array(
+					array(1, 'memberlist_yes'),
+				),
+				'default' => ''
+			),
+			'secmobilestatus' => array(
+				'title' => 'memberlist_secmobilestatus',
 				'type' => 'mcheckbox',
 				'value' => array(
 					array(1, 'memberlist_yes'),
@@ -199,13 +207,16 @@ class block_member extends discuz_block {
 		$lastpost	= !empty($parameter['lastpost']) ? intval($parameter['lastpost']) : '';
 		$avatarstatus = !empty($parameter['avatarstatus']) ? 1 : 0;
 		$emailstatus = !empty($parameter['emailstatus']) ? 1 : 0;
+		$secmobilestatus = !empty($parameter['secmobilestatus']) ? 1 : 0;
 		$verifystatus = !empty($parameter['verifystatus']) ? $parameter['verifystatus'] : array();
 		$profiles = array();
 		$profiles['gender']		= !empty($parameter['gender']) ? intval($parameter['gender']) : 0;
+		$profiles['residecountry']	= !empty($parameter['xresidecountry']) ? $parameter['xresidecountry'] : '';
 		$profiles['resideprovince']	= !empty($parameter['xresideprovince']) ? $parameter['xresideprovince'] : '';
 		$profiles['residecity']	= !empty($parameter['xresidecity']) ? $parameter['xresidecity'] : '';
 		$profiles['residedist']	= !empty($parameter['xresidedist']) ? $parameter['xresidedist'] : '';
 		$profiles['residecommunity']	= !empty($parameter['xresidecommunity']) ? $parameter['xresidecommunity'] : '';
+		$profiles['birthcountry']	= !empty($parameter['xbirthcountry']) ? $parameter['xbirthcountry'] : '';
 		$profiles['birthprovince']	= !empty($parameter['xbirthprovince']) ? $parameter['xbirthprovince'] : '';
 		$profiles['birthcity']	= !empty($parameter['xbirthcity']) ? $parameter['xbirthcity'] : '';
 
@@ -227,6 +238,9 @@ class block_member extends discuz_block {
 		}
 		if($emailstatus) {
 			$wheres[] = "m.emailstatus='1'";
+		}
+		if($secmobilestatus) {
+			$wheres[] = "m.secmobilestatus='1'";
 		}
 		if(!empty($verifystatus)) {
 			$flag = false;

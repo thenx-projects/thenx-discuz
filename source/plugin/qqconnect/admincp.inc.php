@@ -28,7 +28,7 @@ if (!$_G['inajax']) {
 
 if ($_GET['anchor'] == 'setting') {
 
-	$setting = C::t('common_setting')->fetch_all(array('extcredits', 'connect', 'connectsiteid', 'connectsitekey', 'regconnect', 'connectappid', 'connectappkey'));
+	$setting = C::t('common_setting')->fetch_all_setting(array('extcredits', 'connect', 'connectsiteid', 'connectsitekey', 'regconnect', 'connectappid', 'connectappkey'));
 	$setting['connect'] = (array)dunserialize($setting['connect']);
 
 	if(!submitcheck('connectsubmit')) {
@@ -53,8 +53,8 @@ if ($_GET['anchor'] == 'setting') {
 
 		$groups = C::t('common_usergroup')->fetch_all_by_type('special');
 		foreach($groups as $group) {
-			$connectgroup .= "<option value=\"$group[groupid]\" ".($group['groupid'] == $setting['connect']['register_groupid'] ? 'selected' : '').">$group[grouptitle]</option>\n";
-			$connectguestgroup .= "<option value=\"$group[groupid]\" ".($group['groupid'] == $setting['connect']['guest_groupid'] ? 'selected' : '').">$group[grouptitle]</option>\n";
+			$connectgroup .= "<option value=\"{$group['groupid']}\" ".($group['groupid'] == $setting['connect']['register_groupid'] ? 'selected' : '').">{$group['grouptitle']}</option>\n";
+			$connectguestgroup .= "<option value=\"{$group['groupid']}\" ".($group['groupid'] == $setting['connect']['guest_groupid'] ? 'selected' : '').">{$group['grouptitle']}</option>\n";
 		}
 
 		showformheader('plugins&operation=config&do='.$pluginid.'&identifier=qqconnect&pmod=admincp', 'connectsubmit');

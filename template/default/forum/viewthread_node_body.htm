@@ -7,7 +7,7 @@
 	<div class="locked">{lang message_ishidden_hiddenreplies}</div>
 <!--{elseif $post['first'] && $_G['forum_threadpay']}-->
 	<!--{template forum/viewthread_pay}-->
-<!--{elseif $_G['forum_discuzcode']['passwordlock'][$post[pid]]}-->
+<!--{elseif !empty($_G['forum_discuzcode']['passwordlock'][$post[pid]])}-->
 	<div class="locked">{lang message_password_exists} {lang pleaseinputpw}<input type="text" id="postpw_$post[pid]" class="vm" />&nbsp;<button class="pn vm" type="button" onclick="submitpostpw($post[pid]{if $_GET['from'] == 'preview'},{$post[tid]}{else}{/if})"><strong>{lang submit}</strong></button></div>
 <!--{else}-->
 	<!--{if !$post['first'] && !empty($post[subject])}-->
@@ -52,11 +52,11 @@
 			<!--{/if}-->
 		<!--{/if}-->
 	<!--{/if}-->
-	<!--{if $_G['forum_discuzcode']['passwordauthor'][$post[pid]]}-->
+	<!--{if !empty($_G['forum_discuzcode']['passwordauthor'][$post[pid]])}-->
 		<div class="locked">{lang message_password_exists}</div>
 	<!--{/if}-->
 	<div class="{if !$_G[forum_thread][special]}t_fsz{else}pcbs{/if}">
-		$_G['forum_posthtml']['header'][$post[pid]]
+		{$_G['forum_posthtml']['header'][$post[pid]] or ''}
 		<!--{if $post['first']}-->
 			<!--{if !$_G[forum_thread][special]}-->
 				<table cellspacing="0" cellpadding="0"><tr><td class="t_f" id="postmessage_$post[pid]">
@@ -77,7 +77,7 @@
 							</strong></h3>
 						<p>{lang attach_nopermission_login} <!--{hook/global_login_text}--></p>
 					</div>
-					<span class="atips_close" onclick="this.parentNode.style.display='none'">x</span>
+					<span class="atips_close" onclick="this.parentNode.style.display='none'">&#215;</span>
 				</div>
 				<!--{/if}-->
 				$post[message]</td></tr></table>
@@ -104,7 +104,7 @@
 			<!--{/if}-->
 			<!--{if $post['invisible'] != '-2' || $_G['forum']['ismoderator']}-->$post[message]<!--{else}--><span class="xg1">{lang moderate_need}</span><!--{/if}--></td></tr></table>
 		<!--{/if}-->
-		$_G['forum_posthtml']['footer'][$post[pid]]
+		{$_G['forum_posthtml']['footer'][$post[pid]] or ''}
 
 		<!--{if $post['first'] && ($post[tags] || $relatedkeywords) && $_GET['from'] != 'preview'}-->
 			<div class="ptg mbm mtn">
@@ -130,13 +130,13 @@
 					<h3><strong>{lang attach_nopermission_notice}</strong></h3>
 					<p><!--{if $_G['uid']}-->{lang attach_nopermission}<!--{elseif $_G['connectguest']}-->{lang attach_nopermission_connect_fill_profile}<!--{else}-->{lang attach_nopermission_login} <!--{hook/global_login_text}--><!--{/if}--></p>
 				</div>
-				<span class="atips_close" onclick="this.parentNode.style.display='none'">x</span>
+				<span class="atips_close" onclick="this.parentNode.style.display='none'">&#215;</span>
 			</div>
 		<!--{elseif $post['imagelist'] || $post['attachlist']}-->
 			<div class="pattl">
 				<!--{if $post['imagelist'] && $_G['setting']['imagelistthumb'] && $post['imagelistcount'] >= $_G['setting']['imagelistthumb']}-->
 					<!--{if !isset($imagelistkey)}-->
-						<!--{eval $imagelistkey = rawurlencode(dsign($_G[tid].'|100|100'))}-->
+						<!--{eval $imagelistkey = rawurlencode(dsign($_G['tid'].'|100|100'))}-->
 						<script type="text/javascript" reload="1">var imagelistkey = '$imagelistkey';</script>
 					<!--{/if}-->
 					<!--{eval $post['imagelistthumb'] = true;}-->
@@ -146,7 +146,7 @@
 						<a href="javascript:;" onclick="attachimglst('$post[pid]', 1, {echo intval($_G['setting']['lazyload'])})" class="xi2 attl_m">{lang image_big}</a>
 					</div>
 					<div id="imagelist_$post[pid]" class="cl" style="display:none"><!--{echo showattach($post, 1)}--></div>
-					<div id="imagelistthumb_$post[pid]" class="pattl_c cl"><img src="{IMGDIR}/loading.gif" width="16" height="16" class="vm" /> {lang image_list_openning}</div>
+					<div id="imagelistthumb_$post[pid]" class="pattl_c cl"><div class="loadicon vm"></div> {lang image_list_openning}</div>
 				<!--{else}-->
 					<!--{echo showattach($post, 1)}-->
 				<!--{/if}-->
@@ -157,7 +157,8 @@
 		<!--{/if}-->
 		
 		<!--{if $_G['setting']['allowfastreply'] && $post['first'] && $fastpost && $allowpostreply && !$_G['forum_thread']['archiveid'] && $_GET['from'] != 'preview'}-->
-			<form method="post" autocomplete="off" id="vfastpostform" action="forum.php?mod=post&action=reply&fid=$_G[fid]&tid=$_G[tid]&fromvf=1&extra=$_G[gp_extra]&replysubmit=yes{if $_G['gp_ordertype'] != 1}&infloat=yes&handlekey=vfastpost{/if}{if $_G[gp_from]}&from=$_G[gp_from]{/if}" onsubmit="this.message.value = parseurl(this.message.value);ajaxpost('vfastpostform', 'return_reply', 'return_reply', 'onerror');return false;">
+		<!--{eval $_GET['extra']=daddslashes($_GET['extra']);$_GET['from']=daddslashes($_GET['from']);}-->
+			<form method="post" autocomplete="off" id="vfastpostform" action="forum.php?mod=post&action=reply&fid=$_G['fid']&tid=$_G['tid']&fromvf=1&extra=$_GET['extra']&replysubmit=yes{if $_GET['ordertype'] != 1}&infloat=yes&handlekey=vfastpost{/if}{if $_GET['from']}&from=$_GET['from']{/if}" onsubmit="this.message.value = parseurl(this.message.value);ajaxpost('vfastpostform', 'return_reply', 'return_reply', 'onerror');return false;">
 			<div id="vfastpost" class="fullvfastpost">				
 				<input type="hidden" name="formhash" value="{FORMHASH}" />
 				<table cellspacing="0" cellpadding="0" id="vfastposttb">
@@ -166,7 +167,7 @@
 						<td id="vf_m"><input type="text" name="message" id="vmessage" onKeyDown="seditor_ctlent(event, '$(\'vfastpostform\').submit()');"/></td>
 						<td id="vf_r"></td>						
 						<td id="vf_b">
-							<button type="submit" class="pn pnc" name="replysubmit" id="vreplysubmit" value="true" style="">post_newreply</button>								
+							<button type="submit" class="pn pnc" name="replysubmit" id="vreplysubmit" value="true" style="">{lang fastreply}</button>								
 						</td>						
 					</tr>
 				</table>				
@@ -198,7 +199,7 @@
 						<a href="forum.php?mod=post&action=reply&fid=$_G[fid]&tid=$_G[tid]&repquote=$comment[rpid]&extra=$_GET[extra]&page=$page{if $_GET[from]}&from=$_GET[from]{/if}" class="xi2" onclick="showWindow('reply', this.href)">{lang reply}</a>
 					<!--{/if}-->
 					<span class="xg1">
-						{lang poston} <!--{date($comment[dateline], 'u')}-->
+						{lang poston} <!--{date($comment['dateline'], 'u')}-->
 						<!--{if $comment['useip'] && $_G['group']['allowviewip']}-->&nbsp;IP:$comment[useip]{if $comment[port]}:$comment[port]{/if}<!--{/if}-->
 						<!--{if $_G['forum']['ismoderator'] && $_G['group']['allowdelpost']}-->&nbsp;<a href="javascript:;" onclick="modaction('delcomment', $comment[id])">{lang delete}</a><!--{/if}-->
 					</span>

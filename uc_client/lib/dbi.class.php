@@ -12,6 +12,7 @@ class ucclient_db {
 	var $querynum = 0;
 	var $link;
 	var $histories;
+	var $stmtcache = array();
 
 	var $dbhost;
 	var $dbuser;
@@ -24,6 +25,7 @@ class ucclient_db {
 	var $goneaway = 5;
 
 	function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre='', $time = 0) {
+		if (intval($pconnect) === 1) $dbhost = 'p:' . $dbhost; // 前面加p:，表示persistent connection
 		$this->dbhost = $dbhost;
 		$this->dbuser = $dbuser;
 		$this->dbpw = $dbpw;
@@ -32,6 +34,8 @@ class ucclient_db {
 		$this->pconnect = $pconnect;
 		$this->tablepre = $tablepre;
 		$this->time = $time;
+
+		mysqli_report(MYSQLI_REPORT_OFF);
 
 		if(!$this->link = new mysqli($dbhost, $dbuser, $dbpw, $dbname)) {
 			$this->halt('Can not connect to MySQL server');
@@ -72,6 +76,25 @@ class ucclient_db {
 		return $arr;
 	}
 
+	function result_first_stmt($sql, $key = array(), $value = array()) {
+		$query = $this->query_stmt($sql, $key, $value);
+		return $this->result($query, 0);
+	}
+
+	function fetch_first_stmt($sql, $key = array(), $value = array()) {
+		$query = $this->query_stmt($sql, $key, $value);
+		return $this->fetch_array($query);
+	}
+
+	function fetch_all_stmt($sql, $key = array(), $value = array(), $id = '') {
+		$arr = array();
+		$query = $this->query_stmt($sql, $key, $value);
+		while($data = $this->fetch_array($query)) {
+			$id ? $arr[$data[$id]] = $data : $arr[] = $data;
+		}
+		return $arr;
+	}
+
 	function cache_gc() {
 		$this->query("DELETE FROM {$this->tablepre}sqlcaches WHERE expiry<$this->time");
 	}
@@ -86,16 +109,36 @@ class ucclient_db {
 		return $query;
 	}
 
+	function query_stmt($sql, $key = array(), $value = array(), $type = '', $saveprep = FALSE, $cachetime = FALSE) {
+		$parse = $this->parse_query($sql, $key, $value);
+		if($saveprep && array_key_exists(hash("sha256", $parse[0]), $this->stmtcache)) {
+			$stmt = & $this->stmtcache[hash("sha256", $parse[0])];
+		} else {
+			$stmt = $this->link->prepare($parse[0]);
+			$saveprep && $this->stmtcache[hash("sha256", $parse[0])] = & $stmt;
+		}
+		if(!empty($key)) {
+			$stmt->bind_param(...$parse[1]);
+		}
+		if(!($query = $stmt->execute()) && $type != 'SILENT') {
+			$this->halt('MySQL Query Error', $parse[0]);
+		}
+		$this->querynum++;
+		$this->histories[] = $parse[0];
+		// SELECT 指令返回数组供其他方法使用, 其他情况返回 SQL 执行结果
+		return strncasecmp("SELECT", $sql, 6) ? $query : $stmt->get_result();
+	}
+
 	function affected_rows() {
 		return $this->link->affected_rows;
 	}
 
 	function error() {
-		return (($this->link) ? $this->link->error : mysqli_error());
+		return $this->link->error;
 	}
 
 	function errno() {
-		return intval(($this->link) ? $this->link->errno : mysqli_errno());
+		return $this->link->errno;
 	}
 
 	function result($query, $row) {
@@ -143,6 +186,29 @@ class ucclient_db {
 
 	function close() {
 		return $this->link->close();
+	}
+
+	function parse_query($sql, $key = array(), $value = array()) {
+		$list = '';
+		$array = array();
+		if(strpos($sql, '?')) {// 如果SQL存在问号则使用传统匹配方式，KEY顺序与?的顺序保持一致
+			foreach ($key as $k => $v) {
+				if(in_array($v, array('i', 'd', 's', 'b'))) {
+					$list .= $v;
+					$array = array_merge($array, (array)$value[$k]);
+				}
+			}
+		} else {// 不存在问号则使用模拟PDO模式，允许在SQL内指定变量名
+			preg_match_all("/:([A-Za-z0-9]*?)( |$)/", $sql, $matches);
+			foreach ($matches[1] as $match) {
+				if(in_array($key[$match], array('i', 'd', 's', 'b'))) {
+					$list .= $key[$match];
+					$array = array_merge($array, (array)$value[$match]);
+					$sql = str_replace(":".$match, "?", $sql);
+				}
+			}
+		}
+		return array($sql, array_merge((array)$list, $array));
 	}
 
 	function halt($message = '', $sql = '') {

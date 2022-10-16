@@ -28,9 +28,10 @@ class base {
 	var $onlineip;
 	var $db;
 	var $key;
-	var $settings = array();
-	var $cache = array();
-	var $app = array();
+	var $settings;
+	var $cache;
+	var $_CACHE;
+	var $app;
 	var $user = array();
 	var $input = array();
 	function __construct() {
@@ -38,52 +39,60 @@ class base {
 	}
 
 	function base() {
-		$this->init_var();
-		$this->init_db();
-		$this->init_cache();
-		$this->init_note();
-		$this->init_mail();
+		require_once UC_ROOT.'./model/var.php';
+		base_var::bind($this);
+		if(empty($this->time)) {
+			$this->init_var();
+			$this->init_db();
+			$this->init_cache();
+			$this->init_note();
+			$this->init_mail();
+		}
 	}
 
 	function init_var() {
 		$this->time = time();
-		$cip = getenv('HTTP_CLIENT_IP');
-		$xip = getenv('HTTP_X_FORWARDED_FOR');
-		$rip = getenv('REMOTE_ADDR');
-		$srip = $_SERVER['REMOTE_ADDR'];
-		if($cip && strcasecmp($cip, 'unknown')) {
-			$this->onlineip = $cip;
-		} elseif($xip && strcasecmp($xip, 'unknown')) {
-			$this->onlineip = $xip;
-		} elseif($rip && strcasecmp($rip, 'unknown')) {
-			$this->onlineip = $rip;
-		} elseif($srip && strcasecmp($srip, 'unknown')) {
-			$this->onlineip = $srip;
+
+		$this->onlineip = $_SERVER['REMOTE_ADDR'];
+		if (!defined('UC_ONLYREMOTEADDR') || (defined('UC_ONLYREMOTEADDR') && !constant('UC_ONLYREMOTEADDR'))) {
+			require_once UC_ROOT.'./lib/ucip.class.php';
+			if(defined('UC_IPGETTER') && !empty(constant('UC_IPGETTER'))) {
+				$s = defined('UC_IPGETTER_'.constant('UC_IPGETTER')) && is_array(constant('UC_IPGETTER_'.constant('UC_IPGETTER'))) ? constant('UC_IPGETTER_'.constant('UC_IPGETTER')) : array();
+				$c = 'ucip_getter_'.constant('UC_IPGETTER');
+				require_once UC_ROOT.'./lib/'.$c.'.class.php';
+				$r = $c::get($s);
+				$this->onlineip = ucip::validate_ip($r) ? $r : $this->onlineip;
+			} else if (isset($_SERVER['HTTP_CLIENT_IP']) && ucip::validate_ip($_SERVER['HTTP_CLIENT_IP'])) {
+				$this->onlineip = $_SERVER['HTTP_CLIENT_IP'];
+			} elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+				if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ",") > 0) {
+					$exp = explode(",", $_SERVER['HTTP_X_FORWARDED_FOR']);
+					$this->onlineip = ucip::validate_ip(trim($exp[0])) ? $exp[0] : $this->onlineip;
+				} else {
+					$this->onlineip = ucip::validate_ip($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $this->onlineip;
+				}
+			}
 		}
-		preg_match("/[\d\.]{7,15}/", $this->onlineip, $match);
-		$this->onlineip = $match[0] ? $match[0] : 'unknown';
+
 		$this->app['appid'] = UC_APPID;
 	}
 
-	function init_input() {
+	function init_input($getagent = '') {
 
 	}
 
 	function init_db() {
-		if(function_exists("mysql_connect")) {
-			require_once UC_ROOT.'lib/db.class.php';
-		} else {
-			require_once UC_ROOT.'lib/dbi.class.php';
-		}
+		require_once UC_ROOT.'lib/dbi.class.php';
 		$this->db = new ucclient_db();
 		$this->db->connect(UC_DBHOST, UC_DBUSER, UC_DBPW, '', UC_DBCHARSET, UC_DBCONNECT, UC_DBTABLEPRE);
 	}
 
-	function load($model, $base = NULL) {
+	function load($model, $base = NULL, $release = '') {
 		$base = $base ? $base : $this;
 		if(empty($_ENV[$model])) {
 			require_once UC_ROOT."./model/$model.php";
-			eval('$_ENV[$model] = new '.$model.'model($base);');
+			$modelname = $model.'model';
+			$_ENV[$model] = new $modelname($base);
 		}
 		return $_ENV[$model];
 	}
@@ -108,17 +117,17 @@ class base {
 	}
 
 	function &cache($cachefile) {
-		static $_CACHE = array();
-		if(!isset($_CACHE[$cachefile])) {
+		if(!isset($this->_CACHE[$cachefile])) {
 			$cachepath = UC_DATADIR.'./cache/'.$cachefile.'.php';
 			if(!file_exists($cachepath)) {
 				$this->load('cache');
 				$_ENV['cache']->updatedata($cachefile);
 			} else {
 				include_once $cachepath;
+				$this->_CACHE[$cachefile] = $_CACHE[$cachefile];
 			}
 		}
-		return $_CACHE[$cachefile];
+		return $this->_CACHE[$cachefile];
 	}
 
 	function get_setting($k = array(), $decode = FALSE) {

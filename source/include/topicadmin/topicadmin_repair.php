@@ -24,13 +24,13 @@ $attachment = $attachcount ? (C::t('forum_attachment_n')->count_image_by_id('tid
 
 $firstpost = C::t('forum_post')->fetch_visiblepost_by_tid('tid:'.$_G['tid'], $_G['tid'], 0);
 $firstpost['subject'] = addslashes(cutstr($firstpost['subject'], 79));
-@$firstpost['rate'] = $firstpost['rate'] / abs($firstpost['rate']);
+$firstpost['rate'] = intval(abs($firstpost['rate']) ? ($firstpost['rate'] / abs($firstpost['rate'])) : 0);
 
 $lastpost = C::t('forum_post')->fetch_visiblepost_by_tid('tid:'.$_G['tid'], $_G['tid'], 0, 1);
 
 C::t('forum_thread')->update($_G['tid'], array('subject'=>$firstpost['subject'], 'replies'=>$replies, 'lastpost'=>$lastpost['dateline'], 'lastposter'=>$lastpost['author'], 'rate'=>$firstpost['rate'], 'attachment'=>$attachment), true);
 C::t('forum_post')->update_by_tid('tid:'.$_G['tid'], $_G['tid'], array('first' => 0), true);
-C::t('forum_post')->update('tid:'.$_G['tid'], $firstpost['pid'], array('first' => 1, 'subject' => $firstpost['subject']), true);
+C::t('forum_post')->update_post('tid:'.$_G['tid'], $firstpost['pid'], array('first' => 1, 'subject' => $firstpost['subject']), true);
 
 showmessage('admin_repair_succeed', '', array(), array('alert' => 'right'));
 

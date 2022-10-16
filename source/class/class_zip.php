@@ -126,7 +126,7 @@ class SimpleUnzip {
 
 		var $Time = 0;
 
-		function SimpleUnzip($in_FileName = '') {
+		function __construct($in_FileName = '') {
 			if($in_FileName !== '') {
 				SimpleUnzip::ReadFile($in_FileName);
 			}
@@ -235,14 +235,6 @@ class SimpleUnzip {
 								break;
 
 							case 12: // BZIP2
-								if(! extension_loaded('bz2')) {
-								    if(strtoupper(substr(PHP_OS, 0, 3)) == 'WIN') {
-								      @dl('php_bz2.dll');
-								    } else {
-								      @dl('bz2.so');
-								    }
-								}
-
 								if(extension_loaded('bz2')) {
 								    $vZ = bzdecompress($vZ);
 								} else {
@@ -305,7 +297,7 @@ class SimpleUnzipEntry {
 
 		var $Time = 0;
 
-		function SimpleUnzipEntry($in_Entry) {
+		function __construct($in_Entry) {
 		$this->Data     = $in_Entry['D'];
 		$this->Error    = $in_Entry['E'];
 		$this->ErrorMsg = $in_Entry['EM'];

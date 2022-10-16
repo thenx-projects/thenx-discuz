@@ -18,9 +18,11 @@ class dbstuff {
 	var $time;
 	var $tablepre;
 
-	function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset, $pconnect = 0, $tablepre='', $time = 0) {
+	function connect($dbhost, $dbuser, $dbpw, $dbname = '', $dbcharset = '', $pconnect = 0, $tablepre='', $time = 0) {
 		$this->time = $time;
 		$this->tablepre = $tablepre;
+
+		mysqli_report(MYSQLI_REPORT_OFF);
 
 		if(!$this->link = new mysqli($dbhost, $dbuser, $dbpw, $dbname)) {
 			$this->halt('Can not connect to MySQL server');
@@ -76,11 +78,11 @@ class dbstuff {
 	}
 
 	function error() {
-		return (($this->link) ? $this->link->error : mysqli_error());
+		return $this->link->error;
 	}
 
 	function errno() {
-		return intval(($this->link) ? $this->link->errno : mysqli_errno());
+		return $this->link->errno;
 	}
 
 	function result($query, $row) {

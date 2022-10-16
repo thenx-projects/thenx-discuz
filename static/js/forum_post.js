@@ -77,8 +77,12 @@ function validate(theform) {
 	if(($('postsubmit').name != 'replysubmit' && !($('postsubmit').name == 'editsubmit' && !isfirstpost) && theform.subject.value == "") || !sortid && !special && trim(message) == "") {
 		showError('抱歉，您尚未输入标题或内容');
 		return false;
-	} else if(mb_strlen(theform.subject.value) > 80) {
-		showError('您的标题超过 80 个字符的限制');
+	} else if(dstrlen(theform.subject.value) > 255) {
+		showError('您的标题超过 255 个字符的限制');
+		return false;
+	}
+	if(!disablepostctrl && theform.subject.value != "" && ((postminsubjectchars != 0 && dstrlen(theform.subject.value) < postminsubjectchars) || (postminsubjectchars != 0 && dstrlen(theform.subject.value) > postmaxsubjectchars))) {
+		showError('您的标题长度不符合要求。\n\n当前长度: ' + dstrlen(theform.subject.value) + ' 字\n系统限制: ' + postminsubjectchars + ' 到 ' + postmaxsubjectchars + ' 字');
 		return false;
 	}
 	if(in_array($('postsubmit').name, ['topicsubmit', 'editsubmit'])) {
@@ -243,7 +247,7 @@ function uploadAttach(curId, statusid, prefix, sizelimit) {
 			FAILEDATTACHS += '<br />' + mb_cutstr($(prefix + 'attachnew_' + curId).value.substr($(prefix + 'attachnew_' + curId).value.replace(/\\/g, '/').lastIndexOf('/') + 1), 25) + ': ' + STATUSMSG[statusid] + sizelimit;
 			UPLOADFAILED++;
 		}
-		$(prefix + 'cpdel_' + curId).innerHTML = '<img src="' + IMGDIR + '/check_' + (statusid == 0 ? 'right' : 'error') + '.gif" alt="' + STATUSMSG[statusid] + '" />';
+		$(prefix + 'cpdel_' + curId).innerHTML = '<i class="fico' + (statusid == 0 ? 'check_right fc-v' : 'error fc-i') + ' fic4" alt="' + STATUSMSG[statusid] + '"></i>';
 		if(nextId == curId || in_array(statusid, [6, 8])) {
 			if(prefix == 'img') {
 				updateImageList();
@@ -277,7 +281,7 @@ function uploadAttach(curId, statusid, prefix, sizelimit) {
 		$(prefix + 'uploadbtn').style.display = 'none';
 		$(prefix + 'uploading').style.display = '';
 	}
-	$(prefix + 'cpdel_' + nextId).innerHTML = '<img src="' + IMGDIR + '/loading.gif" alt="上传中..." />';
+	$(prefix + 'cpdel_' + nextId).innerHTML = '<div class="loadicon" title="上传中..."></div>';
 	UPLOADSTATUS = 1;
 	$(prefix + 'attachform_' + nextId).submit();
 }

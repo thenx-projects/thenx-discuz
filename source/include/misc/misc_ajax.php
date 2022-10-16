@@ -17,6 +17,15 @@ if($op == 'comment') {
 
 	$cid = empty($_GET['cid'])?0:intval($_GET['cid']);
 
+	$idtype_array = array('picid' => 'album', 'blogid' => 'blog', 'sid' => 'share', 'uid' => 'wall');
+
+	$cmt = C::t('home_comment')->fetch_comment($cid);
+	if(empty($cmt['idtype']) || !array_key_exists($cmt['idtype'], $idtype_array)) {
+		showmessage('no_privilege_comment', '', array(), array('return' => true));
+	} else if(!$_G['setting'][$idtype_array[$cmt['idtype']].'status']) {
+		showmessage($idtype_array[$cmt['idtype']].'_status_off');
+	}
+
 	if($cid) {
 		$ajax_edit = 1;
 	} else {
@@ -30,6 +39,10 @@ if($op == 'comment') {
 
 
 } elseif($op == 'getfriendgroup') {
+
+	if (!$_G['setting']['friendstatus']) {
+		showmessage('friend_status_off');
+	}
 
 	$uid = intval($_GET['uid']);
 	if($_G['uid'] && $uid) {
@@ -46,6 +59,10 @@ if($op == 'comment') {
 
 } elseif($op == 'getfriendname') {
 
+	if (!$_G['setting']['friendstatus']) {
+		showmessage('friend_status_off');
+	}
+
 	$groupname = '';
 	$group = intval($_GET['group']);
 
@@ -57,6 +74,10 @@ if($op == 'comment') {
 
 } elseif($op == 'share') {
 
+	if (!$_G['setting']['sharestatus']) {
+		showmessage('share_status_off');
+	}
+
 	require_once libfile('function/share');
 
 	$list = array();
@@ -67,6 +88,10 @@ if($op == 'comment') {
 	}
 
 } elseif($op == 'album') {
+
+	if (!$_G['setting']['albumstatus']) {
+		showmessage('album_status_off');
+	}
 
 	$id = empty($_GET['id'])?0:intval($_GET['id']);
 
@@ -93,6 +118,10 @@ if($op == 'comment') {
 	}
 
 } elseif($op == 'docomment') {
+
+	if (!$_G['setting']['doingstatus']) {
+		showmessage('doing_status_off');
+	}
 
 	$doid = intval($_GET['doid']);
 	$clist = $do = array();
@@ -132,10 +161,6 @@ if($op == 'comment') {
 		}
 	}
 
-
-
-} elseif($op == 'deluserapp') {
-	
 } elseif($op == 'delnotice') {
 
 	if(empty($_G['uid'])) {
@@ -164,8 +189,8 @@ if($op == 'comment') {
 } elseif($op == 'district') {
 	$container = $_GET['container'];
 	$showlevel = intval($_GET['level']);
-	$showlevel = $showlevel >= 1 && $showlevel <= 4 ? $showlevel : 4;
-	$values = array(intval($_GET['pid']), intval($_GET['cid']), intval($_GET['did']), intval($_GET['coid']));
+	$showlevel = $showlevel >= 1 && $showlevel <= 5 ? $showlevel : 5;
+	$values = array(intval($_GET['countryid']), intval($_GET['pid']), intval($_GET['cid']), intval($_GET['did']), intval($_GET['coid']));
 	$containertype = in_array($_GET['containertype'], array('birth', 'reside'), true) ? $_GET['containertype'] : 'birth';
 	$level = 1;
 	if($values[0]) {
@@ -175,8 +200,11 @@ if($op == 'comment') {
 		space_merge($_G['member'], 'profile');
 		$district = array();
 		if($containertype == 'birth') {
-			if(!empty($_G['member']['birthprovince'])) {
-				$district[] = $_G['member']['birthprovince'];
+			if(!empty($_G['member']['birthcountry'])) {
+				$district[] = $_G['member']['birthcountry'];
+				if(!empty($_G['member']['birthprovince'])) {
+					$district[] = $_G['member']['birthprovince'];
+				}
 				if(!empty($_G['member']['birthcity'])) {
 					$district[] = $_G['member']['birthcity'];
 				}
@@ -188,8 +216,11 @@ if($op == 'comment') {
 				}
 			}
 		} else {
-			if(!empty($_G['member']['resideprovince'])) {
-				$district[] = $_G['member']['resideprovince'];
+			if(!empty($_G['member']['residecountry'])) {
+				$district[] = $_G['member']['residecountry'];
+				if(!empty($_G['member']['resideprovince'])) {
+					$district[] = $_G['member']['resideprovince'];
+				}
 				if(!empty($_G['member']['residecity'])) {
 					$district[] = $_G['member']['residecity'];
 				}
@@ -203,7 +234,7 @@ if($op == 'comment') {
 		}
 		if(!empty($district)) {
 			foreach(C::t('common_district')->fetch_all_by_name($district) as $value) {
-				$key = $value['level'] - 1;
+				$key = $value['level'];
 				$values[$key] = $value['id'];
 			}
 			$level++;
@@ -218,15 +249,21 @@ if($op == 'comment') {
 	if($values[3]) {
 		$level++;
 	}
+	if($values[4]) {
+		$level++;
+	}
 	$showlevel = $level;
 	$elems = array();
-	if($_GET['province']) {
-		$elems = array($_GET['province'], $_GET['city'], $_GET['district'], $_GET['community']);
+	if($_GET['country']) {
+		$elems = array($_GET['country'], $_GET['province'], $_GET['city'], $_GET['district'], $_GET['community']);
 	}
 
 	include_once libfile('function/profile');
 	$html = showdistrict($values, $elems, $container, $showlevel, $containertype);
 } elseif($_GET['op'] == 'createalbum') {
+	if (!$_G['setting']['albumstatus']) {
+		showmessage('album_status_off');
+	}
 	$albumname = 'new:'.$_GET['name'];
 	require_once libfile('function/spacecp');
 	$albumid = album_creat_by_id($albumname, intval($_GET['catid']));

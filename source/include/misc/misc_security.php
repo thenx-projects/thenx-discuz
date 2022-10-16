@@ -91,6 +91,9 @@ function securitymessage($subject, $message, $reload = TRUE, $form = FALSE) {
 		@header('Content-Type: text/html; charset='.$charset);
 		echo '<html>';
 		echo '<head>';
+		echo '<meta charset="'.$_G['charset'].'" />';
+		echo '<meta name="renderer" content="webkit" />';
+		echo '<meta http-equiv="X-UA-Compatible" content="IE=edge" />';
 		echo '<title>'.$subject.'</title>';
 		echo '</head>';
 		echo '<body bgcolor="#FFFFFF">';
@@ -103,7 +106,7 @@ function securitymessage($subject, $message, $reload = TRUE, $form = FALSE) {
 			echo '</script>';
 		}
 		if($form) {
-			echo '<form action="'.$G['PHP_SELF'].'" method="post" autocomplete="off">';
+			echo '<form action="'.$_G['PHP_SELF'].'" method="post" autocomplete="off">';
 		}
 		echo '<table cellpadding="0" cellspacing="0" border="0" width="700" align="center" height="85%">';
 		echo '  <tr align="center" valign="middle">';

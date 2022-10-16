@@ -19,7 +19,8 @@ class helper_form {
 			return FALSE;
 		} else {
 			global $_G;
-			if($allowget || ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_GET['formhash']) && $_GET['formhash'] == formhash() && empty($_SERVER['HTTP_X_FLASH_VERSION']) && (empty($_SERVER['HTTP_REFERER']) ||
+			// 新增 $allowget = 2 时，验证formhash参数
+			if(($allowget && ($allowget !== 2 || (!empty($_GET['formhash']) && $_GET['formhash'] == formhash()))) || ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_GET['formhash']) && $_GET['formhash'] == formhash() && empty($_SERVER['HTTP_X_FLASH_VERSION']) && (empty($_SERVER['HTTP_REFERER']) ||
 				strncmp($_SERVER['HTTP_REFERER'], 'http://wsq.discuz.com/', 22) === 0 || preg_replace("/https?:\/\/([^\:\/]+).*/i", "\\1", $_SERVER['HTTP_REFERER']) == preg_replace("/([^\:]+).*/", "\\1", $_SERVER['HTTP_HOST'])))) {
 				if(checkperm('seccode')) {
 					if($secqaacheck && !check_secqaa($_GET['secanswer'], $_GET['secqaahash'])) {
@@ -120,7 +121,7 @@ class helper_form {
 				$tmp = parse_url($val);
 				$return[1][$key] = $tmp['host'];
 				if($tmp['port']){
-					$return[1][$key] .= ":$tmp[port]";
+					$return[1][$key] .= ":{$tmp['port']}";
 				}
 			}
 		}
@@ -134,16 +135,16 @@ class helper_form {
 		}
 		if(!$status) {
 			foreach($ids as $id) {
-				C::t('common_moderate')->insert($idtype, array(
+				C::t('common_moderate')->insert_moderate($idtype, array(
 					'id' => $id,
 					'status' => 0,
 					'dateline' => TIMESTAMP,
 				), false, true);
 			}
 		} elseif($status == 1) {
-			C::t('common_moderate')->update($ids, $idtype, array('status' => 1));
+			C::t('common_moderate')->update_moderate($ids, $idtype, array('status' => 1));
 		} elseif($status == 2) {
-			C::t('common_moderate')->delete($ids, $idtype);
+			C::t('common_moderate')->delete_moderate($ids, $idtype);
 		}
 	}
 }

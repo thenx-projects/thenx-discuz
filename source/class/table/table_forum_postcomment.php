@@ -155,7 +155,7 @@ class table_forum_postcomment extends discuz_table
 			if($comment['authorid'] > '-1') {
 				$commentcount[$comment['pid']]++;
 			}
-			if(count($comments[$comment['pid']]) < $commentnumber && $comment['authorid'] > '-1') {
+			if((!is_array($comments[$comment['pid']]) || count($comments[$comment['pid']]) < $commentnumber) && $comment['authorid'] > '-1') {
 				$comment['avatar'] = avatar($comment['authorid'], 'small');
 				$comment['comment'] = str_replace(array('[b]', '[/b]', '[/color]'), array('<b>', '</b>', '</font>'), preg_replace("/\[color=([#\w]+?)\]/i", "<font color=\"\\1\">", $comment['comment']));
 				$comments[$comment['pid']][] = $comment;
@@ -172,7 +172,7 @@ class table_forum_postcomment extends discuz_table
 	}
 
 	public function fetch_postcomment_by_pid_callback_1($matches) {
-		return '<i class="cmstarv" style="background-position:20px -'.(intval($matches[1]) * 16).'px">'.sprintf('%1.1f', $matches[1]).'</i>'.($this->cic_for_fetch_postcomment_by_pid++ % 2 ? '<br />' : '');
+		return '<i class="cmstarv">'.sprintf('%1.1f', $matches[1]).'</i>'.str_repeat('<span class="fico-star fc-l fnmr"></span>',intval($matches[1])).str_repeat('<span class="fico-star fc-s fnmr"></span>',(5-intval($matches[1]))).($this->cic_for_fetch_postcomment_by_pid++ % 2 ? '<br />' : '');
 	}
 }
 

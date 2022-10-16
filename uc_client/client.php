@@ -14,24 +14,20 @@ if(!defined('UC_API')) {
 error_reporting(0);
 
 define('IN_UC', TRUE);
-define('UC_CLIENT_VERSION', '1.6.0');
-define('UC_CLIENT_RELEASE', '20170101');
 define('UC_ROOT', substr(__FILE__, 0, -10));
+require UC_ROOT.'./release/release.php';
 define('UC_DATADIR', UC_ROOT.'./data/');
 define('UC_DATAURL', UC_API.'/data');
-define('UC_API_FUNC', UC_CONNECT == 'mysql' ? 'uc_api_mysql' : 'uc_api_post');
-$GLOBALS['uc_controls'] = array();
+define('UC_API_FUNC', (defined('UC_CONNECT') && UC_CONNECT == 'mysql') ? 'uc_api_mysql' : 'uc_api_post');
+$uc_controls = array();
 
 function uc_addslashes($string, $force = 0, $strip = FALSE) {
-	!defined('MAGIC_QUOTES_GPC') && define('MAGIC_QUOTES_GPC', get_magic_quotes_gpc());
-	if(!MAGIC_QUOTES_GPC || $force) {
-		if(is_array($string)) {
-			foreach($string as $key => $val) {
-				$string[$key] = uc_addslashes($val, $force, $strip);
-			}
-		} else {
-			$string = addslashes($strip ? stripslashes($string) : $string);
+	if(is_array($string)) {
+		foreach($string as $key => $val) {
+			$string[$key] = uc_addslashes($val, $force, $strip);
 		}
+	} else {
+		$string = addslashes($strip ? stripslashes($string) : $string);
 	}
 	return $string;
 }
@@ -72,7 +68,7 @@ if(!function_exists('dhtmlspecialchars')) {
 	}
 }
 if(!function_exists('fsocketopen')) {
-	function fsocketopen($hostname, $port = 80, &$errno, &$errstr, $timeout = 15) {
+	function fsocketopen($hostname, $port = 80, &$errno = null, &$errstr = null, $timeout = 15) {
 		$fp = '';
 		if(function_exists('fsockopen')) {
 			$fp = @fsockopen($hostname, $port, $errno, $errstr, $timeout);
@@ -85,15 +81,6 @@ if(!function_exists('fsocketopen')) {
 	}
 }
 
-function uc_stripslashes($string) {
-	!defined('MAGIC_QUOTES_GPC') && define('MAGIC_QUOTES_GPC', get_magic_quotes_gpc());
-	if(MAGIC_QUOTES_GPC) {
-		return stripslashes($string);
-	} else {
-		return $string;
-	}
-}
-
 function uc_api_post($module, $action, $arg = array()) {
 	$s = $sep = '';
 	foreach($arg as $k => $v) {
@@ -102,12 +89,12 @@ function uc_api_post($module, $action, $arg = array()) {
 			$s2 = $sep2 = '';
 			foreach($v as $k2 => $v2) {
 				$k2 = urlencode($k2);
-				$s2 .= "$sep2{$k}[$k2]=".urlencode(uc_stripslashes($v2));
+				$s2 .= "$sep2{$k}[$k2]=".urlencode($v2);
 				$sep2 = '&';
 			}
 			$s .= $sep.$s2;
 		} else {
-			$s .= "$sep$k=".urlencode(uc_stripslashes($v));
+			$s .= "$sep$k=".urlencode($v);
 		}
 		$sep = '&';
 	}
@@ -134,14 +121,11 @@ function uc_api_input($data) {
 function uc_api_mysql($model, $action, $args=array()) {
 	global $uc_controls;
 	if(empty($uc_controls[$model])) {
-		if(function_exists("mysql_connect")) {
-			include_once UC_ROOT.'./lib/db.class.php';
-		} else {
-			include_once UC_ROOT.'./lib/dbi.class.php';
-		}
+		include_once UC_ROOT.'./lib/dbi.class.php';
 		include_once UC_ROOT.'./model/base.php';
 		include_once UC_ROOT."./control/$model.php";
-		eval("\$uc_controls['$model'] = new {$model}control();");
+		$modelname = $model.'control';
+		$uc_controls[$model] = new $modelname();
 	}
 	if($action[0] != '_') {
 		$args = uc_addslashes($args, 1, TRUE);
@@ -165,27 +149,35 @@ function uc_unserialize($s) {
 
 function uc_authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 
+	// 动态密钥长度, 通过动态密钥可以让相同的 string 和 key 生成不同的密文, 提高安全性
 	$ckey_length = 4;
 
 	$key = md5($key ? $key : UC_KEY);
+	// a参与加解密, b参与数据验证, c进行密文随机变换
 	$keya = md5(substr($key, 0, 16));
 	$keyb = md5(substr($key, 16, 16));
 	$keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length): substr(md5(microtime()), -$ckey_length)) : '';
 
+	// 参与运算的密钥组
 	$cryptkey = $keya.md5($keya.$keyc);
 	$key_length = strlen($cryptkey);
 
+	// 前 10 位用于保存时间戳验证数据有效性, 10 - 26位保存 $keyb , 解密时通过其验证数据完整性
+	// 如果是解码的话会从第 $ckey_length 位开始, 因为密文前 $ckey_length 位保存动态密匙以保证解密正确
 	$string = $operation == 'DECODE' ? base64_decode(substr($string, $ckey_length)) : sprintf('%010d', $expiry ? $expiry + time() : 0).substr(md5($string.$keyb), 0, 16).$string;
 	$string_length = strlen($string);
 
 	$result = '';
 	$box = range(0, 255);
 
+	// 产生密钥簿
 	$rndkey = array();
 	for($i = 0; $i <= 255; $i++) {
 		$rndkey[$i] = ord($cryptkey[$i % $key_length]);
 	}
 
+	// 打乱密钥簿, 增加随机性
+	// 类似 AES 算法中的 SubBytes 步骤
 	for($j = $i = 0; $i < 256; $i++) {
 		$j = ($j + $box[$i] + $rndkey[$i]) % 256;
 		$tmp = $box[$i];
@@ -193,6 +185,7 @@ function uc_authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 		$box[$j] = $tmp;
 	}
 
+	// 从密钥簿得出密钥进行异或，再转成字符 
 	for($a = $j = $i = 0; $i < $string_length; $i++) {
 		$a = ($a + 1) % 256;
 		$j = ($j + $box[$a]) % 256;
@@ -203,12 +196,16 @@ function uc_authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 	}
 
 	if($operation == 'DECODE') {
-		if((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) === substr(md5(substr($result, 26).$keyb), 0, 16)) {
+		// 这里按照算法对数据进行验证, 保证数据有效性和完整性
+		// $result 01 - 10 位是时间, 如果小于当前时间或为 0 则通过
+		// $result 10 - 26 位是加密时的 $keyb , 需要和入参的 $keyb 做比对
+		if(((int)substr($result, 0, 10) == 0 || (int)substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) === substr(md5(substr($result, 26).$keyb), 0, 16)) {
 			return substr($result, 26);
 		} else {
 			return '';
 		}
 	} else {
+		// 把动态密钥保存在密文里, 并用 base64 编码保证传输时不被破坏
 		return $keyc.str_replace('=', '', base64_encode($result));
 	}
 }
@@ -278,7 +275,7 @@ function uc_fopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE,
 		}
 		$boundary = $encodetype == 'URLENCODE' ? '' : '; boundary='.trim(substr(trim($post), 2, strpos(trim($post), "\n") - 2));
 		$header .= $encodetype == 'URLENCODE' ? "Content-Type: application/x-www-form-urlencoded\r\n" : "Content-Type: multipart/form-data$boundary\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= 'Content-Length: '.strlen($post)."\r\n";
 		$header .= "Connection: Close\r\n";
@@ -289,7 +286,7 @@ function uc_fopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE,
 		$out = "GET $path HTTP/1.0\r\n";
 		$header = "Accept: */*\r\n";
 		$header .= "Accept-Language: zh-cn\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= "Connection: Close\r\n";
 		$header .= "Cookie: $cookie\r\n\r\n";
@@ -414,13 +411,16 @@ function uc_user_register($username, $password, $email, $questionid = '', $answe
 	return call_user_func(UC_API_FUNC, 'user', 'register', array('username'=>$username, 'password'=>$password, 'email'=>$email, 'questionid'=>$questionid, 'answer'=>$answer, 'regip' => $regip));
 }
 
-function uc_user_login($username, $password, $isuid = 0, $checkques = 0, $questionid = '', $answer = '', $ip = '') {
+function uc_user_login($username, $password, $isuid = 0, $checkques = 0, $questionid = '', $answer = '', $ip = '', $nolog = 0) {
 	$isuid = intval($isuid);
-	$return = call_user_func(UC_API_FUNC, 'user', 'login', array('username'=>$username, 'password'=>$password, 'isuid'=>$isuid, 'checkques'=>$checkques, 'questionid'=>$questionid, 'answer'=>$answer, 'ip' => $ip));
+	$return = call_user_func(UC_API_FUNC, 'user', 'login', array('username'=>$username, 'password'=>$password, 'isuid'=>$isuid, 'checkques'=>$checkques, 'questionid'=>$questionid, 'answer'=>$answer, 'ip' => $ip, 'nolog' => $nolog));
 	return UC_CONNECT == 'mysql' ? $return : uc_unserialize($return);
 }
 
 function uc_user_synlogin($uid) {
+	if(UC_STANDALONE) {
+		return '';
+	}
 	$uid = intval($uid);
 	if(@include UC_ROOT.'./data/cache/apps.php') {
 		if(count($_CACHE['apps']) > 1) {
@@ -433,6 +433,9 @@ function uc_user_synlogin($uid) {
 }
 
 function uc_user_synlogout() {
+	if(UC_STANDALONE) {
+		return '';
+	}
 	if(@include UC_ROOT.'./data/cache/apps.php') {
 		if(count($_CACHE['apps']) > 1) {
 			$return = uc_api_post('user', 'synlogout', array());
@@ -443,12 +446,12 @@ function uc_user_synlogout() {
 	return $return;
 }
 
-function uc_user_edit($username, $oldpw, $newpw, $email, $ignoreoldpw = 0, $questionid = '', $answer = '') {
-	return call_user_func(UC_API_FUNC, 'user', 'edit', array('username'=>$username, 'oldpw'=>$oldpw, 'newpw'=>$newpw, 'email'=>$email, 'ignoreoldpw'=>$ignoreoldpw, 'questionid'=>$questionid, 'answer'=>$answer));
+function uc_user_edit($username, $oldpw, $newpw, $email, $ignoreoldpw = 0, $questionid = '', $answer = '', $secmobicc = '', $secmobile = '') {
+	return call_user_func(UC_API_FUNC, 'user', 'edit', array('username'=>$username, 'oldpw'=>$oldpw, 'newpw'=>$newpw, 'email'=>$email, 'ignoreoldpw'=>$ignoreoldpw, 'questionid'=>$questionid, 'answer'=>$answer, 'secmobicc'=>$secmobicc, 'secmobile'=>$secmobile));
 }
 
 function uc_user_delete($uid) {
-	return call_user_func(UC_API_FUNC, 'user', 'delete', array('uid'=>$uid));
+	return call_user_func(UC_API_FUNC, 'user', 'delete', array('uid'=>$uid, 'action'=>'delete'));
 }
 
 function uc_user_deleteavatar($uid) {
@@ -461,6 +464,10 @@ function uc_user_checkname($username) {
 
 function uc_user_checkemail($email) {
 	return call_user_func(UC_API_FUNC, 'user', 'check_email', array('email'=>$email));
+}
+
+function uc_user_checksecmobile($secmobicc, $secmobile) {
+	return call_user_func(UC_API_FUNC, 'user', 'check_secmobile', array('secmobicc'=>$secmobicc, 'secmobile'=>$secmobile));
 }
 
 function uc_user_addprotected($username, $admin='') {
@@ -479,6 +486,10 @@ function uc_user_getprotected() {
 function uc_get_user($username, $isuid=0) {
 	$return = call_user_func(UC_API_FUNC, 'user', 'get_user', array('username'=>$username, 'isuid'=>$isuid));
 	return UC_CONNECT == 'mysql' ? $return : uc_unserialize($return);
+}
+
+function uc_user_chgusername($uid, $newusername) {
+	return call_user_func(UC_API_FUNC, 'user', 'chgusername', array('uid'=>$uid, 'newusername'=>$newusername));
 }
 
 function uc_user_merge($oldusername, $newusername, $uid, $password, $email) {
@@ -648,23 +659,20 @@ function uc_avatar($uid, $type = 'virtual', $returnhtml = 1) {
 	$uid = intval($uid);
 	$uc_input = uc_api_input("uid=$uid");
 	$uc_avatarflash = UC_API.'/images/camera.swf?inajax=1&appid='.UC_APPID.'&input='.$uc_input.'&agent='.md5($_SERVER['HTTP_USER_AGENT']).'&ucapi='.urlencode(UC_API).'&avatartype='.$type.'&uploadSize=2048';
+	$uc_avatarhtml5 = UC_API.'/index.php?m=user&a=camera&width=450&height=253&appid='.UC_APPID.'&input='.$uc_input.'&agent='.md5($_SERVER['HTTP_USER_AGENT']).'&ucapi='.urlencode(UC_API).'&avatartype='.$type.'&uploadSize=2048';
+	$uc_avatarstl = '&width=450&height=253&appid='.UC_APPID.'&input='.$uc_input.'&agent='.md5($_SERVER['HTTP_USER_AGENT']).'&ucapi='.urlencode(UC_API).'&avatartype='.$type.'&uploadSize=2048';
 	if($returnhtml) {
-		return '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="450" height="253" id="mycamera" align="middle">
-			<param name="allowScriptAccess" value="always" />
-			<param name="scale" value="exactfit" />
-			<param name="wmode" value="transparent" />
-			<param name="quality" value="high" />
-			<param name="bgcolor" value="#ffffff" />
-			<param name="movie" value="'.$uc_avatarflash.'" />
-			<param name="menu" value="false" />
-			<embed src="'.$uc_avatarflash.'" quality="high" bgcolor="#ffffff" width="450" height="253" name="mycamera" align="middle" allowScriptAccess="always" allowFullScreen="false" scale="exactfit"  wmode="transparent" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
-		</object>';
+		$flash = '<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="450" height="253" id="mycamera" align="middle"><param name="allowScriptAccess" value="always" /><param name="scale" value="exactfit" /><param name="wmode" value="transparent" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" /><param name="movie" value="'.$uc_avatarflash.'" /><param name="menu" value="false" /><embed src="'.$uc_avatarflash.'" quality="high" bgcolor="#ffffff" width="450" height="253" name="mycamera" align="middle" allowScriptAccess="always" allowFullScreen="false" scale="exactfit"  wmode="transparent" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" /></object>';
+		$html5 = '<iframe src="' . $uc_avatarhtml5 . '" width="450" marginwidth="0" height="253" marginheight="0" scrolling="no" frameborder="0" id="mycamera" name="mycamera" align="middle"></iframe>';
+		return '<script type="text/javascript">document.write(document.createElement("Canvas").getContext ? \'' . $html5 . '\' : \'' . $flash . '\');</script>';
 	} else {
 		return array(
 			'width', '450',
 			'height', '253',
 			'scale', 'exactfit',
 			'src', $uc_avatarflash,
+			'html5_src', $uc_avatarhtml5,
+			'stl_src', $uc_avatarstl,
 			'id', 'mycamera',
 			'name', 'mycamera',
 			'quality','high',

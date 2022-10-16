@@ -110,9 +110,7 @@ class template {
 		$template = preg_replace("/\<\?(\s{1})/is", "<?php\\1", $template);
 		$template = preg_replace("/\<\?\=(.+?)\?\>/is", "<?php echo \\1;?>", $template);
 
-		$fp = fopen($this->objfile, 'w');
-		fwrite($fp, $template);
-		fclose($fp);
+		file_put_contents($this->objfile, $template, LOCK_EX);
 	}
 
 	function complie_callback_lang_1($matches) {
@@ -188,8 +186,6 @@ class template {
 	}
 
 	function __destruct() {
-		if($_COOKIE['sid']) {
-		}
 		$sid = rawurlencode($this->sid);
 		$content = preg_replace_callback("/\<a(\s*[^\>]+\s*)href\=([\"|\']?)([^\"\'\s]+)/is", array($this, 'destruct_callback_transsid_312'), ob_get_contents());
 		$content = preg_replace("/(\<form.+?\>)/is", "\\1\n<input type=\"hidden\" name=\"sid\" value=\"".rawurldecode(rawurldecode(rawurldecode($sid)))."\" />", $content);

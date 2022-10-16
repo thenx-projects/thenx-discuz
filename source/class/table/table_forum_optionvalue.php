@@ -29,14 +29,23 @@ class table_forum_optionvalue extends discuz_table
 		$this->_table = 'forum_optionvalue'.$sortid;
 		$query = DB::query("SHOW TABLES LIKE '%t'", array($this->_table));
 		if(DB::num_rows($query) != 1) {
-			$create_table_sql = "CREATE TABLE ".DB::table($this->_table)." ($fields) TYPE=MyISAM;";
+			$engine = strtolower(getglobal("config/db/common/engine")) !== 'innodb' ? 'MyISAM' : 'InnoDB';
+			$create_table_sql = "CREATE TABLE ".DB::table($this->_table)." ($fields) ENGINE=" . $engine . ";";
 			$db = DB::object();
-			$create_table_sql = $this->syntablestruct($create_table_sql, $db->version() > '4.1', $dbcharset);
+			$create_table_sql = $this->syntablestruct($create_table_sql, true, $dbcharset);
 			DB::query($create_table_sql);
 		}
 	}
 
-	public function truncate($sortid) {
+	public function truncate($null = 0) {
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->truncate_by_sortid($null);
+		}
+	}
+
+	public function truncate_by_sortid($sortid) {
 		if(!$sortid) {
 			return;
 		}
@@ -52,11 +61,7 @@ class table_forum_optionvalue extends discuz_table
 		$sortid = intval($sortid);
 		$this->_table = 'forum_optionvalue'.$sortid;
 		$db = DB::object();
-		if($db->version() > '4.1') {
-			$query = DB::query("SHOW FULL COLUMNS FROM %t", array($this->_table), true);
-		} else {
-			$query = DB::query("SHOW COLUMNS FROM %t", array($this->_table), true);
-		}
+		$query = DB::query("SHOW FULL COLUMNS FROM %t", array($this->_table), true);
 		$tables = array();
 		while($field = @DB::fetch($query)) {
 			$tables[$field['Field']] = 1;
@@ -117,7 +122,15 @@ class table_forum_optionvalue extends discuz_table
 		return $return;
 	}
 
-	public function update($sortid, $tid, $fid, $fields) {
+	public function update($sortid, $tid, $fid = null, $fields = null) {
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->update_optionvalue($sortid, $tid, $fid, $fields);
+		}
+	}
+
+	public function update_optionvalue($sortid, $tid, $fid, $fields) {
 		if(!$sortid || !$fields) {
 			return;
 		}
@@ -126,7 +139,16 @@ class table_forum_optionvalue extends discuz_table
 		DB::query("UPDATE %t SET %i WHERE tid=%d AND fid=%d", array($this->_table, $fields, $tid, $fid));
 	}
 
-	public function insert($sortid, $fields, $replace = false) {
+	public function insert($sortid, $fields = null, $replace = false, $null = null) {
+		// $null 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->insert_optionvalue($sortid, $fields, $replace);
+		}
+	}
+
+	public function insert_optionvalue($sortid, $fields, $replace = false) {
 		if(!$sortid || !$fields) {
 			return;
 		}

@@ -19,7 +19,7 @@ require './source/function/function_forum.php';
 
 
 $modarray = array('ajax','announcement','attachment','forumdisplay',
-	'group','image','index','medal','misc','modcp','notice','post','redirect',
+	'group','image','index','misc','modcp','post','redirect',
 	'rss','topicadmin','trade','viewthread','tag','collection','guide'
 );
 
@@ -61,6 +61,10 @@ loadforum();
 set_rssauth();
 
 runhooks();
+
+if(!$_G['setting']['forumstatus'] && !in_array($mod, array('ajax', 'misc', 'modcp'))) {
+	showmessage('forum_status_off');
+}
 
 $navtitle = str_replace('{bbname}', $_G['setting']['bbname'], $_G['setting']['seotitle']['forum']);
 $_G['setting']['threadhidethreshold'] = 1;

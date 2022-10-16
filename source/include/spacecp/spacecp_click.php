@@ -25,10 +25,13 @@ if(empty($click)) {
 
 switch ($idtype) {
 	case 'picid':
+		if (!$_G['setting']['albumstatus']) {
+			showmessage('album_status_off');
+		}
 		$item = C::t('home_pic')->fetch($id);
 		if($item) {
 			$picfield = C::t('home_picfield')->fetch($id);
-			$album = C::t('home_album')->fetch($item['albumid']);
+			$album = C::t('home_album')->fetch_album($item['albumid']);
 			$item['hotuser'] = $picfield['hotuser'];
 			$item['friend'] = $album['friend'];
 			$item['username'] = $album['username'];
@@ -36,10 +39,16 @@ switch ($idtype) {
 		$tablename = 'home_pic';
 		break;
 	case 'aid':
+		if (!$_G['setting']['portalstatus']) {
+			showmessage('portal_status_off');
+		}
 		$item = C::t('portal_article_title')->fetch($id);
 		$tablename = 'portal_article_title';
 		break;
 	default:
+		if (!$_G['setting']['blogstatus']) {
+			showmessage('blog_status_off');
+		}
 		$idtype = 'blogid';
 		$item = array_merge(
 			C::t('home_blog')->fetch($id),
@@ -66,7 +75,7 @@ if($_GET['op'] == 'add') {
 		showmessage('is_blacklist');
 	}
 
-	if(C::t('home_clickuser')->count_by_uid_id_idtype($space[uid], $id, $idtype)) {
+	if(C::t('home_clickuser')->count_by_uid_id_idtype($space['uid'], $id, $idtype)) {
 		showmessage('click_have');
 	}
 
@@ -92,14 +101,14 @@ if($_GET['op'] == 'add') {
 		case 'blogid':
 			$fs['title_template'] = 'feed_click_blog';
 			$fs['title_data'] = array(
-				'touser' => "<a href=\"home.php?mod=space&uid=$item[uid]\">{$item[username]}</a>",
-				'subject' => "<a href=\"home.php?mod=space&uid=$item[uid]&do=blog&id=$item[blogid]\">$item[subject]</a>",
+				'touser' => "<a href=\"home.php?mod=space&uid={$item['uid']}\">{$item['username']}</a>",
+				'subject' => "<a href=\"home.php?mod=space&uid={$item['uid']}&do=blog&id={$item['blogid']}\">{$item['subject']}</a>",
 				'click' => $click['name']
 			);
 
 			$q_note = 'click_blog';
 			$q_note_values = array(
-				'url'=>"home.php?mod=space&uid=$item[uid]&do=blog&id=$item[blogid]",
+				'url'=>"home.php?mod=space&uid={$item['uid']}&do=blog&id={$item['blogid']}",
 				'subject'=>$item['subject'],
 				'from_id' => $item['blogid'],
 				'from_idtype' => 'blogid'
@@ -110,8 +119,8 @@ if($_GET['op'] == 'add') {
 			$article_url = fetch_article_url($item);
 			$fs['title_template'] = 'feed_click_article';
 			$fs['title_data'] = array(
-				'touser' => "<a href=\"home.php?mod=space&uid=$item[uid]\">{$item[username]}</a>",
-				'subject' => "<a href=\"$article_url\">$item[title]</a>",
+				'touser' => "<a href=\"home.php?mod=space&uid={$item['uid']}\">{$item['username']}</a>",
+				'subject' => "<a href=\"$article_url\">{$item['title']}</a>",
 				'click' => $click['name']
 			);
 
@@ -126,16 +135,16 @@ if($_GET['op'] == 'add') {
 		case 'picid':
 			$fs['title_template'] = 'feed_click_pic';
 			$fs['title_data'] = array(
-				'touser' => "<a href=\"home.php?mod=space&uid=$item[uid]\">{$item[username]}</a>",
+				'touser' => "<a href=\"home.php?mod=space&uid={$item['uid']}\">{$item['username']}</a>",
 				'click' => $click['name']
 			);
 			$fs['images'] = array(pic_get($item['filepath'], 'album', $item['thumb'], $item['remote']));
-			$fs['image_links'] = array("home.php?mod=space&uid=$item[uid]&do=album&picid=$item[picid]");
+			$fs['image_links'] = array("home.php?mod=space&uid={$item['uid']}&do=album&picid={$item['picid']}");
 			$fs['body_general'] = $item['title'];
 
 			$q_note = 'click_pic';
 			$q_note_values = array(
-				'url'=>"home.php?mod=space&uid=$item[uid]&do=album&picid=$item[picid]",
+				'url'=>"home.php?mod=space&uid={$item['uid']}&do=album&picid={$item['picid']}",
 				'from_id' => $item['picid'],
 				'from_idtype' => 'picid'
 			);

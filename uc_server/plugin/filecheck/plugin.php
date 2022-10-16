@@ -7,7 +7,7 @@ class control extends pluginbase {
 
 	var $md5data = array();
 
-	function control() {
+	function __construct() {
 		$this->pluginbase();
 	}
 
@@ -37,26 +37,29 @@ class control extends pluginbase {
 		foreach($ucfiles as $line) {
 			$file = trim(substr($line, 34));
 			$md5datanew[$file] = substr($line, 0, 32);
-			if($md5datanew[$file] != $this->md5data[$file]) {
-				$modifylist[$file] = $this->md5data[$file];
+			if(isset($this->md5data[$file])) {
+				if($md5datanew[$file] != $this->md5data[$file]) {
+					$modifylist[$file] = $this->md5data[$file];
+				}
+				$md5datanew[$file] = $this->md5data[$file];
 			}
-			$md5datanew[$file] = $this->md5data[$file];
 		}
 
-		$weekbefore = $timestamp - 604800;
-		$addlist = @array_diff_assoc($this->md5data, $md5datanew);
-		$dellist = @array_diff_assoc($md5datanew, $this->md5data);
-		$modifylist = @array_diff_assoc($modifylist, $dellist);
-		$showlist = @array_merge($this->md5data, $md5datanew);
+		$weekbefore = time() - 604800;
+		$md5datanew = is_array($md5datanew) ? $md5datanew : array();
+		$addlist = array_diff_assoc($this->md5data, $md5datanew);
+		$dellist = array_diff_assoc($md5datanew, $this->md5data);
+		$modifylist = array_diff_assoc($modifylist, $dellist);
+		$showlist = array_merge($this->md5data, $md5datanew);
 		$doubt = 0;
 		$dirlist = array('modify' => array(), 'del' => array(), 'add' => array(), 'doubt' => array());
 		foreach($showlist as $file => $md5) {
 			$dir = dirname($file);
-			if(@array_key_exists($file, $modifylist)) {
+			if(is_array($modifylist) && array_key_exists($file, $modifylist)) {
 				$fileststus = 'modify';
-			} elseif(@array_key_exists($file, $dellist)) {
+			} elseif(is_array($dellist) && array_key_exists($file, $dellist)) {
 				$fileststus = 'del';
-			} elseif(@array_key_exists($file, $addlist)) {
+			} elseif(is_array($addlist) && array_key_exists($file, $addlist)) {
 				$fileststus = 'add';
 			} else {
 				$filemtime = @filemtime($file);

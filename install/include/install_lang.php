@@ -13,12 +13,8 @@ if(!defined('IN_COMSENZ')) {
 
 define('UC_VERNAME', '中文版');
 $lang = array(
-	'SC_GBK' => '简体中文版',
-	'TC_BIG5' => '繁体中文版',
 	'SC_UTF8' => '简体中文 UTF8 版',
 	'TC_UTF8' => '繁体中文 UTF8 版',
-	'EN_ISO' => 'ENGLISH ISO8859',
-	'EN_UTF8' => 'ENGLIST UTF-8',
 
 	'title_install' => SOFT_NAME.' 安装向导',
 	'agreement_yes' => '我同意',
@@ -36,9 +32,6 @@ $lang = array(
 	'nodir' => '目录不存在',
 	'redirect' => '浏览器会自动跳转页面，无需人工干预。<br>除非当您的浏览器没有自动跳转时，请点击这里',
 	'auto_redirect' => '浏览器会自动跳转页面，无需人工干预',
-	'database_errno_2003' => '无法连接数据库，请检查数据库是否启动，数据库服务器地址是否正确',
-	'database_errno_1044' => '无法创建新的数据库，请检查数据库名称填写是否正确',
-	'database_errno_1045' => '无法连接数据库，请检查数据库用户名或者密码是否正确',
 	'database_errno_1064' => 'SQL 语法错误',
 
 	'dbpriv_createtable' => '没有CREATE TABLE权限，无法继续安装',
@@ -84,6 +77,7 @@ $lang = array(
 	'ext_info_succ' => '安装成功。',
 	'install_submit' => '提交',
 	'install_locked' => '安装锁定，已经安装过了，如果您确定要重新安装，请到服务器上删除<br /> '.str_replace(ROOT_PATH, '', $lockfile),
+	'error_stuck_msg' => '安装进程已经很久没有进展了，可能相关请求已经因网络超时或服务器严重错误而异常退出',
 	'error_quit_msg' => '您必须解决以上问题，安装才可以继续',
 
 	'step_app_reg_title' => '设置运行环境',
@@ -91,18 +85,17 @@ $lang = array(
 	'tips_ucenter' => '请填写 UCenter 相关信息',
 	'tips_ucenter_comment' => 'UCenter 是 Comsenz 公司产品的核心服务程序，Discuz! Board 的安装和运行依赖此程序。如果您已经安装了 UCenter，请填写以下信息。否则，请到 <a href="http://www.discuz.com/" target="blank">Comsenz 产品中心</a> 下载并且安装，然后再继续。',
 
-	'advice_mysql_connect' => '请检查 mysql 模块是否正确加载',
-	'advice_gethostbyname' => '是否 PHP 配置中禁止了 gethostbyname 函数。请联系空间商，确定开启了此项功能',
-	'advice_file_get_contents' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
-	'advice_xml_parser_create' => '该函数需要 PHP 支持 XML。请联系空间商，确定开启了此项功能',
-	'advice_fsockopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
-	'advice_pfsockopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
-	'advice_stream_socket_client' => '是否 PHP 配置中禁止了 stream_socket_client 函数',
-	'advice_curl_init' => '是否 PHP 配置中禁止了 curl_init 函数',
+	'advice_mysqli_connect' => '请检查 mysqli 模块是否正确加载',
+	'advice_xml_parser_create' => '该函数需要 PHP 支持 XML 。请联系服务商，确定开启了此项功能',
+	'advice_json_encode' => '该函数需要 PHP 支持 JSON 。请联系服务商，确定开启了此项功能',
+	'advice_fsockopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系服务商，确定开启了此项功能',
+	'advice_pfsockopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系服务商，确定开启了此项功能',
+	'advice_stream_socket_client' => '该函数需要 php.ini 中 stream_socket_client 函数开启。请联系服务商，确定开启了此项功能',
+	'advice_curl_init' => '该函数需要 php.ini 中 curl_init 函数开启。请联系服务商，确定开启了此项功能',
 
 	'ucurl' => 'UCenter 的 URL',
 	'ucpw' => 'UCenter 创始人密码',
-	'ucip' => 'UCenter 的IP地址',
+	'ucip' => 'UCenter 的 IP 地址',
 	'ucenter_ucip_invalid' => '格式错误，请填写正确的 IP 地址',
 	'ucip_comment' => '绝大多数情况下您可以不填',
 
@@ -122,6 +115,8 @@ $lang = array(
 	'dbpw_comment' => '您的数据库密码',
 	'tablepre_comment' => '同一数据库运行多个论坛时，请修改前缀',
 	'forceinstall_check_label' => '我要删除数据，强制安装 !!!',
+	'initdbresult_succ' => '数据库安装完成',
+	'initsys' => '正在系统初始化',
 
 	'uc_url_empty' => '您没有填写 UCenter 的 URL，请返回填写',
 	'uc_url_invalid' => 'URL 格式错误',
@@ -148,8 +143,8 @@ $lang = array(
 	'admininfo_password_invalid' => '管理员密码为空，请填写',
 	'admininfo_password2_invalid' => '两次密码不一致，请检查',
 
-	'install_dzfull' => '<br><label><input type="radio"'.(getgpc('install_ucenter') != 'no' ? ' checked="checked"' : '').' name="install_ucenter" value="yes" onclick="if(this.checked)$(\'form_items_2\').style.display=\'none\';" /> 全新安装 Discuz! X (含 UCenter Server)</label>',
-	'install_dzonly' => '<br><label><input type="radio"'.(getgpc('install_ucenter') == 'no' ? ' checked="checked"' : '').' name="install_ucenter" value="no" onclick="if(this.checked)$(\'form_items_2\').style.display=\'\';" /> 仅安装 Discuz! X (手工指定已经安装的 UCenter Server)</label>',
+	'install_dzfull' => '<div class="selradio"><input type="radio" id="install_ucenter_yes"'.(getgpc('install_ucenter') != 'no' ? ' checked="checked"' : '').' name="install_ucenter" value="yes" onclick="if(this.checked)$(\'form_items_2\').style.display=\'none\';" /><label for="install_ucenter_yes">全新安装 Discuz! X (含 UCenter Server)</label></div>',
+	'install_dzonly' => '<div class="selradio"><input type="radio" id="install_ucenter_no"'.(getgpc('install_ucenter') == 'no' ? ' checked="checked"' : '').' name="install_ucenter" value="no" onclick="if(this.checked)$(\'form_items_2\').style.display=\'\';" /><label for="install_ucenter_no">仅安装 Discuz! X (手工指定已经安装的 UCenter Server)</label></div>',
 
 	'username' => '管理员账号',
 	'email' => '管理员 Email',
@@ -177,9 +172,6 @@ $lang = array(
 
 	'install_in_processed' => '正在安装...',
 	'install_succeed' => '安装成功，点击进入',
-	'install_cloud' => '安装成功，欢迎开通Discuz!云平台<br>Discuz!云平台致力于帮助站长提高网站流量，增强网站运营能力，增加网站收入。<br>Discuz!云平台目前免费提供了QQ互联、腾讯分析、纵横搜索、漫游应用、SOSO表情服务。Discuz!云平台将陆续提供更多优质服务项目。<br>开通Discuz!平台之前，请确保您的网站（Discuz!、UCHome或SupeSite）已经升级到Discuz! X3。',
-	'to_install_cloud' => '到后台开通',
-	'to_index' => '暂不开通',
 
 	'init_credits_karma' => '威望',
 	'init_credits_money' => '金钱',
@@ -253,9 +245,11 @@ $lang = array(
 	'init_gift_task' => '红包类任务',
 	'init_avatar_task' => '头像类任务',
 
+	'copyright' => 'Copyright &copy; 2001-'.date('Y').' Tencent Cloud.',
+
 	'license' => '
 <div class="license"><h1>中文版授权协议 适用于中文用户</h1>
-<p>版权所有 (c) 2001-2022，腾讯云计算（北京）有限责任公司（原北京康盛新创科技有限责任公司）保留所有权利。</p>
+<p>版权所有 (c) 2001-'.date('Y').'，腾讯云计算（北京）有限责任公司（原北京康盛新创科技有限责任公司）保留所有权利。</p>
 
 <p>感谢您选择腾讯云产品。希望我们的努力能为您提供一个高效快速、强大的站点解决方案，和强大的社区论坛解决方案。腾讯云公司网址为 https://www.qcloud.com，产品官方讨论社区网址为 https://www.dismall.com。产品官方应用中心网址为：https://addon.dismall.com。开源代码网址为 https://code.dismall.com。</p>
 
@@ -309,8 +303,7 @@ $lang = array(
 
 </div>',
 
-	'php_version_too_low' => '您的 PHP 版本太低，请升级到至少 PHP '.$env_items['php']['r'].' 后再试！',
-	'php8_tips' => '您好，当前产品暂不支持 PHP 8 安装，请降级到至少 PHP 7.4 后再试！',
+	'php8_tips' => '您好，当前产品暂不支持 PHP 9 安装，请降级到至少 PHP 8.0 后再试！',
 	'no_utf8_tips' => '您好，您使用的版本为 GBK / BIG-5 等本地化编码版本，此版本已经不作为主推版本，如果您计划建设新站点【强烈】建议您使用最新正式 UTF-8 版本安装。',
 	'no_latest_tips' => '您好，您使用的版本较老，可能存在 Bug 以及安全隐患，如无特殊情况建议您改用最新正式 UTF-8 版本安装。',
 	'unstable_tips' => '您好，您使用的版本为非正式版本，可能存在未知的 Bug 或缺陷，如果您计划正式建站或购买插件建议您使用最新正式 UTF-8 版本安装。',
@@ -342,11 +335,12 @@ $lang = array(
 	'func_name' => '函数名称',
 	'check_result' => '检查结果',
 	'suggestion' => '建议',
-	'advice_mysql' => '请检查 mysql 模块是否正确加载',
-	'advice_fopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
-	'advice_file_get_contents' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系空间商，确定开启了此项功能',
-	'advice_xml' => '该函数需要 PHP 支持 XML。请联系空间商，确定开启了此项功能',
+	'advice_mysqli' => '请检查 mysqli 模块是否正确加载',
+	'advice_fopen' => '该函数需要 php.ini 中 allow_url_fopen 选项开启。请联系服务商，确定开启了此项功能',
+	'advice_xml' => '该函数需要 PHP 支持 XML。请联系服务商，确定开启了此项功能',
 	'none' => '无',
+	'undefine_func' => '不存在的函数',
+	'mysqli_unsupport' => '请检查 mysqli 模块是否正确加载',
 
 	'dbhost' => '数据库服务器地址',
 	'dbuser' => '数据库用户名',
@@ -357,12 +351,13 @@ $lang = array(
 	'ucfounderpw' => '创始人密码',
 	'ucfounderpw2' => '重复创始人密码',
 
-	'init_log' => '初始化记录',
 	'clear_dir' => '清空目录',
 	'select_db' => '选择数据库',
 	'create_table' => '建立数据表',
-	'succeed' => '成功 ',
+	'succeed' => '成功',
+	'failed' => '失败',
 
+	'init_table_data' => '正在初始化数据表中的数据',
 	'install_data' => '正在安装数据',
 	'install_test_data' => '正在安装附加数据',
 
@@ -370,7 +365,11 @@ $lang = array(
 	'database_nonexistence' => '数据库操作对象不存在',
 	'skip_current' => '跳过本步',
 	'topic' => '专题',
-	'install_finish' => '您的论坛已完成安装，点此访问',
+	'install_finish' => '站点安装完成，感谢您的支持！',
+	'install_finish_next' => '接下来您可以：',
+	'finish_btn_admin' => '进入管理后台',
+	'finish_btn_cloudaddon' => '安装插件模板',
+	'finish_btn_direct' => '直接访问站点',
 
 );
 

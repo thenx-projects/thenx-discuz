@@ -89,58 +89,62 @@ if($operation == 'verify') {
 			}
 
 			$orderby = isset($_GET['orderby']) ? $_GET['orderby'] : '';
+			$orderby = array($orderby => ' selected');
 			$datehtml = $orderbyhtml = '';
 			if($anchor != 'pass') {
-				$datehtml = "<tr><th>$searchlang[members_verify_dateline]</th><td colspan=\"3\">
-					<input type=\"text\" name=\"dateline1\" value=\"$_GET[dateline1]\" size=\"10\" onclick=\"showcalendar(event, this)\"> ~
-					<input type=\"text\" name=\"dateline2\" value=\"$_GET[dateline2]\" size=\"10\" onclick=\"showcalendar(event, this)\"> (YYYY-MM-DD)
+				$datehtml = "<tr><th>{$searchlang['members_verify_dateline']}</th><td colspan=\"3\">
+					<input type=\"text\" name=\"dateline1\" value=\"{$_GET['dateline1']}\" size=\"10\" onclick=\"showcalendar(event, this)\"> ~
+					<input type=\"text\" name=\"dateline2\" value=\"{$_GET['dateline2']}\" size=\"10\" onclick=\"showcalendar(event, this)\"> (YYYY-MM-DD)
 					</td></tr>";
-				$orderbyhtml = "<select name=\"orderby\"><option value=\"dateline\"$orderby[dateline]>$searchlang[members_verify_dateline]</option>	</select>";
+				$orderbyhtml = "<select name=\"orderby\"><option value=\"dateline\"{$orderby['dateline']}>{$searchlang['members_verify_dateline']}</option>	</select>";
 			} else {
-				$orderbyhtml = "<select name=\"orderby\"><option value=\"uid\"$orderby[dateline]>$searchlang[members_verify_uid]</option>	</select>";
+				$orderbyhtml = "<select name=\"orderby\"><option value=\"uid\"{$orderby['dateline']}>{$searchlang['members_verify_uid']}</option>	</select>";
 			}
 
 
 			$ordersc = isset($_GET['ordersc']) ? $_GET['ordersc'] : '';
-			$perpages = isset($_GET['perpages']) ? $_GET['perpages'] : '';
+			$perpages = isset($_GET['perpage']) ? $_GET['perpage'] : '';
+			$ordersc = array($ordersc => ' selected');
+			$perpages = array($perpages => ' selected');
 			$adminscript = ADMINSCRIPT;
+			$staticurl = STATICURL;
 			$expertsearch = $vid ? '&nbsp;<a href="'.ADMINSCRIPT.'?action=members&operation=search&more=1&vid='.$vid.'" target="_top">'.cplang('search_higher').'</a>' : '';
 echo <<<EOF
 			<form method="get" autocomplete="off" action="$adminscript">
-				<div class="block style4">
-					<table cellspacing="3" cellpadding="3">
+				<div class="dbox"><div class="boxbody">
+					<table cellspacing="3" cellpadding="3" class="tb tb2">
 					<tr>
-						<th>$searchlang[members_verify_username]* </th><td><input type="text" name="username" value="$_GET[username]"></td>
-						<th>$searchlang[members_verify_uid]</th><td><input type="text" name="uid" value="$_GET[uid]"> *$searchlang[likesupport]</td>
+						<th>{$searchlang['members_verify_username']}* </th><td><input type="text" name="username" value="{$_GET['username']}"></td>
+						<th>{$searchlang['members_verify_uid']}</th><td><input type="text" name="uid" value="{$_GET['uid']}"> *{$searchlang['likesupport']}</td>
 
 					</tr>
 					$datehtml
 					<tr>
-						<th>$searchlang[resultsort]</th>
+						<th>{$searchlang['resultsort']}</th>
 						<td colspan="3">
 							$orderbyhtml
 							<select name="ordersc">
-							<option value="desc"$ordersc[desc]>$searchlang[orderdesc]</option>
-							<option value="asc"$ordersc[asc]>$searchlang[orderasc]</option>
+							<option value="desc"{$ordersc['desc']}>{$searchlang['orderdesc']}</option>
+							<option value="asc"{$ordersc['asc']}>{$searchlang['orderasc']}</option>
 							</select>
 							<select name="perpage">
-							<option value="10"$perpages[10]>$searchlang[perpage_10]</option>
-							<option value="20"$perpages[20]>$searchlang[perpage_20]</option>
-							<option value="50"$perpages[50]>$searchlang[perpage_50]</option>
-							<option value="100"$perpages[100]>$searchlang[perpage_100]</option>
+							<option value="10"{$perpages[10]}>{$searchlang['perpage_10']}</option>
+							<option value="20"{$perpages[20]}>{$searchlang['perpage_20']}</option>
+							<option value="50"{$perpages[50]}>{$searchlang['perpage_50']}</option>
+							<option value="100"{$perpages[100]}>{$searchlang['perpage_100']}</option>
 							</select>
 							<input type="hidden" name="action" value="verify">
 							<input type="hidden" name="operation" value="verify">
 							<input type="hidden" name="do" value="$vid">
 							<input type="hidden" name="anchor" value="$anchor">
-							<input type="submit" name="searchsubmit" value="$searchlang[search]" class="btn">$expertsearch
+							<input type="submit" name="searchsubmit" value="{$searchlang['search']}" class="btn">$expertsearch
 						</td>
 					</tr>
 					</table>
-				</div>
+				</div></div>
 			</form>
 			<iframe id="frame_profile" name="frame_profile" style="display: none"></iframe>
-			<script type="text/javascript" src="static/js/calendar.js"></script>
+			<script type="text/javascript" src="{$staticurl}js/calendar.js"></script>
 			<script type="text/javascript">
 				function showreason(vid, flag) {
 					var reasonobj = $('reason_'+vid);
@@ -246,7 +250,7 @@ EOF;
 			$multipage = '';
 
 			showformheader("verify&operation=verify&do=".$vid.'&anchor='.$anchor);
-			echo "<script>disallowfloat = '{$_G[setting][disallowfloat]}';</script><input type=\"hidden\" name=\"verifysubmit\" value=\"trun\" />";
+			echo "<script>disallowfloat = '{$_G['setting']['disallowfloat']}';</script><input type=\"hidden\" name=\"verifysubmit\" value=\"trun\" />";
 			showtableheader('members_verify_manage', 'fixpadding');
 
 			if($anchor != 'pass') {
@@ -281,10 +285,10 @@ EOF;
 						$verifytype = $value['verifytype'] ? $_G['setting']['verify'][$value['verifytype']]['title'] : $lang['members_verify_profile'];
 						$fieldstr = '<table width="96%">';
 						$i = 0;
-						$fieldstr .= '<tr>'.($anchor == 'authstr' ? '<td width="26">'.$lang[members_verify_refusal].'</td>' : '').'<td width="100">'.$lang['members_verify_fieldid'].'</td><td>'.$lang['members_verify_newvalue'].'</td></tr><tbody id="verifyitem_'.$value[vid].'">';
+						$fieldstr .= '<tr>'.($anchor == 'authstr' ? '<td width="26">'.$lang['members_verify_refusal'].'</td>' : '').'<td width="100">'.$lang['members_verify_fieldid'].'</td><td>'.$lang['members_verify_newvalue'].'</td></tr><tbody id="verifyitem_'.$value['vid'].'">';
 						$i++;
 						foreach($fields as $key => $field) {
-							if(in_array($key, array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthprovince', 'birthdist', 'birthcommunity', 'resideprovince', 'residedist', 'residecommunity'))) {
+							if(in_array($key, array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthcountry', 'birthprovince', 'birthdist', 'birthcommunity', 'residecountry', 'resideprovince', 'residedist', 'residecommunity'))) {
 								continue;
 							}
 							if($_G['cache']['profilesetting'][$key]['formtype'] == 'file') {
@@ -302,15 +306,15 @@ EOF;
 						$opstr = "";
 
 						if($anchor == 'authstr') {
-							$opstr .= "<label><input class=\"radio\" type=\"radio\" name=\"verify[$value[vid]]\" value=\"validate\" onclick=\"mod_setbg($value[vid], 'validate');showreason($value[vid], 0);\">$lang[validate]</label>&nbsp;<label><input class=\"radio\" type=\"radio\" name=\"verify[$value[vid]]\" value=\"refusal\" id=\"refusal$value[vid]\" onclick=\"mod_setbg($value[vid], 'refusal');showreason($value[vid], 1);\">$lang[members_verify_refusal]</label>";
+							$opstr .= "<label><input class=\"radio\" type=\"radio\" name=\"verify[{$value['vid']}]\" value=\"validate\" onclick=\"mod_setbg({$value['vid']}, 'validate');showreason({$value['vid']}, 0);\">{$lang['validate']}</label>&nbsp;<label><input class=\"radio\" type=\"radio\" name=\"verify[{$value['vid']}]\" value=\"refusal\" id=\"refusal{$value['vid']}\" onclick=\"mod_setbg({$value['vid']}, 'refusal');showreason({$value['vid']}, 1);\">{$lang['members_verify_refusal']}</label>";
 						} elseif ($anchor == 'refusal') {
-							$opstr .= "<label><input class=\"radio\" type=\"radio\" name=\"verify[$value[vid]]\" value=\"validate\" onclick=\"mod_setbg($value[vid], 'validate');\">$lang[validate]</label>";
+							$opstr .= "<label><input class=\"radio\" type=\"radio\" name=\"verify[{$value['vid']}]\" value=\"validate\" onclick=\"mod_setbg({$value['vid']}, 'validate');\">{$lang['validate']}</label>";
 						}
 
-						$fieldstr .= "</tbody><tr><td colspan=\"5\">$opstr &nbsp;<span id=\"reason_$value[vid]\" style=\"display: none;\">$lang[moderate_reasonpm]&nbsp; <input type=\"text\" class=\"txt\" name=\"reason[$value[vid]]\" style=\"margin: 0px;\"></span>&nbsp;<input type=\"button\" value=\"$lang[moderate]\" name=\"singleverifysubmit\" class=\"btn\" onclick=\"singleverify($value[vid]);\"></td></tr></table>";
+						$fieldstr .= "</tbody><tr><td colspan=\"5\">$opstr &nbsp;<span id=\"reason_{$value['vid']}\" style=\"display: none;\">{$lang['moderate_reasonpm']}&nbsp; <input type=\"text\" class=\"txt\" name=\"reason[{$value['vid']}]\" style=\"margin: 0px;\"></span>&nbsp;<input type=\"button\" value=\"{$lang['moderate']}\" name=\"singleverifysubmit\" class=\"btn\" onclick=\"singleverify({$value['vid']});\"></td></tr></table>";
 
 						$valuearr = array($value['username'], $verifytype, dgmdate($value['dateline'], 'dt'), $fieldstr);
-						showtablerow("id=\"mod_$value[vid]_row\" verifyid=\"$value[vid]\"", $cssarr, $valuearr);
+						showtablerow("id=\"mod_{$value['vid']}_row\" verifyid=\"{$value['vid']}}\"", $cssarr, $valuearr);
 					} else {
 						$fields = $_G['setting']['verify'][$vid]['field'];
 						$verifytype = $vid ? $_G['setting']['verify'][$vid]['title'] : $lang['members_verify_profile'];
@@ -318,7 +322,7 @@ EOF;
 						$fieldstr = '<table width="96%">';
 						$fieldstr .= '<tr><td width="100">'.$lang['members_verify_fieldid'].'</td><td>'.$lang['members_verify_newvalue'].'</td></tr>';
 						foreach($fields as $key => $field) {
-							if(!in_array($key, array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthprovince', 'birthdist', 'birthcommunity', 'resideprovince', 'residedist', 'residecommunity'))) {
+							if(!in_array($key, array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthcountry', 'birthprovince', 'birthdist', 'birthcommunity', 'residecountry', 'resideprovince', 'residedist', 'residecommunity'))) {
 								if(in_array($key, array('gender', 'birthday', 'birthcity', 'residecity'))) {
 									$value[$field] = profile_show($key, $value);
 								}
@@ -333,9 +337,9 @@ EOF;
 							}
 						}
 						$fieldstr .= "</table>";
-						$opstr = "<ul class=\"nofloat\"><li><label><input class=\"radio\" type=\"radio\" name=\"verify[$value[uid]]\" value=\"export\" onclick=\"mod_setbg($value[uid], 'validate');\">$lang[export]</label></li><li><label><input class=\"radio\" type=\"radio\" name=\"verify[$value[uid]]\" value=\"refusal\" onclick=\"mod_setbg($value[uid], 'refusal');\">$lang[members_verify_refusal]</label></li></ul>";
+						$opstr = "<ul class=\"nofloat\"><li><label><input class=\"radio\" type=\"radio\" name=\"verify[{$value['uid']}]\" value=\"export\" onclick=\"mod_setbg({$value['uid']}, 'validate');\">{$lang['export']}</label></li><li><label><input class=\"radio\" type=\"radio\" name=\"verify[{$value['uid']}]\" value=\"refusal\" onclick=\"mod_setbg({$value['uid']}, 'refusal');\">{$lang['members_verify_refusal']}</label></li></ul>";
 						$valuearr = array($opstr, $value['username'], $verifytype, $fieldstr);
-						showtablerow("id=\"mod_$value[uid]_row\"", $cssarr, $valuearr);
+						showtablerow("id=\"mod_{$value['uid']}_row\"", $cssarr, $valuearr);
 					}
 				}
 				$multipage = multi($count, $perpage, $page, $mpurl);
@@ -388,7 +392,7 @@ EOF;
 						$value = array_merge($value, $members[$uid], $profiles[$uid]);
 						$str = $common = '';
 						foreach($fields as $key => $field) {
-							if(in_array($key, array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthprovince', 'birthdist', 'birthcommunity', 'resideprovince', 'residedist', 'residecommunity'))) {
+							if(in_array($key, array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthcountry', 'birthprovince', 'birthdist', 'birthcommunity', 'residecountry', 'resideprovince', 'residedist', 'residecommunity'))) {
 								continue;
 							}
 							if($showtitle) {
@@ -467,6 +471,10 @@ EOF;
 									);
 								$note_lang = 'profile_verify_error';
 							} else {
+								// 用户信息变更记录
+								if($_G['setting']['profilehistory']) {
+									C::t('common_member_profile_history')->insert(array_merge(C::t('common_member_profile')->fetch(intval($value['uid'])), array('dateline' => time())));
+								}
 								C::t('common_member_profile')->update(intval($value['uid']), $fields);
 								$verify['delete'][] = $value['vid'];
 								if($value['verifytype']) {
@@ -537,13 +545,11 @@ EOF;
 
 		if($vid == 6) {
 			showsetting('members_verify_view_real_name', "verify[viewrealname]", $verifyarr['viewrealname'], 'radio');
-		} elseif($vid == 7) {
-			showsetting('members_verify_view_video_photo', "verify[viewvideophoto]", $verifyarr['viewvideophoto'], 'radio');
 		}
-		if($vid != 7) {
+		if($vid) {
 			$varname = array('verify[field]', array(), 'isfloat');
 			foreach(C::t('common_member_profile_setting')->fetch_all_by_available(1) as $value) {
-				if(!in_array($value['fieldid'], array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthprovince', 'birthdist', 'birthcommunity', 'resideprovince', 'residedist', 'residecommunity'))) {
+				if(!in_array($value['fieldid'], array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'birthcountry', 'birthprovince', 'birthdist', 'birthcommunity', 'residecountry', 'resideprovince', 'residedist', 'residecommunity'))) {
 					$varname[1][] = array($value['fieldid'], $value['title'], $value['fieldid']);
 				}
 			}
@@ -553,7 +559,7 @@ EOF;
 		$groupselect = array();
 		foreach(C::t('common_usergroup')->fetch_all_not(array(6, 7)) as $group) {
 			$group['type'] = $group['type'] == 'special' && $group['radminid'] ? 'specialadmin' : $group['type'];
-			$groupselect[$group['type']] .= "<option value=\"$group[groupid]\" ".(in_array($group['groupid'], $verifyarr['groupid']) ? 'selected' : '').">$group[grouptitle]</option>\n";
+			$groupselect[$group['type']] .= "<option value=\"{$group['groupid']}\" ".((is_array($verifyarr['groupid']) && in_array($group['groupid'], $verifyarr['groupid'])) ? 'selected' : '').">{$group['grouptitle']}</option>\n";
 		}
 		$groupselect = '<optgroup label="'.$lang['usergroups_member'].'">'.$groupselect['member'].'</optgroup>'.
 			($groupselect['special'] ? '<optgroup label="'.$lang['usergroups_special'].'">'.$groupselect['special'].'</optgroup>' : '').
@@ -566,6 +572,9 @@ EOF;
 		showformfooter();
 	} else {
 		foreach( $_G['setting']['verify'] AS $key => $value) {
+			if(!is_array($value)) {
+				continue;
+			}
 			$_G['setting']['verify'][$key]['icon'] = str_replace($_G['setting']['attachurl'].'common/', '', $value['icon']);
 			$_G['setting']['verify'][$key]['unverifyicon'] = str_replace($_G['setting']['attachurl'].'common/', '', $value['unverifyicon']);
 		}
@@ -586,6 +595,7 @@ EOF;
 			$verifynew['unverifyicon'] = delverifyicon($verifyarr['unverifyicon']);
 		}
 		if(!empty($verifynew['field']['residecity'])) {
+			$verifynew['field']['residecountry'] = 'residecountry';
 			$verifynew['field']['resideprovince'] = 'resideprovince';
 			$verifynew['field']['residedist'] = 'residedist';
 			$verifynew['field']['residecommunity'] = 'residecommunity';
@@ -595,6 +605,7 @@ EOF;
 			$verifynew['field']['birthmonth'] = 'birthmonth';
 		}
 		if(!empty($verifynew['field']['birthcity'])) {
+			$verifynew['field']['birthcountry'] = 'birthcountry';
 			$verifynew['field']['birthprovince'] = 'birthprovince';
 			$verifynew['field']['birthdist'] = 'birthdist';
 			$verifynew['field']['birthcommunity'] = 'birthcommunity';
@@ -611,13 +622,13 @@ EOF;
 			}
 			$_G['setting']['verify'][$i]['icon'] = !$icon_url['host'] ? str_replace($_G['setting']['attachurl'].'common/', '', $_G['setting']['verify'][$i]['icon']) : $_G['setting']['verify'][$i]['icon'] ;
 		}
-		C::t('common_setting')->update('verify', $_G['setting']['verify']);
+		C::t('common_setting')->update_setting('verify', $_G['setting']['verify']);
 		if(isset($verifynew['viewrealname']) && !$verifynew['viewrealname']) {
 			C::t('common_member_profile_setting')->update('realname', array('showinthread' => 0));
-			$custominfo = C::t('common_setting')->fetch('customauthorinfo', true);
+			$custominfo = C::t('common_setting')->fetch_setting('customauthorinfo', true);
 			if(isset($custominfo[0]['field_realname'])) {
 				unset($custominfo[0]['field_realname']);
-				C::t('common_setting')->update('customauthorinfo', $custominfo);
+				C::t('common_setting')->update_setting('customauthorinfo', $custominfo);
 				updatecache(array('custominfo'));
 			}
 		}
@@ -666,7 +677,7 @@ EOF;
 			$_G['setting']['verify'][$key]['title'] = $value['title'];
 		}
 		$_G['setting']['verify']['enabled'] = $enabled;
-		C::t('common_setting')->update('verify', $_G['setting']['verify']);
+		C::t('common_setting')->update_setting('verify', $_G['setting']['verify']);
 		updatecache(array('setting'));
 		updatemenu('user');
 		cpmsg('members_verify_update_succeed', 'action=verify', 'succeed');

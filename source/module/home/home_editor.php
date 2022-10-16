@@ -17,16 +17,20 @@ $doodle = empty($_GET['doodle']) ? 0 : 1;
 $isportal = empty($_GET['isportal']) ? 0 : 1;
 if (empty($_GET['op'])) {
 	?>
+	<!DOCTYPE html>
 	<html>
 		<head>
-			<meta http-equiv="Content-Type" content="text/html;charset=<?php echo $_GET['charset']; ?>" />
+			<meta charset="<?php echo $_GET['charset']; ?>" />
+			<meta name="renderer" content="webkit" />
+			<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 			<title>Editor</title>
-			<script type="text/javascript" src="static/js/common.js"></script>
-			<script type="text/javascript" src="static/js/home.js"></script>
-			<script language="javascript" src="static/image/editor/editor_base.js"></script>
+			<script type="text/javascript" src="<?php echo STATICURL; ?>js/common.js"></script>
+			<script type="text/javascript" src="<?php echo STATICURL; ?>js/home.js"></script>
+			<script language="javascript" src="<?php echo STATICURL; ?>image/editor/editor_base.js"></script>
 			<style type="text/css">
+				html, body { height: 100%; }
 				body{margin:0;padding:0;}
-				body, td, input, button, select, textarea {font: 12px/1.5em Tahoma, Arial, Helvetica, snas-serif;}
+				body, td, input, button, select, textarea {font: 12px/1.5em Tahoma, Arial, Helvetica, sans-serif;}
 				textarea { resize: none; font-size: 14px; line-height: 1.8em; }
 				.submit { padding: 0 10px; height: 22px; border: 1px solid; border-color: #DDD #264F6E #264F6E #DDD; background: #2782D6; color: #FFF; line-height: 20px; letter-spacing: 1px; cursor: pointer; }
 				a.dm{text-decoration:none}
@@ -83,7 +87,7 @@ if (empty($_GET['op'])) {
 				.ico4{height:24px;width:8px;vertical-align:middle;text-align:center}
 
 				.edTb { background: #F2F2F2; }
-				.icons a,.sepline,.switch{background-image:url(static/image/editor/editor.gif)}
+				.icons a,.sepline,.switch{background-image:url(<?php echo STATICURL; ?>image/editor/editor.gif)}
 
 				.toobar, .toobarmini{position:relative;height:26px;overflow:hidden}
 				.toobarmini .icoSwitchTxt, .toobarmini .tble{ display: none !important;}
@@ -124,7 +128,7 @@ if (empty($_GET['op'])) {
 				a.icoAttach{background-position:-200px -20px}
 				a.icoSwf{background-position:-240px -20px}
 				a.icoSwitchTxt{background-position:-220px -60px;float:right}
-				a.icoFullTxt{ float: right; width: 35px; height: 20px; line-height: 20px; border: 1px solid #C2D5E3; background: url(static/image/common/card_btn.png) repeat-x 0 100%; text-align: center; color: #333; text-decoration: none; }
+				a.icoFullTxt{ float: right; width: 35px; height: 20px; line-height: 20px; border: 1px solid #C2D5E3; background: url(<?php echo STATICURL; ?>image/common/card_btn.png) repeat-x 0 100%; text-align: center; color: #333; text-decoration: none; }
 				a.icoSwitchMdi{background-position:-239px -60px;float:right}
 
 
@@ -137,11 +141,9 @@ if (empty($_GET['op'])) {
 			</script>
 		</head>
 		<body style="overflow-y:hidden">
-			<div >
+			<div style="height:100%">
 
-				<table cellpadding="0" cellspacing="0" width="100%" height="100%">
-					<tr>
-						<td height="31">
+						<div style="position: absolute;width: 100%;height: 31px;">
 							<table width="100%" border="0" cellpadding="0" cellspacing="0" class="edTb">
 								<tr>
 									<td height="31" style="padding-left:3px">
@@ -272,8 +274,8 @@ if (empty($_GET['op'])) {
 								<input type="text" id="pageTitle" name="pageTitle" value="" class="t_input" style="width: 190px;" /> <input type="button" onclick="pageBreak();" name="createURL" value="<?php echo lang('home/editor', 'editor_ok'); ?>" class="submit" /> <a href="javascript:;" onclick="fHide($('createPage'));return false;"><?php echo lang('home/editor', 'editor_cancel'); ?></a>
 							</div>
 
-						</td></tr>
-					<tr><td>
+						</div>
+						<div style="height: 100%;padding-top: 31px;box-sizing: border-box;">
 							<textarea id="dvtext" style="overflow-y:auto; margin-top: 0; padding:0px 4px 4px;width:100%;height:100%;word-wrap:break-word;border:0;display:none;"></textarea>
 							<div id="dvhtml" style="height:100%;width:100%;overflow:hidden">
 								<SCRIPT LANGUAGE="JavaScript">
@@ -293,9 +295,7 @@ if (empty($_GET['op'])) {
 								</SCRIPT>
 								<textarea id="sourceEditor" style="overflow-y:auto;padding-left:4px;width:100%;height:100%;word-wrap:break-word;display:none;border:0;"></textarea>
 							</div>
-						</td>
-					</tr>
-				</table>
+						</div>
 			</div>
 			<input type="hidden" name="uchome-editstatus" id="uchome-editstatus" value="html">
 		</body>
@@ -303,15 +303,16 @@ if (empty($_GET['op'])) {
 	<?php
 } else {
 	?>
-	<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-	<HTML>
-		<HEAD>
-			<meta http-equiv="Content-Type" content="text/html;charset=<?php echo $_GET['charset']; ?>" />
-			<title>New Document</title>
+	<!DOCTYPE html>
+	<html>
+		<head>
+			<meta charset="<?php echo $_GET['charset']; ?>" />
+			<meta name="renderer" content="webkit" />
+			<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+			<title>Editor</title>
 			<style>
 				body { margin: 0; padding: 0; word-wrap: break-word; font-size:14px; line-height:1.8em; font-family: Tahoma, Arial, Helvetica, snas-serif; }
 			</style>
-			<meta content="mshtml 6.00.2900.3132" name=generator>
 		</head>
 		<body>
 		</body>

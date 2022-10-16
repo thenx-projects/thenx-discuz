@@ -13,9 +13,9 @@ if(!defined('IN_DISCUZ')) {
 
 class block_permission {
 
-	function block_permission() {}
+	function __construct() {}
 
-	function &instance() {
+	public static function &instance() {
 		static $object;
 		if(empty($object)) {
 			$object = new block_permission();
@@ -122,9 +122,9 @@ class block_permission {
 }
 
 class template_permission {
-	function template_permission() {}
+	function __construct() {}
 
-	function &instance() {
+	public static function &instance() {
 		static $object;
 		if(empty($object)) {
 			$object = new template_permission();

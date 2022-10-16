@@ -103,17 +103,17 @@ function _checksec(type, idhash, showmsg, recall, modid) {
 	var modid = !modid ? '' : modid;
 	var x = new Ajax('XML', 'checksec' + type + 'verify_' + idhash);
 	x.loading = '';
-	$('checksec' + type + 'verify_' + idhash).innerHTML = '<img src="'+ IMGDIR + '/loading.gif" width="16" height="16" class="vm" />';
+	$('checksec' + type + 'verify_' + idhash).innerHTML = '<div class="loadicon vm"></div>';
 	x.get('misc.php?mod=sec' + type + '&action=check&inajax=1&modid=' + modid + '&idhash=' + idhash + '&secverify=' + (BROWSER.ie && document.charset == 'utf-8' ? encodeURIComponent(secverify) : secverify), function(s){
 		var obj = $('checksec' + type + 'verify_' + idhash);
 		obj.style.display = '';
 		if(s.substr(0, 7) == 'succeed') {
-			obj.innerHTML = '<img src="'+ IMGDIR + '/check_right.gif" width="16" height="16" class="vm" />';
+			obj.innerHTML = '<i class="fico-check_right fic4 fc-v fnmr vm"></i>';
 			if(showmsg) {
 				recall(1);
 			}
 		} else {
-			obj.innerHTML = '<img src="'+ IMGDIR + '/check_error.gif" width="16" height="16" class="vm" />';
+			obj.innerHTML = '<i class="fico-error fic4 fc-l fnmr vm"></i>';
 			if(showmsg) {
 				if(type == 'code') {
 					showError('验证码错误，请重新填写');
@@ -156,13 +156,15 @@ function _showdistrict(container, elems, totallevel, changelevel, containertype)
 		var op = elem.options[elem.selectedIndex];
 		return op['did'] || op.getAttribute('did') || '0';
 	};
-	var pid = changelevel >= 1 && elems[0] && $(elems[0]) ? getdid($(elems[0])) : 0;
-	var cid = changelevel >= 2 && elems[1] && $(elems[1]) ? getdid($(elems[1])) : 0;
-	var did = changelevel >= 3 && elems[2] && $(elems[2]) ? getdid($(elems[2])) : 0;
-	var coid = changelevel >= 4 && elems[3] && $(elems[3]) ? getdid($(elems[3])) : 0;
+	var countryid = changelevel >= 0 && elems[0] && $(elems[0]) ? getdid($(elems[0])) : 0;
+	var pid = changelevel >= 1 && elems[1] && $(elems[1]) ? getdid($(elems[1])) : 0;
+	var cid = changelevel >= 2 && elems[2] && $(elems[2]) ? getdid($(elems[2])) : 0;
+	var did = changelevel >= 3 && elems[3] && $(elems[3]) ? getdid($(elems[3])) : 0;
+	var coid = changelevel >= 4 && elems[4] && $(elems[4]) ? getdid($(elems[4])) : 0;
 	var url = "home.php?mod=misc&ac=ajax&op=district&container="+container+"&containertype="+containertype
-		+"&province="+elems[0]+"&city="+elems[1]+"&district="+elems[2]+"&community="+elems[3]
-		+"&pid="+pid + "&cid="+cid+"&did="+did+"&coid="+coid+'&level='+totallevel+'&handlekey='+container+'&inajax=1'+(!changelevel ? '&showdefault=1' : '');
+		+"&country="+elems[0]+"&province="+elems[1]+"&city="+elems[2]+"&district="+elems[3]+"&community="+elems[4]
+		+"&countryid="+countryid + "&pid="+pid + "&cid="+cid+"&did="+did+"&coid="+coid+'&level='+totallevel
+		+'&handlekey='+container+'&inajax=1'+(!changelevel ? '&showdefault=1' : '');
 	ajaxget(url, container, '');
 }
 
@@ -496,9 +498,9 @@ function _zoom(obj, zimg, nocover, pn, showexif) {
 			}
 			if(authorcurrent !== '') {
 				paid = authorcurrent > 0 ? authorimgs[authorcurrent - 1] : authorimgs[authorlength - 1];
-				picpage += ' <div id="zimg_prev" onmouseover="dragMenuDisabled=true;this.style.backgroundPosition=\'0 50px\'" onmouseout="dragMenuDisabled=false;this.style.backgroundPosition=\'0 -100px\';" onclick="_zoom_page(\'' + paid + '\', ' + (showexif ? 1 : 0) + ')" class="zimg_prev"><strong>上一张</strong></div> ';
+				picpage += ' <div id="zimg_prev" onmouseover="dragMenuDisabled=true;" onmouseout="dragMenuDisabled=false;" onclick="_zoom_page(\'' + paid + '\', ' + (showexif ? 1 : 0) + ')" class="zimg_prev"><strong>‹ 上一张</strong></div> ';
 				paid = authorcurrent < authorlength - 1 ? authorimgs[authorcurrent + 1] : authorimgs[0];
-				picpage += ' <div id="zimg_next" onmouseover="dragMenuDisabled=true;this.style.backgroundPosition=\'100% 50px\'" onmouseout="dragMenuDisabled=false;this.style.backgroundPosition=\'100% -100px\';" onclick="_zoom_page(\'' + paid + '\', ' + (showexif ? 1 : 0) + ')" class="zimg_next"><strong>下一张</strong></div> ';
+				picpage += ' <div id="zimg_next" onmouseover="dragMenuDisabled=true;" onmouseout="dragMenuDisabled=false;" onclick="_zoom_page(\'' + paid + '\', ' + (showexif ? 1 : 0) + ')" class="zimg_next"><strong>下一张 ›</strong></div> ';
 			}
 			if(picpage) {
 				$(menuid + '_picpage').innerHTML = picpage;
@@ -941,8 +943,7 @@ function _showPrompt(ctrlid, evt, msg, timeout, classname) {
 	if(ctrlid) {
 		msg = '<div id="' + ctrlid + '_prompt"><div class="tip_horn"></div><div class="tip_c">' + msg + '</div>';
 	} else {
-		msg = '<table cellspacing="0" cellpadding="0" class="popupcredit"><tr><td class="pc_l">&nbsp;</td><td class="pc_c"><div class="pc_inner">' + msg +
-			'</td><td class="pc_r">&nbsp;</td></tr></table>';
+		msg = '<div class="pc_inner">' + msg + '</div>';
 	}
 	div.innerHTML = msg;
 	if(ctrlid) {
@@ -1124,7 +1125,7 @@ function _showCreditmenu() {
 		menu.id = 'extcreditmenu_menu';
 		menu.style.display = 'none';
 		menu.className = 'p_pop';
-		menu.innerHTML = '<div class="p_opt"><img src="'+ IMGDIR + '/loading.gif" width="16" height="16" class="vm" /> 请稍候...</div>';
+		menu.innerHTML = '<div class="p_opt"><div class="loadicon vm"></div> 请稍候...</div>';
 		$('append_parent').appendChild(menu);
 		ajaxget($('extcreditmenu').href, 'extcreditmenu_menu', 'ajaxwaitid');
 	}
@@ -1137,7 +1138,7 @@ function _showUpgradeinfo() {
 		menu.id = 'g_upmine_menu';
 		menu.style.display = 'none';
 		menu.className = 'p_pop';
-		menu.innerHTML = '<div class="p_opt"><img src="'+ IMGDIR + '/loading.gif" width="16" height="16" class="vm" /> 请稍候...</div>';
+		menu.innerHTML = '<div class="p_opt"><div class="loadicon vm"></div> 请稍候...</div>';
 		$('append_parent').appendChild(menu);
 		ajaxget('home.php?mod=spacecp&ac=usergroup&showextgroups=1', 'g_upmine_menu', 'ajaxwaitid');
 	}
@@ -1147,13 +1148,6 @@ function _showUpgradeinfo() {
 function _showForummenu(fid) {
 	if($('fjump_menu') && !$('fjump_menu').innerHTML) {
 		ajaxget('forum.php?mod=ajax&action=forumjump&jfid=' + fid, 'fjump_menu', 'ajaxwaitid');
-	}
-}
-
-function _showUserApp(fid) {
-	var menu = $('mn_userapp_menu');
-	if(menu && !menu.innerHTML) {
-		ajaxget('misc.php?mod=manyou&action=menu', 'mn_userapp_menu', 'ajaxwaitid');
 	}
 }
 

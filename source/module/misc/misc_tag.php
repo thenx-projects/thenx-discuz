@@ -64,7 +64,7 @@ if($id || $name) {
 				$tidarray[$result['itemid']] = $result['itemid'];
 			}
 			$threadlist = getthreadsbytids($tidarray);
-			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id=$tag[tagid]&type=thread");
+			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id={$tag['tagid']}&type=thread");
 		}
 	} elseif($type == 'blog') {
 		$showtype = 'blog';
@@ -77,7 +77,7 @@ if($id || $name) {
 			}
 			$bloglist = getblogbyid($blogidarray);
 
-			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id=$tag[tagid]&type=blog");
+			$multipage = multi($count, $tpp, $page, "misc.php?mod=tag&id={$tag['tagid']}&type=blog");
 		}
 	} else {
 		$shownum = 20;
@@ -147,7 +147,7 @@ function getblogbyid($blogidarray) {
 
 	$bloglist = array();
 	if(!empty($blogidarray)) {
-		$data_blog = C::t('home_blog')->fetch_all($blogidarray, 'dateline', 'DESC');
+		$data_blog = C::t('home_blog')->fetch_all_blog($blogidarray, 'dateline', 'DESC');
 		$data_blogfield = C::t('home_blogfield')->fetch_all($blogidarray);
 
 		require_once libfile('function/spacecp');
@@ -157,7 +157,7 @@ function getblogbyid($blogidarray) {
 			$result = array_merge($result, (array)$data_blogfield[$curblogid]);
 			$result['dateline'] = dgmdate($result['dateline']);
 			$classarr = getclassarr($result['uid']);
-			$result['classname'] = $classarr[$result[classid]]['classname'];
+			$result['classname'] = $classarr[$result['classid']]['classname'];
 			if($result['friend'] == 4) {
 				$result['message'] = $result['pic'] = '';
 			} else {

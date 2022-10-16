@@ -25,7 +25,6 @@ function feed_add($icon, $title_template='', $title_data=array(), $body_template
 	}
 
 	$feedarr = array(
-		'appid' => $appid,
 		'icon' => $icon,
 		'uid' => $uid ? intval($uid) : $_G['uid'],
 		'username' => $username ? $username : $_G['username'],
@@ -51,18 +50,13 @@ function feed_add($icon, $title_template='', $title_data=array(), $body_template
 	$feedarr['body_data'] = serialize($body_data);
 	$feedarr['hash_data'] = empty($title_data['hash_data'])?'':$title_data['hash_data'];
 
-	if(is_numeric($icon)) {
-		$feed_table = 'home_feed_app';
-		unset($feedarr['id'], $feedarr['idtype']);
-	} else {
-		if($feedarr['hash_data']) {
-			$oldfeed = C::t('home_feed')->fetch_feedid_by_hashdata($feedarr['uid'], $feedarr['hash_data']);
-			if($oldfeed) {
-				return 0;
-			}
+	if($feedarr['hash_data']) {
+		$oldfeed = C::t('home_feed')->fetch_feedid_by_hashdata($feedarr['uid'], $feedarr['hash_data']);
+		if($oldfeed) {
+			return 0;
 		}
-		$feed_table = 'home_feed';
 	}
+	$feed_table = 'home_feed';
 
 	return C::t($feed_table)->insert($feedarr, $returnid);
 }
@@ -84,13 +78,13 @@ function mkfeed($feed, $actors=array()) {
 	}
 
 	$searchs[] = '{actor}';
-	$replaces[] = empty($actors)?"<a href=\"home.php?mod=space&uid=$feed[uid]\" target=\"_blank\">$feed[username]</a>":implode(lang('core', 'dot'), $actors);
+	$replaces[] = empty($actors)?"<a href=\"home.php?mod=space&uid={$feed['uid']}\" target=\"_blank\">{$feed['username']}</a>":implode(lang('core', 'dot'), $actors);
 	$feed['title_template'] = str_replace($searchs, $replaces, $feed['title_template']);
 	$feed['title_template'] = feed_mktarget($feed['title_template']);
 
 	$searchs = $replaces = array();
 	$searchs[] = '{actor}';
-	$replaces[] = empty($actors)?"<a href=\"home.php?mod=space&uid=$feed[uid]\" target=\"_blank\">$feed[username]</a>":implode(lang('core', 'dot'), $actors);
+	$replaces[] = empty($actors)?"<a href=\"home.php?mod=space&uid={$feed['uid']}\" target=\"_blank\">{$feed['username']}</a>":implode(lang('core', 'dot'), $actors);
 	if($feed['body_data'] && is_array($feed['body_data'])) {
 		foreach (array_keys($feed['body_data']) as $key) {
 			$searchs[] = '{'.$key.'}';
@@ -168,10 +162,10 @@ function feed_publish($id, $idtype, $add=0) {
 					$setarr['hot'] = $value['hot'];
 					$status = $value['status'];
 
-					$url = "home.php?mod=space&uid=$value[uid]&do=blog&id=$value[blogid]";
+					$url = "home.php?mod=space&uid={$value['uid']}&do=blog&id={$value['blogid']}";
 					if($value['friend'] == 4) {
 						$setarr['title_template'] = 'feed_blog_password';
-						$setarr['title_data'] = array('subject' => "<a href=\"$url\">$value[subject]</a>");
+						$setarr['title_data'] = array('subject' => "<a href=\"$url\">{$value['subject']}</a>");
 					} else {
 						if($value['pic']) {
 							$setarr['image_1'] = pic_cover_get($value['pic'], $value['picflag']);
@@ -181,7 +175,7 @@ function feed_publish($id, $idtype, $add=0) {
 						$setarr['body_template'] = 'feed_blog_body';
 						$value['message'] = preg_replace("/&[a-z]+\;/i", '', $value['message']);
 						$setarr['body_data'] = array(
-							'subject' => "<a href=\"$url\">$value[subject]</a>",
+							'subject' => "<a href=\"$url\">{$value['subject']}</a>",
 							'summary' => getstr($value['message'], 150, 0, 0, 0, -1)
 						);
 					}
@@ -207,12 +201,12 @@ function feed_publish($id, $idtype, $add=0) {
 							$setarr['title_template'] = 'feed_album_title';
 							$setarr['body_template'] = 'feed_album_body';
 							$setarr['body_data'] = array(
-								'album' => "<a href=\"home.php?mod=space&uid=$value[uid]&do=album&id=$value[albumid]\">$value[albumname]</a>",
+								'album' => "<a href=\"home.php?mod=space&uid={$value['uid']}&do=album&id={$value['albumid']}\">{$value['albumname']}</a>",
 								'picnum' => $value['picnum']
 							);
 						}
 						$setarr['image_'.$key] = pic_get($value['filepath'], 'album', $value['thumb'], $value['remote']);
-						$setarr['image_'.$key.'_link'] = "home.php?mod=space&uid=$value[uid]&do=album&picid=$value[picid]";
+						$setarr['image_'.$key.'_link'] = "home.php?mod=space&uid={$value['uid']}&do=album&picid={$value['picid']}";
 						$key++;
 					} else {
 						break;
@@ -221,7 +215,7 @@ function feed_publish($id, $idtype, $add=0) {
 			}
 			break;
 		case 'picid':
-			$plussql = $id>0 ? 'p.'.DB::field('picid', $id) : 'p.'.DB::field('uid', $_G[uid]).' ORDER BY dateline DESC LIMIT 1';
+			$plussql = $id>0 ? 'p.'.DB::field('picid', $id) : 'p.'.DB::field('uid', $_G['uid']).' ORDER BY dateline DESC LIMIT 1';
 			$query = C::t('home_pic')->fetch_all_by_sql($plussql);
 			if($value = $query[0]) {
 				if(empty($value['friend'])) {
@@ -235,7 +229,7 @@ function feed_publish($id, $idtype, $add=0) {
 					$setarr['friend'] = $value['friend'];
 					$setarr['hot'] = $value['hot'];
 					$status = $value['status'];
-					$url = "home.php?mod=space&uid=$value[uid]&do=album&picid=$value[picid]";
+					$url = "home.php?mod=space&uid={$value['uid']}&do=album&picid={$value['picid']}";
 					$setarr['image_1'] = pic_get($value['filepath'], 'album', $value['thumb'], $value['remote']);
 					$setarr['image_1_link'] = $url;
 					$setarr['title_template'] = 'feed_pic_title';
@@ -257,12 +251,12 @@ function feed_publish($id, $idtype, $add=0) {
 
 		$feedid = 0;
 		if(!$add && $setarr['id']) {
-			$feedid = C::t('home_feed')->fetch($id, $idtype);
+			$feedid = C::t('home_feed')->fetch_feed($id, $idtype);
 			$feedid = $feedid['feedid'];
 		}
 		if($status == 0) {
 			if($feedid) {
-				C::t('home_feed')->update('', $setarr, '', '', $feedid);
+				C::t('home_feed')->update_feed('', $setarr, '', '', $feedid);
 			} else {
 				C::t('home_feed')->insert($setarr);
 			}

@@ -12,7 +12,7 @@ if(!defined('IN_DISCUZ')) {
 }
 class block_forum extends discuz_block {
 	var $setting = array();
-	function block_forum() {
+	function __construct() {
 		$this->setting = array(
 			'fids'	=> array(
 				'title' => 'forumlist_fids',
@@ -148,7 +148,7 @@ class block_forum extends discuz_block {
 			if(!empty($data['icon'])) {
 				$data['icon'] = preg_match('/^(http|ftp|ftps|https):\/\//', $data['icon']) ? $data['icon'] : $attachurl.'common/'.$data['icon'];
 			} else {
-				$data['icon'] = 'static/image/common/forum_new.gif';
+				$data['icon'] = STATICURL.'image/common/forum_new.gif';
 			}
 			$list[] = array(
 				'id' => $data['fid'],

@@ -54,11 +54,11 @@ class discuz_remote {
 	function loadservice() {
 
 		if(!$this->core->config['remote']['on']) {
-			remote_service::error(1, 'remote service is down');
+			$this->error(1, 'remote service is down');
 		}
 
 		if(!$this->core->config['remote']['appkey']) {
-			remote_service::error(1, 'remote service need a appkey, please edit you config.global.php');
+			$this->error(1, 'remote service need a appkey, please edit you config.global.php');
 		}
 
 		if ($this->mod != 'index') {
@@ -71,12 +71,12 @@ class discuz_remote {
 		}
 
 		if(!$this->check_timestamp()) {
-			remote_service::error(5, 'your request is time out');
+			$this->error(5, 'your request is time out');
 		}
 
 		$modfile = DISCUZ_ROOT . './api/' . SERVICE_DIR . '/mod/mod_' . $this->mod . '.php';
 		if (!is_file($modfile)) {
-			remote_service::error(3, 'mod file is missing');
+			$this->error(3, 'mod file is missing');
 		}
 
 		require $modfile;
@@ -106,6 +106,12 @@ class discuz_remote {
 		return md5($str . getglobal('config/remote/appkey'));
 	}
 
+	function error($code, $msg) {
+		$code = sprintf("%04d", $code);
+		echo $code.':'.ucfirst($msg);
+		exit();
+	}
+
 }
 
 class remote_service {
@@ -113,7 +119,7 @@ class remote_service {
 	var $version = '1.0.0';
 	var $config;
 
-	function remote_service() {
+	function __construct() {
 		$this->config = getglobal('config/remote');
 	}
 

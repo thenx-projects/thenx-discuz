@@ -26,6 +26,10 @@ if(empty($_GET['mod']) || !in_array($_GET['mod'], array('list', 'view', 'comment
 define('CURMODULE', $_GET['mod']);
 runhooks();
 
+if(!$_G['setting']['portalstatus'] && $_GET['mod'] != 'portalcp'){
+	showmessage('portal_status_off');
+}
+
 $navtitle = str_replace('{bbname}', $_G['setting']['bbname'], $_G['setting']['seotitle']['portal']);
 $_G['disabledwidthauto'] = 1;
 

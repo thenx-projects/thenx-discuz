@@ -25,14 +25,14 @@ function handlePrompt(type) {
 </script>
 
 <div id="moodfm">
-	<form method="post" autocomplete="off" id="mood_addform" action="home.php?mod=spacecp&ac=doing&view=$_GET[view]" onsubmit="if($('message').value == msgstr){return false;}">
+	<form method="post" autocomplete="off" id="mood_addform" action="home.php?mod=spacecp&ac=doing&view=$_GET[view]" onsubmit="if($('message').value == msgstr){showError('{lang content_isnull}');return false;}">
 		<table cellspacing="0" cellpadding="0">
 			<tr>
 				<td id="mood_statusinput" class="moodfm_input">
 					<textarea name="message" id="message" class="xg1" onfocus="handlePrompt(1);" onclick="showFace(this.id, 'message', msgstr);" onblur="handlePrompt(0);" onkeyup="strLenCalc(this, 'maxlimit')" onkeydown="ctrlEnter(event, 'add');" rows="4">$defaultstr</textarea>
 				</td>
 				<td class="moodfm_btn">
-					<button type="submit" name="add" id="add">{lang publish}</button>
+					<button type="submit" name="add" id="add" class="pgsbtn">{lang publish}</button>
 				</td>
 			</tr>
 			<tr>

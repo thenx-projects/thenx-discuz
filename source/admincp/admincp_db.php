@@ -13,7 +13,7 @@ if(!defined('IN_DISCUZ') || !defined('IN_ADMINCP')) {
 
 $db = & DB::object();
 
-$tabletype = $db->version() > '4.1' ? 'Engine' : 'Type';
+$tabletype = 'Engine';
 $tablepre = $_G['config']['db'][1]['tablepre'];
 $dbcharset = $_G['config']['db'][1]['dbcharset'];
 
@@ -23,14 +23,14 @@ cpheader();
 if(!isfounder()) cpmsg('noaccess_isfounder', '', 'error');
 
 
-$excepttables = array($tablepre.'common_admincp_session', $tablepre.'common_failedlogin', $tablepre.'forum_rsscache', $tablepre.'common_searchindex', $tablepre.'forum_spacecache', $tablepre.'common_session');
+$excepttables = array($tablepre.'common_admincp_session', $tablepre.'common_syscache', $tablepre.'common_failedlogin', $tablepre.'forum_rsscache', $tablepre.'common_searchindex', $tablepre.'forum_spacecache', $tablepre.'common_session');
 
-$backupdir = C::t('common_setting')->fetch('backupdir');
+$backupdir = C::t('common_setting')->fetch_setting('backupdir');
 
 if(!$backupdir) {
 	$backupdir = random(6);
 	@mkdir('./data/backup_'.$backupdir, 0777);
-	C::t('common_setting')->update('backupdir',$backupdir);
+	C::t('common_setting')->update_setting('backupdir',$backupdir);
 }
 $backupdir = 'backup_'.$backupdir;
 if(!is_dir('./data/'.$backupdir)) {
@@ -53,7 +53,7 @@ if($operation == 'export') {
 
 		$tables = '';
 		$dztables = array();
-		$tables = C::t('common_setting')->fetch('custombackup', true);
+		$tables = C::t('common_setting')->fetch_setting('custombackup', true);
 
 		$discuz_tables = fetchtablelist($tablepre);
 
@@ -103,7 +103,7 @@ if($operation == 'export') {
 		showtagfooter('tbody');
 
 		showtagheader('tbody', 'advanceoption');
-		showsetting('db_export_method', '', '', '<ul class="nofloat"><li><input class="radio" type="radio" name="method" value="shell" '.$shelldisabled.' onclick="if('.intval($db->version() < '4.1').') {if(this.form.sqlcompat[2].checked==true) this.form.sqlcompat[0].checked=true; this.form.sqlcompat[2].disabled=true; this.form.sizelimit.disabled=true;} else {this.form.sqlcharset[0].checked=true; for(var i=1; i<=5; i++) {if(this.form.sqlcharset[i]) this.form.sqlcharset[i].disabled=true;}}" id="method_shell" /><label for="method_shell"> '.$lang['db_export_shell'].'</label></li><li><input class="radio" type="radio" name="method" value="multivol" checked="checked" onclick="this.form.sqlcompat[2].disabled=false; this.form.sizelimit.disabled=false; for(var i=1; i<=5; i++) {if(this.form.sqlcharset[i]) this.form.sqlcharset[i].disabled=false;}" id="method_multivol" /><label for="method_multivol"> '.$lang['db_export_multivol'].'</label> <input type="text" class="txt" size="40" name="sizelimit" value="2048" /></li></ul>');
+		showsetting('db_export_method', '', '', '<ul class="nofloat"><li><input class="radio" type="radio" name="method" value="shell" '.$shelldisabled.' onclick="this.form.sqlcharset[0].checked=true; for(var i=1; i<=5; i++) {if(this.form.sqlcharset[i]) this.form.sqlcharset[i].disabled=true;}" id="method_shell" /><label for="method_shell"> '.$lang['db_export_shell'].'</label></li><li><input class="radio" type="radio" name="method" value="multivol" checked="checked" onclick="this.form.sqlcompat[2].disabled=false; this.form.sizelimit.disabled=false; for(var i=1; i<=5; i++) {if(this.form.sqlcharset[i]) this.form.sqlcharset[i].disabled=false;}" id="method_multivol" /><label for="method_multivol"> '.$lang['db_export_multivol'].'</label> <input type="text" class="txt" size="40" name="sizelimit" value="2048" /></li></ul>');
 		showtitle('db_export_options');
 		showsetting('db_export_options_extended_insert', 'extendins', 0, 'radio');
 		showsetting('db_export_options_sql_compatible', array('sqlcompat', array(
@@ -114,7 +114,7 @@ if($operation == 'export') {
 		showsetting('db_export_options_charset', array('sqlcharset', array(
 			array('0', cplang('default')),
 			$dbcharset ? array($dbcharset, strtoupper($dbcharset)) : array(),
-			$db->version() > '4.1' && $dbcharset != 'utf8' ? array('utf8', 'UTF-8') : array()
+			$dbcharset != 'utf8' ? array('utf8', 'UTF-8') : array()
 		), TRUE), '0', 'mradio');
 		showsetting('db_export_usehex', 'usehex', 1, 'radio');
 		if(function_exists('gzcompress')) {
@@ -158,9 +158,9 @@ if($operation == 'export') {
 		} elseif($_GET['type'] == 'custom') {
 			$tables = array();
 			if(empty($_GET['setup'])) {
-				$tables = C::t('common_setting')->fetch('custombackup', true);
+				$tables = C::t('common_setting')->fetch_setting('custombackup', true);
 			} else {
-				C::t('common_setting')->update('custombackup', empty($_GET['customtables'])? '' : $_GET['customtables']);
+				C::t('common_setting')->update_setting('custombackup', empty($_GET['customtables'])? '' : $_GET['customtables']);
 				$tables = & $_GET['customtables'];
 			}
 			if( !is_array($tables) || empty($tables)) {
@@ -175,20 +175,18 @@ if($operation == 'export') {
 		}
 
 		$volume = intval($_GET['volume']) + 1;
-		$idstring = '# Identify: '.base64_encode("$_G[timestamp],".$_G['setting']['version'].",{$_GET['type']},{$_GET['method']},{$volume},{$tablepre},{$_GET['sqlcharset']}")."\n";
+		$idstring = '# Identify: '.base64_encode("{$_G['timestamp']},".$_G['setting']['version'].",{$_GET['type']},{$_GET['method']},{$volume},{$tablepre},{$_GET['sqlcharset']}")."\n";
 
 
 		$dumpcharset = $_GET['sqlcharset'] ? $_GET['sqlcharset'] : str_replace('-', '', $_G['charset']);
-		$setnames = ($_GET['sqlcharset'] && $db->version() > '4.1' && (!$_GET['sqlcompat'] || $_GET['sqlcompat'] == 'MYSQL41')) ? "SET NAMES '$dumpcharset';\n\n" : '';
-		if($db->version() > '4.1') {
-			if($_GET['sqlcharset']) {
-				DB::query('SET NAMES %s', array($_GET['sqlcharset']));
-			}
-			if($_GET['sqlcompat'] == 'MYSQL40') {
-				DB::query("SET SQL_MODE='MYSQL40'");
-			} elseif($_GET['sqlcompat'] == 'MYSQL41') {
-				DB::query("SET SQL_MODE=''");
-			}
+		$setnames = ($_GET['sqlcharset'] && (!$_GET['sqlcompat'] || $_GET['sqlcompat'] == 'MYSQL41')) ? "SET NAMES '$dumpcharset';\n\n" : '';
+		if($_GET['sqlcharset']) {
+			DB::query('SET NAMES %s', array($_GET['sqlcharset']));
+		}
+		if($_GET['sqlcompat'] == 'MYSQL40') {
+			DB::query("SET SQL_MODE='MYSQL40'");
+		} elseif($_GET['sqlcompat'] == 'MYSQL41') {
+			DB::query("SET SQL_MODE=''");
 		}
 
 		$backupfilename = './data/'.$backupdir.'/'.str_replace(array('/', '\\', '.', "'"), '', $_GET['filename']);
@@ -223,7 +221,7 @@ if($operation == 'export') {
 				$sqldump = "$idstring".
 					"# <?php exit();?>\n".
 					"# Discuz! Multi-Volume Data Dump Vol.$volume\n".
-					"# Version: Discuz! {$_G[setting][version]}\n".
+					"# Version: Discuz! {$_G['setting']['version']}\n".
 					"# Time: $time\n".
 					"# Type: {$_GET['type']}\n".
 					"# Table Prefix: $tablepre\n".
@@ -234,24 +232,25 @@ if($operation == 'export') {
 					"$setnames".
 					$sqldump;
 				$dumpfilename = sprintf($dumpfile, $volume);
-				@$fp = fopen($dumpfilename, 'wb');
-				@flock($fp, 2);
-				if(@!fwrite($fp, $sqldump)) {
-					@fclose($fp);
+
+				$fp = fopen($dumpfilename, 'cb');
+				if(!($fp && flock($fp, LOCK_EX) && ftruncate($fp, 0) && fwrite($fp, $sqldump) && fflush($fp) && flock($fp, LOCK_UN) && fclose($fp))) {
+					flock($fp, LOCK_UN);
+					fclose($fp);
 					cpmsg('database_export_file_invalid', '', 'error');
 				} else {
-					fclose($fp);
 					if($_GET['usezip'] == 2) {
 						$fp = fopen($dumpfilename, "r");
 						$content = @fread($fp, filesize($dumpfilename));
 						fclose($fp);
 						$zip = new zipfile();
 						$zip->addFile($content, basename($dumpfilename));
-						$fp = fopen(sprintf($backupfilename."-%s".'.zip', $volume), 'w');
-						if(@fwrite($fp, $zip->file()) !== FALSE) {
-							@unlink($dumpfilename);
+						$fp = fopen(sprintf($backupfilename."-%s".'.zip', $volume), 'c');
+						if(!($fp && flock($fp, LOCK_EX) && ftruncate($fp, 0) && fwrite($fp, $zip->file()) && fflush($fp) && flock($fp, LOCK_UN) && fclose($fp))) {
+							flock($fp, LOCK_UN);
+							fclose($fp);
+							cpmsg('database_export_zip_invalid', '', 'error');
 						}
-						fclose($fp);
 					}
 					unset($sqldump, $zip, $content);
 					cpmsg('database_export_multivol_redirect', "action=db&operation=export&formhash=".formhash()."&type=".rawurlencode($_GET['type'])."&saveto=server&filename=".rawurlencode($_GET['filename'])."&method=multivol&sizelimit=".rawurlencode($_GET['sizelimit'])."&volume=".rawurlencode($volume)."&tableid=".rawurlencode($tableid)."&startfrom=".rawurlencode($startrow)."&extendins=".rawurlencode($_GET['extendins'])."&sqlcharset=".rawurlencode($_GET['sqlcharset'])."&sqlcompat=".rawurlencode($_GET['sqlcompat'])."&exportsubmit=yes&usehex={$_GET['usehex']}&usezip={$_GET['usezip']}", 'loading', array('volume' => $volume));
@@ -274,11 +273,13 @@ if($operation == 'export') {
 						$unlinks[] = $filename;
 						$filelist .= "<li><a href=\"$filename\">$filename</a></li>\n";
 					}
-					$fp = fopen($zipfilename, 'w');
-					if(@fwrite($fp, $zip->file()) !== FALSE) {
+					$fp = fopen($zipfilename, 'c');
+					if(!($fp && flock($fp, LOCK_EX) && ftruncate($fp, 0) && fwrite($fp, $zip->file()) && fflush($fp) && flock($fp, LOCK_UN) && fclose($fp))) {
 						foreach($unlinks as $link) {
 							@unlink($link);
 						}
+						flock($fp, LOCK_UN);
+						fclose($fp);
 					} else {
 						C::t('common_cache')->insert(array(
 							'cachekey' => 'db_export',
@@ -289,7 +290,6 @@ if($operation == 'export') {
 						cpmsg('database_export_multivol_succeed', '', 'succeed', array('volume' => $volume, 'filelist' => $filelist, 'deletetips' => $deletetips));
 					}
 					unset($sqldump, $zip, $content);
-					fclose($fp);
 					@touch('./data/'.$backupdir.'/index.htm');
 					$filename = $zipfilename;
 					C::t('common_cache')->insert(array(
@@ -332,7 +332,7 @@ if($operation == 'export') {
 
 			$db = DB::object();
 			$query = DB::query("SHOW VARIABLES LIKE 'basedir'");
-			list(, $mysql_base) = DB::fetch($query, $db->drivertype == 'mysqli' ? MYSQLI_NUM : MYSQL_NUM);
+			list(, $mysql_base) = DB::fetch($query, constant('MYSQLI_NUM'));
 
 			$dumpfile = addslashes(dirname(dirname(dirname(__FILE__)))).'/'.$backupfilename.'.sql';
 			@unlink($dumpfile);
@@ -340,7 +340,7 @@ if($operation == 'export') {
 			$tablesstr = str_replace(' ', '" "', $tablesstr);
 
 			$mysqlbin = $mysql_base == '/' ? '' : addslashes(rtrim($mysql_base, '/\\')).'/bin/';
-			@shell_exec($mysqlbin.'mysqldump --force --quick '.($db->version() > '4.1' ? '--skip-opt --create-options' : '-all').' --add-drop-table'.($_GET['extendins'] == 1 ? ' --extended-insert' : '').''.($db->version() > '4.1' && $_GET['sqlcompat'] == 'MYSQL40' ? ' --compatible=mysql40' : '').' --host="'.$dbhost.'"'.($dbport ? (is_numeric($dbport) ? ' --port='.$dbport : ' --socket="'.$dbport.'"') : '').' --user="'.$dbuser.'" --password="'.$dbpw.'" "'.$dbname.'" '.$tablesstr.' > '.$dumpfile);
+			@shell_exec($mysqlbin.'mysqldump --force --quick --skip-opt --create-options --add-drop-table'.($_GET['extendins'] == 1 ? ' --extended-insert' : '').''.($_GET['sqlcompat'] == 'MYSQL40' ? ' --compatible=mysql40' : '').' --host="'.$dbhost.'"'.($dbport ? (is_numeric($dbport) ? ' --port='.$dbport : ' --socket="'.$dbport.'"') : '').' --user="'.$dbuser.'" --password="'.$dbpw.'" "'.$dbname.'" '.$tablesstr.' > '.$dumpfile);
 			if(@file_exists($dumpfile)) {
 
 				if($_GET['usezip']) {
@@ -351,9 +351,12 @@ if($operation == 'export') {
 					$content = @fread($fp, filesize($dumpfile));
 					fclose($fp);
 					$zip->addFile($idstring."# <?php exit();?>\n ".$setnames."\n #".$content, basename($dumpfile));
-					$fp = fopen($zipfilename, 'w');
-					@fwrite($fp, $zip->file());
-					fclose($fp);
+					$fp = fopen($zipfilename, 'c');
+					if(!($fp && flock($fp, LOCK_EX) && ftruncate($fp, 0) && fwrite($fp, $zip->file()) && fflush($fp) && flock($fp, LOCK_UN) && fclose($fp))) {
+						flock($fp, LOCK_UN);
+						fclose($fp);
+						cpmsg('database_export_zip_invalid', '', 'error');
+					}
 					@unlink($dumpfile);
 					@touch('./data/'.$backupdir.'/index.htm');
 					$filename = $backupfilename.'.zip';
@@ -485,7 +488,7 @@ if($operation == 'export') {
 				$info['size'],
 				$info['method'],
 				"<a href=\"javascript:;\" onclick=\"display('exportlog_$key')\">".$info['volume']."</a>",
-				"<a class=\"act\" href=\"".$datasiteurl."restore.php?operation=import&from=server&datafile_server=$datafile_server&importsubmit=yes\"".($info['version'] != $_G['setting']['version'] ? " onclick=\"return confirm('$lang[db_import_confirm]');\"" : " onclick=\"return confirm('$lang[db_import_confirm_sql]');\"")." class=\"act\" target=\"_blank\">$lang[import]</a>"
+				"<a class=\"act\" href=\"".$datasiteurl."restore.php?operation=import&from=server&datafile_server=$datafile_server&importsubmit=yes\"".($info['version'] != $_G['setting']['version'] ? " onclick=\"return confirm('{$lang['db_import_confirm']}');\"" : " onclick=\"return confirm('{$lang['db_import_confirm_sql']}');\"")." class=\"act\" target=\"_blank\">{$lang['import']}</a>"
 			));
 			echo '<tbody id="exportlog_'.$key.'" style="display:none">';
 			foreach($val as $info) {
@@ -523,7 +526,7 @@ if($operation == 'export') {
 				$info['size'],
 				$info['method'],
 				"<a href=\"javascript:;\" onclick=\"display('exportlog_zip_$key')\">".$info['volume']."</a>",
-				"<a href=\"".$datasiteurl."restore.php?operation=importzip&datafile_server=$datafile_server&importsubmit=yes\"  onclick=\"return confirm('$lang[db_import_confirm_zip]');\" class=\"act\" target=\"_blank\">$lang[db_import_unzip]</a>"
+				"<a href=\"".$datasiteurl."restore.php?operation=importzip&datafile_server=$datafile_server&importsubmit=yes\"  onclick=\"return confirm('{$lang['db_import_confirm_zip']}');\" class=\"act\" target=\"_blank\">{$lang['db_import_unzip']}</a>"
 			));
 			echo '<tbody id="exportlog_zip_'.$key.'" style="display:none">';
 			foreach($val as $info) {
@@ -594,7 +597,7 @@ if($operation == 'export') {
 		$runqueryselect = '';
 		foreach($simplequeries as $key => $query) {
 			if(empty($query['sql'])) {
-				$runqueryselect .= "<optgroup label=\"$query[comment]\">";
+				$runqueryselect .= "<optgroup label=\"{$query['comment']}\">";
 			} else {
 				$runqueryselect .= '<option value="'.$key.'">'.$query['comment'].'</option>';
 			}
@@ -646,7 +649,7 @@ if($operation == 'export') {
 		$affected_rows = 0;
 		foreach($sqlquery as $sql) {
 			if(trim($sql) != '') {
-				$sql = !empty($_GET['createcompatible']) ? syntablestruct(trim($sql), $db->version() > '4.1', $dbcharset) : $sql;
+				$sql = !empty($_GET['createcompatible']) ? syntablestruct(trim($sql), true, $dbcharset) : $sql;
 
 				DB::query($sql, 'SILENT');
 				if($sqlerror = DB::error()) {
@@ -690,13 +693,13 @@ if($operation == 'export') {
 				if($table['Data_free'] && $table[$tabletype] == 'MyISAM') {
 					$checked = $table[$tabletype] == 'MyISAM' ? 'checked' : 'disabled';
 					showtablerow('', '', array(
-						"<input class=\"checkbox\" type=\"checkbox\" name=\"optimizetables[]\" value=\"$table[Name]\" $checked>",
-						$table[Name],
+						"<input class=\"checkbox\" type=\"checkbox\" name=\"optimizetables[]\" value=\"{$table['Name']}\" $checked>",
+						$table['Name'],
 						$table[$tabletype],
-						$table[Rows],
-						$table[Data_length],
-						$table[Index_length],
-						$table[Data_free],
+						$table['Rows'],
+						$table['Data_length'],
+						$table['Index_length'],
+						$table['Data_free'],
 					));
 					$totalsize += $table['Data_length'] + $table['Index_length'];
 				}
@@ -706,7 +709,7 @@ if($operation == 'export') {
 			showtablerow('', 'colspan="6"', $lang['db_optimize_done']);
 		} else {
 			showtablerow('', 'colspan="6"', $lang['db_optimize_used'].' '.sizecount($totalsize));
-			showsubmit('optimizesubmit', 'submit', '<input name="chkall" id="chkall" class="checkbox" onclick="checkAll(\'prefix\', this.form)" checked="checked" type="checkbox" /><label for="chkall">'.$lang[db_optimize_opt].'</label>');
+			showsubmit('optimizesubmit', 'submit', '<input name="chkall" id="chkall" class="checkbox" onclick="checkAll(\'prefix\', this.form)" checked="checked" type="checkbox" /><label for="chkall">'.$lang['db_optimize_opt'].'</label>');
 		}
 
 	} else {
@@ -716,20 +719,20 @@ if($operation == 'export') {
 			$query = DB::query("SHOW TABLE STATUS LIKE '$tp%'", 'SILENT');
 			while($table = DB::fetch($query)) {
 				if($table['Data_free'] && $table[$tabletype] == 'MyISAM') {
-					$optimizeinput = "<input class=\"checkbox\" type=\"checkbox\" name=\"optimizetables[]\" value=\"$table[Name]\" $checked>";
+					$optimizeinput = "<input class=\"checkbox\" type=\"checkbox\" name=\"optimizetables[]\" value=\"{$table['Name']}\" $checked>";
 					if(is_array($_GET['optimizetables']) && in_array($table['Name'], $_GET['optimizetables'])) {
-						DB::query("OPTIMIZE TABLE $table[Name]");
-						$table[Data_free] = 0;
+						DB::query("OPTIMIZE TABLE {$table['Name']}");
+						$table['Data_free'] = 0;
 						$optimizeinput = '';
 					}
 					showtablerow('', '', array(
 						$optimizeinput,
-						$table[Name],
-						$db->version() > '4.1' ?  $table['Engine'] : $table['Type'],
-						$table[Rows],
-						$table[Data_length],
-						$table[Index_length],
-						$table[Data_free]
+						$table['Name'],
+						$table['Engine'],
+						$table['Rows'],
+						$table['Data_length'],
+						$table['Index_length'],
+						$table['Data_free']
 					));
 					$totalsize += $table['Data_length'] + $table['Index_length'];
 				}
@@ -772,7 +775,7 @@ if($operation == 'export') {
 		$repairtable = is_array($_GET['repairtable']) && !empty($_GET['repairtable']) ? $_GET['repairtable'] : array();
 
 		$except = array('threads' => array('sgid'));
-		foreach(C::t('common_member_profile_setting')->range() as $profilefields) {
+		foreach(C::t('common_member_profile_setting')->range_setting() as $profilefields) {
 			$except['memberfields'][] = 'field_'.$profilefields['fieldid'];
 		}
 
@@ -792,9 +795,9 @@ if($operation == 'export') {
 			}
 
 			foreach($repair as $value) {
-				if(!in_array($r_table, $repairtable)) {
-					list($r_table, $r_field, $option) = explode('|', $value);
-					if(!isset($repairrtable[$r_table]) && $fieldsquery = DB::query("SHOW FIELDS FROM ".DB::table($r_table), 'SILENT')) {
+				list($r_table, $r_field, $option) = explode('|', $value);
+				if(!in_array($r_table, $repairtable) || $option != 'modify') {
+					if($fieldsquery = DB::query("SHOW FIELDS FROM ".DB::table($r_table), 'SILENT')) {
 						while($fields = DB::fetch($fieldsquery)) {
 							$fielddefault[$r_table][$fields['Field']] = $fields['Default'];
 						}
@@ -851,10 +854,10 @@ if($operation == 'export') {
 
 			if(!empty($setting)) {
 				$settingsdatanow = $newsettings = array();
-				$allsetting = C::t('common_setting')->fetch_all();
+				$allsetting = C::t('common_setting')->fetch_all_setting();
 				$settingsdatanew = array_keys($allsetting);
 				unset($allsetting);
-				$settingsdellist = @array_diff($settingsdata, $settingsdatanew);
+				$settingsdellist = is_array($settingsdata) ? array_diff($settingsdata, $settingsdatanew) : array();
 				if($setting['del'] && is_array($settingsdellist)) {
 					foreach($settingsdellist as $variable) {
 						$newsettings[$variable] = '';
@@ -880,9 +883,6 @@ if($operation == 'export') {
 				while($fields = DB::fetch($fieldsquery)) {
 					$r = '/^'.$tablepre.'/';
 					$cuttable = preg_replace($r, '', $dbtable);
-					if($db->version() < '4.1' && $cuttable == 'sessions' && $fields['Field'] == 'sid') {
-						$fields['Type'] = str_replace(' binary', '', $fields['Type']);
-					}
 					if($cuttable == 'memberfields' && preg_match('/^field\_\d+$/', $fields['Field'])) {
 						unset($discuzdbnew[$cuttable][$fields['Field']]);
 						continue;
@@ -891,7 +891,7 @@ if($operation == 'export') {
 					$discuzdbnew[$cuttable][$fields['Field']]['Type'] = $fields['Type'];
 					$discuzdbnew[$cuttable][$fields['Field']]['Null'] = $fields['Null'] == '' ? 'NO' : $fields['Null'];
 					$discuzdbnew[$cuttable][$fields['Field']]['Extra'] = $fields['Extra'];
-					$discuzdbnew[$cuttable][$fields['Field']]['Default'] = $fields['Default'] == '' || $fields['Default'] == '0' ? '' : $fields['Default'];
+					$discuzdbnew[$cuttable][$fields['Field']]['Default'] = $fields['Default'] == '' || $fields['Default'] == '0' || substr($fields['Type'], 0, 9) == 'varbinary' ? '' : $fields['Default'];
 				}
 				ksort($discuzdbnew[$cuttable]);
 			} else {
@@ -900,56 +900,58 @@ if($operation == 'export') {
 			}
 		}
 
-		if($db->version() > '4.1') {
-			$dbcharset = strtoupper($dbcharset) == 'UTF-8' ? 'UTF8' : strtoupper($dbcharset);
-			$query = DB::query("SHOW TABLE STATUS LIKE '$tablepre%'");
-			while($tables = DB::fetch($query)) {
-				$r = '/^'.$tablepre.'/';
-				$cuttable = preg_replace($r, '', $tables['Name']);
-				$tabledbcharset = substr($tables['Collation'], 0, strpos($tables['Collation'], '_'));
-				if($dbcharset != strtoupper($tabledbcharset)) {
-					$charseterror[] = '<span style="float:left;width:33%">'.$tablepre.$cuttable.'('.$tabledbcharset.')</span>';
-				}
+		$dbcharset = strtoupper($dbcharset) == 'UTF-8' ? 'UTF8' : strtoupper($dbcharset);
+		$query = DB::query("SHOW TABLE STATUS LIKE '$tablepre%'");
+		while($tables = DB::fetch($query)) {
+			$r = '/^'.$tablepre.'/';
+			$cuttable = preg_replace($r, '', $tables['Name']);
+			$tabledbcharset = substr($tables['Collation'], 0, strpos($tables['Collation'], '_'));
+			if($dbcharset != strtoupper($tabledbcharset)) {
+				$charseterror[] = '<span style="float:left;width:33%">'.$tablepre.$cuttable.'('.$tabledbcharset.')</span>';
 			}
 		}
 
 		$dbmd5new = md5(serialize($discuzdbnew));
 
 		$settingsdatanow = array();
-		$allsetting = C::t('common_setting')->fetch_all();
+		$allsetting = C::t('common_setting')->fetch_all_setting();
 		$settingsdatanew = array_keys($allsetting);
 		unset($allsetting);
-		$settingsdellist = @array_diff($settingsdata, $settingsdatanew);
+		$settingsdellist = is_array($settingsdata) ? array_diff($settingsdata, $settingsdatanew) : array();
 
-		if($dbmd5 == $dbmd5new && empty($charseterror) && empty($settingsdellist)) {
+		if((substr($dbmd5, 0, 16) == substr($dbmd5new, 0, 16) || substr($dbmd5, 16, 16) == substr($dbmd5new, 16, 16)) && empty($charseterror) && empty($settingsdellist)) {
 			cpmsg('dbcheck_ok', '', 'succeed');
 		}
 
 		$showlist = $addlists = '';
 		foreach($discuzdb as $dbtable => $fields) {
 			$addlist = $modifylist = $dellist = array();
+			if(is_array($excepttables) && in_array($dbtable, $excepttables)) {
+				continue;
+			}
 			if($fields != $discuzdbnew[$dbtable]) {
 				foreach($discuzdb[$dbtable] as $key => $value) {
-					$tempvalue = str_replace('mediumtext', 'text', $value);
-					$discuzdbnew[$dbtable][$key] = str_replace('mediumtext', 'text', $discuzdbnew[$dbtable][$key]);
-					if(is_array($missingtables) && in_array($tablepre.$dbtable, $missingtables)) {
-					} elseif(!isset($discuzdbnew[$dbtable][$key])) {
+					if(empty($discuzdbnew[$dbtable][$key])) {
 						$dellist[] = $value;
-					} elseif($tempvalue != $discuzdbnew[$dbtable][$key]) {
-						// MySQL 8.0.17 开始不再支持除tinyint(1)以外的任何int类数据类型的显示宽度，检测到此行为则移除数值。
-						if((strpos($tempvalue['Type'], 'int(') !== false) && (strpos($discuzdbnew[$dbtable][$key]['Type'], '(') === false)) {
-							$tempvalue['Type'] = preg_replace('/\(\d+\)/', '', $tempvalue['Type']);
-							if($tempvalue != $discuzdbnew[$dbtable][$key]) {
+					} else {
+						$tempvalue = str_replace('mediumtext', 'text', $value);
+						$discuzdbnew[$dbtable][$key] = str_replace('mediumtext', 'text', $discuzdbnew[$dbtable][$key]);
+						if($tempvalue != $discuzdbnew[$dbtable][$key]) {
+							// MySQL 8.0.17 开始不再支持除tinyint(1)以外的任何int类数据类型的显示宽度，检测到此行为则移除数值。
+							if((strpos($tempvalue['Type'], 'int(') !== false) && !empty($discuzdbnew[$dbtable][$key]['Type']) && (strpos($discuzdbnew[$dbtable][$key]['Type'], '(') === false)) {
+								$tempvalue['Type'] = preg_replace('/\(\d+\)/', '', $tempvalue['Type']);
+								if($tempvalue != $discuzdbnew[$dbtable][$key]) {
+									$modifylist[] = $value;
+								}
+							} else {
 								$modifylist[] = $value;
 							}
-						} else {
-							$modifylist[] = $value;
 						}
 					}
 				}
 				if(is_array($discuzdbnew[$dbtable])) {
 					foreach($discuzdbnew[$dbtable] as $key => $value) {
-						if(!isset($discuzdb[$dbtable][$key]) && !@in_array($value['Field'], $except[$dbtable])) {
+						if(!isset($discuzdb[$dbtable][$key]) && (!is_array($except[$dbtable]) || !in_array($value['Field'], $except[$dbtable]))) {
 							$addlist[] = $value;
 						}
 					}
@@ -958,35 +960,36 @@ if($operation == 'export') {
 
 			if(($modifylist || $dellist) && !in_array($dbtable, $excepttables)) {
 
-				$showlist .= showtablerow('', '', array("<span class=\"diffcolor3\">$tablepre$dbtable</span> $lang[dbcheck_field]", $lang[dbcheck_org_field], $lang[dbcheck_status]), TRUE);
+				$showlist .= showtablerow('', '', array("<span class=\"diffcolor3\">$tablepre$dbtable</span> {$lang['dbcheck_field']}", $lang['dbcheck_org_field'], $lang['dbcheck_status']), TRUE);
 
 				foreach($modifylist as $value) {
-					$slowstatus = slowcheck($discuzdbnew[$dbtable][$value['Field']]['Type'], $value['Type']);
+					$dbvfield = empty($discuzdbnew[$dbtable][$value['Field']]) ? array('Type' => '', 'Null' => '', 'Extra' => '', 'Default' => '') : $discuzdbnew[$dbtable][$value['Field']];
+					$slowstatus = slowcheck($dbvfield['Type'], $value['Type']);
 
-					$showlist .= "<tr><td><input name=\"repair[]\" class=\"checkbox\" type=\"checkbox\" value=\"$dbtable|$value[Field]|modify\"> <b>".$value['Field']."</b> ".
-						$discuzdbnew[$dbtable][$value['Field']]['Type'].
-						($discuzdbnew[$dbtable][$value['Field']]['Null'] == 'NO' ? ' NOT NULL' : '').
-						(!preg_match('/auto_increment/i', $discuzdbnew[$dbtable][$value['Field']]['Extra']) && !preg_match('/text/i', $discuzdbnew[$dbtable][$value['Field']]['Type']) ? ' default \''.$discuzdbnew[$dbtable][$value['Field']]['Default'].'\'' : '').
-						' '.$discuzdbnew[$dbtable][$value['Field']]['Extra'].
+					$showlist .= "<tr><td><input name=\"repair[]\" class=\"checkbox\" type=\"checkbox\" value=\"$dbtable|{$value['Field']}|modify\"> <b>".$value['Field']."</b> ".
+						$dbvfield['Type'].
+						($dbvfield['Null'] == 'NO' ? ' NOT NULL' : '').
+						(!preg_match('/auto_increment/i', $dbvfield['Extra']) && !preg_match('/text/i', $dbvfield['Type']) ? ' default \''.$dbvfield['Default'].'\'' : '').
+						' '.$dbvfield['Extra'].
 						"</td><td><b>".$value['Field']."</b> ".$value['Type'].
 						($value['Null'] == 'NO' ? ' NOT NULL' : '').
 						(!preg_match('/auto_increment/i', $value['Extra']) && !preg_match('/text/i', $value['Type']) ? ' default \''.$value['Default'].'\'' : '').
 						' '.$value['Extra']."</td><td>".
-						(!$slowstatus ? "<em class=\"edited\">$lang[dbcheck_modify]</em></td></tr>" : "<em class=\"unknown\">$lang[dbcheck_slow]</em>")."</td></tr>";
+						(!$slowstatus ? "<em class=\"edited\">{$lang['dbcheck_modify']}</em></td></tr>" : "<em class=\"unknown\">{$lang['dbcheck_slow']}</em>")."</td></tr>";
 				}
 
 				if($modifylist) {
-					$showlist .= showtablerow('', 'colspan="3"', "<input onclick=\"setrepaircheck(this, this.form, '$dbtable')\" name=\"repairtable[]\" class=\"checkbox\" type=\"checkbox\" value=\"$dbtable\"> <b>$lang[dbcheck_repairtable]</b>", TRUE);
+					$showlist .= showtablerow('', 'colspan="3"', "<input onclick=\"setrepaircheck(this, this.form, '$dbtable')\" name=\"repairtable[]\" class=\"checkbox\" type=\"checkbox\" value=\"$dbtable\"> <b>{$lang['dbcheck_repairtable']}</b>", TRUE);
 				}
 
 				foreach($dellist as $value) {
-					$showlist .= "<tr><td><input name=\"repair[]\" class=\"checkbox\" type=\"checkbox\" value=\"$dbtable|$value[Field]|add\"> <strike><b>".$value['Field']."</b></strike></td><td> <b>".$value['Field']."</b> ".$value['Type'].($value['Null'] == 'NO' ? ' NOT NULL' : '')."</td><td>".
-						"<em class=\"del\">$lang[dbcheck_delete]</em></td></tr>";
+					$showlist .= "<tr><td><input name=\"repair[]\" class=\"checkbox\" type=\"checkbox\" value=\"$dbtable|{$value['Field']}|add\"> <strike><b>".$value['Field']."</b></strike></td><td> <b>".$value['Field']."</b> ".$value['Type'].($value['Null'] == 'NO' ? ' NOT NULL' : '')."</td><td>".
+						"<em class=\"del\">{$lang['dbcheck_delete']}</em></td></tr>";
 				}
 			}
 
 			if($addlist) {
-				$addlists .= "<tr><td colspan=\"3\"><b>$tablepre$dbtable</b> $lang[dbcheck_new_field]</td></tr>";
+				$addlists .= "<tr><td colspan=\"3\"><b>$tablepre$dbtable</b> {$lang['dbcheck_new_field']}</td></tr>";
 
 				foreach($addlist as $value) {
 					$addlists .= "<tr><td colspan=\"3\">&nbsp;&nbsp;&nbsp;&nbsp;<b>".$value['Field']."</b> ".$discuzdbnew[$dbtable][$value['Field']]['Type'].($discuzdbnew[$dbtable][$value['Field']]['Null'] == 'NO' ? ' NOT NULL' : '')."</td></tr>";
@@ -1005,7 +1008,7 @@ if($operation == 'export') {
 		}
 
 		if($settingsdellist) {
-			$showlist .= "<tr class=\"partition\"><td colspan=\"3\">$lang[dbcheck_setting]</td></tr>";
+			$showlist .= "<tr class=\"partition\"><td colspan=\"3\">{$lang['dbcheck_setting']}</td></tr>";
 			$showlist .= '<tr><td colspan="3">';
 			$showlist .= "<input name=\"setting[del]\" class=\"checkbox\" type=\"checkbox\" value=\"1\"> ".implode(', ', $settingsdellist).'<br />';
 			$showlist .= '</td></tr>';
@@ -1016,7 +1019,7 @@ if($operation == 'export') {
 		}
 
 		if($charseterror) {
-			$showlist .= "<tr><td class=\"partition\" colspan=\"3\">$lang[dbcheck_charseterror_tables] ($lang[dbcheck_charseterror_notice] $dbcharset)</td></tr>";
+			$showlist .= "<tr><td class=\"partition\" colspan=\"3\">{$lang['dbcheck_charseterror_tables']} ({$lang['dbcheck_charseterror_notice']} $dbcharset)</td></tr>";
 			$showlist .= '<tr><td colspan="3">'.implode('', $charseterror).'</td></tr>';
 		}
 
@@ -1081,6 +1084,7 @@ EOT;
 		showformheader('db&operation=dbcheck&step=3', 'fixpadding');
 		showtableheader();
 		echo $showlist;
+		!$showlist && cpmsg('dbcheck_ok', '', 'succeed');
 		showtablefooter();
 		showformfooter();
 
@@ -1090,9 +1094,9 @@ EOT;
 
 function createtable($sql, $dbcharset) {
 	$type = strtoupper(preg_replace("/^\s*CREATE TABLE\s+.+\s+\(.+?\).*(ENGINE|TYPE)\s*=\s*([a-z]+?).*$/isU", "\\2", $sql));
-	$type = in_array($type, array('MYISAM', 'HEAP', 'MEMORY')) ? $type : 'MYISAM';
-	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql).
-		(DB::$db->version() > '4.1' ? " ENGINE=$type DEFAULT CHARSET=$dbcharset" : " TYPE=$type");
+	$defaultengine = strtolower(getglobal("config/db/common/engine")) !== 'innodb' ? 'MyISAM' : 'InnoDB';
+	$type = in_array($type, array('INNODB', 'MYISAM', 'HEAP', 'MEMORY')) ? $type : $defaultengine;
+	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql) . " ENGINE=$type DEFAULT CHARSET=" . getglobal("config/db/1/dbcharset") . (getglobal("config/db/1/dbcharset") === 'utf8mb4' ? " COLLATE=utf8mb4_unicode_ci" : "");
 }
 
 function fetchtablelist($tablepre = '') {
@@ -1141,7 +1145,7 @@ function syntablestruct($sql, $version, $dbcharset) {
 }
 
 function sqldumptablestruct($table) {
-	global $_G, $db, $excepttables;
+	global $_G, $db, $excepttables, $dumpcharset;
 
 	if(in_array($table, $excepttables)) {
 		return;
@@ -1163,16 +1167,13 @@ function sqldumptablestruct($table) {
 	}
 	$tabledump .= $create[1];
 
-	if($_GET['sqlcompat'] == 'MYSQL41' && $db->version() < '4.1') {
-		$tabledump = preg_replace("/TYPE\=(.+)/", "ENGINE=\\1 DEFAULT CHARSET=".$dumpcharset, $tabledump);
-	}
-	if($db->version() > '4.1' && $_GET['sqlcharset']) {
+	if($_GET['sqlcharset']) {
 		$tabledump = preg_replace("/(DEFAULT)*\s*CHARSET=.+/", "DEFAULT CHARSET=".$_GET['sqlcharset'], $tabledump);
 	}
 
 	$tablestatus = DB::fetch_first("SHOW TABLE STATUS LIKE '$table'");
-	$tabledump .= ($tablestatus['Auto_increment'] ? " AUTO_INCREMENT=$tablestatus[Auto_increment]" : '').";\n\n";
-	if($_GET['sqlcompat'] == 'MYSQL40' && $db->version() >= '4.1' && $db->version() < '5.1') {
+	$tabledump .= ($tablestatus['Auto_increment'] ? " AUTO_INCREMENT={$tablestatus['Auto_increment']}" : '').";\n\n";
+	if($_GET['sqlcompat'] == 'MYSQL40') {
 		if($tablestatus['Auto_increment'] <> '') {
 			$temppos = strpos($tabledump, ',');
 			$tabledump = substr($tabledump, 0, $temppos).' auto_increment'.substr($tabledump, $temppos);
@@ -1212,7 +1213,7 @@ function sqldumptable($table, $startfrom = 0, $currsize = 0) {
 		if($_GET['extendins'] == '0') {
 			while($currsize + strlen($tabledump) + 500 < $_GET['sizelimit'] * 1000 && $numrows == $offset) {
 				if($firstfield['Extra'] == 'auto_increment') {
-					$selectsql = "SELECT * FROM $table WHERE $firstfield[Field] > $startfrom ORDER BY $firstfield[Field] LIMIT $offset";
+					$selectsql = "SELECT * FROM $table WHERE {$firstfield['Field']} > $startfrom ORDER BY {$firstfield['Field']} LIMIT $offset";
 				} else {
 					$selectsql = "SELECT * FROM $table LIMIT $startfrom, $offset";
 				}
@@ -1243,7 +1244,7 @@ function sqldumptable($table, $startfrom = 0, $currsize = 0) {
 		} else {
 			while($currsize + strlen($tabledump) + 500 < $_GET['sizelimit'] * 1000 && $numrows == $offset) {
 				if($firstfield['Extra'] == 'auto_increment') {
-					$selectsql = "SELECT * FROM $table WHERE $firstfield[Field] > $startfrom LIMIT $offset";
+					$selectsql = "SELECT * FROM $table WHERE {$firstfield['Field']} > $startfrom LIMIT $offset";
 				} else {
 					$selectsql = "SELECT * FROM $table LIMIT $startfrom, $offset";
 				}
@@ -1302,8 +1303,8 @@ function splitsql($sql) {
 }
 
 function slowcheck($type1, $type2) {
-	$t1 = explode(' ', $type1);$t1 = $t1[0];
-	$t2 = explode(' ', $type2);$t2 = $t2[0];
+	$t1 = explode(' ', $type1.' ');$t1 = $t1[0];
+	$t2 = explode(' ', $type2.' ');$t2 = $t2[0];
 	$arr = array($t1, $t2);
 	sort($arr);
 	if($arr == array('mediumtext', 'text')) {

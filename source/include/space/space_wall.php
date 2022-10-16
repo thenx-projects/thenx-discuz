@@ -11,6 +11,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['wallstatus']) {
+	showmessage('wall_status_off');
+}
+
 $perpage = 20;
 $perpage = mob_perpage($perpage);
 
@@ -20,7 +24,7 @@ $start = ($page-1)*$perpage;
 
 ckstart($start, $perpage);
 
-$theurl = "home.php?mod=space&uid=$space[uid]&do=$do";
+$theurl = "home.php?mod=space&uid={$space['uid']}&do=$do";
 
 $diymode = 1;
 

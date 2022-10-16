@@ -14,7 +14,7 @@ if(!defined('IN_DISCUZ')) {
 require_once libfile('block_member', 'class/block/member');
 
 class block_membernew extends block_member {
-	function block_membernew() {
+	function __construct() {
 		$this->setting = array(
 			'gender' => array(
 				'title' => 'memberlist_gender',
@@ -29,12 +29,12 @@ class block_membernew extends block_member {
 			'birthcity' => array(
 				'title' => 'memberlist_birthcity',
 				'type' => 'district',
-				'value' => array('xbirthprovince', 'xbirthcity', 'xbirthdist', 'xbirthcommunity'),
+				'value' => array('xbirthcountry', 'xbirthprovince', 'xbirthcity', 'xbirthdist', 'xbirthcommunity'),
 			),
 			'residecity' => array(
 				'title' => 'memberlist_residecity',
 				'type' => 'district',
-				'value' => array('xresideprovince', 'xresidecity', 'xresidedist', 'xresidecommunity')
+				'value' => array('xresidecountry', 'xresideprovince', 'xresidecity', 'xresidedist', 'xresidecommunity')
 			),
 			'avatarstatus' => array(
 				'title' => 'memberlist_avatarstatus',

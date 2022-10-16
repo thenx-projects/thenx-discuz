@@ -11,6 +11,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['albumstatus']) {
+	showmessage('album_status_off');
+}
+
 $minhot = $_G['setting']['feedhotmin']<1?3:intval($_G['setting']['feedhotmin']);
 $id = empty($_GET['id'])?0:intval($_GET['id']);
 $picid = empty($_GET['picid'])?0:intval($_GET['picid']);
@@ -28,7 +32,7 @@ if($id) {
 	ckstart($start, $perpage);
 
 	if($id > 0) {
-		$album = C::t('home_album')->fetch($id, $space['uid']);
+		$album = C::t('home_album')->fetch_album($id, $space['uid']);
 		if(empty($album)) {
 			showmessage('to_view_the_photo_does_not_exist');
 		}
@@ -40,7 +44,7 @@ if($id) {
 
 		if(empty($count) && !$space['self']) {
 			C::t('home_album')->delete($id);
-			showmessage('to_view_the_photo_does_not_exist', "home.php?mod=space&uid=$album[uid]&do=album&view=me");
+			showmessage('to_view_the_photo_does_not_exist', "home.php?mod=space&uid={$album['uid']}&do=album&view=me");
 		}
 
 		if($album['catid']) {
@@ -66,7 +70,7 @@ if($id) {
 		if($value['friend'] != 4 && ckfriend($value['uid'], $value['friend'], $value['target_ids'])) {
 			$value['pic'] = pic_cover_get($value['pic'], $value['picflag']);
 		} elseif ($value['picnum']) {
-			$value['pic'] = STATICURL.'image/common/nopublish.gif';
+			$value['pic'] = STATICURL.'image/common/nopublish.svg';
 		} else {
 			$value['pic'] = '';
 		}
@@ -88,7 +92,7 @@ if($id) {
 			}
 		}
 	}
-	$multi = multi($count, $perpage, $page, "home.php?mod=space&uid=$album[uid]&do=$do&id=$id#comment");
+	$multi = multi($count, $perpage, $page, "home.php?mod=space&uid={$album['uid']}&do=$do&id=$id#comment");
 
 	$actives = array('me' =>' class="a"');
 
@@ -121,11 +125,11 @@ if($id) {
 	}
 
 	$picid = $pic['picid'];
-	$theurl = "home.php?mod=space&uid=$pic[uid]&do=$do&picid=$picid";
+	$theurl = "home.php?mod=space&uid={$pic['uid']}&do=$do&picid=$picid";
 
 	$album = array();
 	if($pic['albumid']) {
-		$album = C::t('home_album')->fetch($pic['albumid']);
+		$album = C::t('home_album')->fetch_album($pic['albumid']);
 		if(!$album) {
 			C::t('home_pic')->update_for_albumid($pic['albumid'], array('albumid' => 0));
 		}
@@ -192,6 +196,7 @@ if($id) {
 
 	$pic['pic'] = pic_get($pic['filepath'], 'album', $pic['thumb'], $pic['remote'], 0);
 	$pic['size'] = formatsize($pic['size']);
+	$pic['postip'] = ip::to_display($pic['postip']);
 
 	$exifs = array();
 	$allowexif = function_exists('exif_read_data');
@@ -286,9 +291,8 @@ if($id) {
 	$pricount = 0;
 	$picmode = 0;
 
-	if(empty($_GET['view'])) {
-		$_GET['view'] = 'we';
-	}
+	$_GET['view'] = in_array($_GET['view'], array('we', 'me', 'all')) ? $_GET['view'] : 'we';
+	$_GET['order'] = in_array($_GET['order'], array('hot', 'dateline')) ? $_GET['order'] : 'dateline';
 
 	$gets = array(
 		'mod' => 'space',
@@ -387,7 +391,7 @@ if($id) {
 				if($value['friend'] != 4 && ckfriend($value['uid'], $value['friend'], $value['target_ids'])) {
 					$value['pic'] = pic_cover_get($value['pic'], $value['picflag']);
 				} elseif ($value['picnum']) {
-					$value['pic'] = STATICURL.'image/common/nopublish.gif';
+					$value['pic'] = STATICURL.'image/common/nopublish.svg';
 				} else {
 					$value['pic'] = '';
 				}
@@ -441,7 +445,7 @@ function ckfriend_album($album) {
 			include template('home/space_privacy');
 			exit();
 		} elseif(!$space['self'] && $album['friend'] == 4) {
-			$cookiename = "view_pwd_album_$album[albumid]";
+			$cookiename = "view_pwd_album_{$album['albumid']}";
 			$cookievalue = empty($_G['cookie'][$cookiename])?'':$_G['cookie'][$cookiename];
 			if($cookievalue != md5(md5($album['password']))) {
 				$invalue = $album;

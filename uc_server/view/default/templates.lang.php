@@ -7,6 +7,8 @@ $languages = array(
 	'delete'=>'删除',
 	'checkall'=>'全选',
 	'submit' => '提 交',
+	'confirms' => '确定',
+	'finished' => '完成',
 	'yes' => '是',
 	'no' => '否',
 	'tips' => '提示',
@@ -17,6 +19,8 @@ $languages = array(
 	'plugin' => '插件中心',
 	'to' => '到',
 	'menu' => '菜单',
+
+	'copyright' => 'Copyright &copy; 2001-'.date('Y').' Tencent Cloud.',
 
 	'founder'=>'UCenter创始人',
 	'login_username'=>'用户名',
@@ -118,7 +122,7 @@ $languages = array(
 	'sendto' => '发送给: ',
 	'fromto' => '来自: ',
 	'sendeveryone' => '发送给大家',
-	'privatewithwho' => '与$pm[tousername]的对话',
+	'privatewithwho' => '与 {$pm[\'tousername\']} 的对话',
 	'chatpmmembernum' => '参与人数: ',
 	'chatpm' => '群聊',
 
@@ -153,7 +157,7 @@ $languages = array(
 	'app_url' => '应用的主 URL',
 	'app_url_comment' => '该应用与 UCenter 通信的接口 URL，结尾请不要加“/” ，应用的通知只发送给主 URL',
 	'app_extra_url' => '应用的其他 URL',
-	'app_extra_url_comment' => '该应用可以访问的其他 URL，结尾请不要加“/” ，每行一个，只有在同步登录是请求该 URL',
+	'app_extra_url_comment' => '该应用可以访问的其他 URL，结尾请不要加“/” ，每行一个，只有在同步登录时请求该 URL',
 	'app_ip' => '应用 IP',
 	'app_ip_comment' => '正常情况下留空即可。如果由于域名解析问题导致 UCenter 与该应用通信失败，请尝试设置为该应用所在服务器的 IP 地址。',
 	'app_key' => '通信密钥',
@@ -213,7 +217,7 @@ $languages = array(
 					<li>badword=good</li>',
 	'badword_skip' => '当冲突时，跳过原来的词表',
 	'badword_overwrite' => '当冲突时，覆盖原来的词表',
-	'badword_truncate' => '清空当前词表，后导入新词语（此操作不可恢复，建议首先<a href="admin.php?m=badword&a=export" target="_blanks">导出词表</a>，做好备份）',
+	'badword_truncate' => '清空当前词表，后导入新词语（此操作不可恢复，建议首先 <a href="{$adminscript}?m=badword&a=export" target="_blank">导出词表</a>，做好备份）',
 
 	'announcepm' => '公共消息管理',
 	'announcepm_deleted' => '成功删除公共消息',
@@ -302,7 +306,13 @@ $languages = array(
 	'setting_pmfloodctrl' => '发短消息灌水预防',
 	'setting_pmfloodctrl_comment' => '两次发短消息间隔小于此时间，单位秒，0 为不限制，此举为了限制通过机器批量发广告',
 	'setting_addappbyurl' => '启用通过 URL 添加应用功能',
-	'setting_addappbyurl_comment' => '是否启用通过 URL 添加应用功能，建议只有必须通过 URL 添加应用时开启',
+	'setting_addappbyurl_comment' => '是否启用通过 URL 添加应用功能，建议只在需要通过 URL 添加应用时开启',
+	'setting_insecureuserdelete' => '启用不安全的删除用户接口',
+	'setting_insecureuserdelete_comment' => '是否启用不安全的删除用户接口，建议只有必须使用此接口且无法改造应用时开启',
+	'setting_passwordalgo' => 'UCenter 密码算法',
+	'setting_passwordalgo_comment' => '取值为您当前 PHP 版本支持密码散列算法的常量名。请注意使用高版本 PHP 独有的算法后不能降级到更低的 PHP 版本，否则用户无法验证密码。默认值为空。',
+	'setting_passwordoptions' => 'UCenter 密码算法配置',
+	'setting_passwordoptions_comment' => '取值为密码散列算法的配置信息，以一行 JSON 数组的形式存储，请自行确认相关配置是否正确。当配置本项时, UCenter 密码算法不能为空。默认值为空。',
 
 	'setting_user_failedtime' => '允许用户登录失败次数',
 	'setting_user_failedtime_comment' => '用户登录失败超过设置的次数，将在 15 分钟内无法登录，0 为使用默认设置，负数为不限制次数（不安全）',
@@ -364,6 +374,8 @@ $languages = array(
 
 	'delete' => '删除',
 	'email' => 'Email',
+	'secmobicc' => '安全手机国际电话区号',
+	'secmobile' => '安全手机号',
 	'user_list' => '用户列表',
 	'user_add_succeed' => '成功添加用户。',
 	'user_delete_confirm' => '该操作不可恢复，您确认要删除这些用户吗？',
@@ -503,8 +515,8 @@ $languages = array(
 	'app_allowips_comment' => '限定终端访问的IP, 设置哪些IP可以访问Ucenter  的数据接口',
 
 	'envstatus_result' => '检测结果',
-	'envstatus_ver_too_low' => '您当前系统环境内的 $envstatus[req] 版本 ($envstatus[now_ver]) 过低，程序无法按预期正常运行。我们强烈建议您升级到 $envstatus[sug_ver] 版本，程序正常运行最低要求为 $envstatus[req_ver] 版本。',
-	'envstatus_not_found' => '您当前系统环境内未安装或开启 $envstatus[req] 模块，程序无法按预期正常运行。我们强烈建议您安装或开启此模块，以满足程序正常运行的最低要求。',
-	'envstatus_ok' => '您当前系统环境适合当前版本的 UCenter $envstatus[version] 。',
+	'envstatus_ver_too_low' => '您当前系统环境内的 {$envstatus[\'req\']} 版本 ({$envstatus[\'now_ver\']}) 过低，程序无法按预期正常运行。我们强烈建议您升级到 {$envstatus[\'sug_ver\']} 版本，程序正常运行最低要求为 {$envstatus[\'req_ver\']} 版本。',
+	'envstatus_not_found' => '您当前系统环境内未安装或开启 {$envstatus[\'req\']} 模块，程序无法按预期正常运行。我们强烈建议您安装或开启此模块，以满足程序正常运行的最低要求。',
+	'envstatus_ok' => '您当前系统环境适合当前版本的 UCenter {$envstatus[\'version\']} 。',
 
 );

@@ -19,7 +19,7 @@ foreach(C::t('forum_typeoption')->fetch_all_by_classid(0) as $option) {
 	if($_GET['classid'] == $option['optionid']) {
 		$curclassname = $option['title'];
 	}
-	$classoptionmenu[] = array($option['title'], "threadtypes&operation=typeoption&classid=$option[optionid]", $_GET['classid'] == $option['optionid']);
+	$classoptionmenu[] = array($option['title'], "threadtypes&operation=typeoption&classid={$option['optionid']}", $_GET['classid'] == $option['optionid']);
 }
 
 $mysql_keywords = array( 'ADD', 'ALL', 'ALTER', 'ANALYZE', 'AND', 'AS', 'ASC', 'ASENSITIVE', 'BEFORE', 'BETWEEN', 'BIGINT', 'BINARY', 'BLOB', 'BOTH', 'BY', 'CALL', 'CASCADE', 'CASE', 'CHANGE', 'CHAR', 'CHARACTER', 'CHECK', 'COLLATE', 'COLUMN', 'CONDITION', 'CONNECTION', 'CONSTRAINT', 'CONTINUE', 'CONVERT', 'CREATE', 'CROSS', 'CURRENT_DATE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP', 'CURRENT_USER', 'CURSOR', 'DATABASE', 'DATABASES', 'DAY_HOUR', 'DAY_MICROSECOND', 'DAY_MINUTE', 'DAY_SECOND', 'DEC', 'DECIMAL', 'DECLARE', 'DEFAULT', 'DELAYED', 'DELETE', 'DESC', 'DESCRIBE', 'DETERMINISTIC', 'DISTINCT', 'DISTINCTROW', 'DIV', 'DOUBLE', 'DROP', 'DUAL', 'EACH', 'ELSE', 'ELSEIF', 'ENCLOSED', 'ESCAPED', 'EXISTS', 'EXIT', 'EXPLAIN', 'FALSE', 'FETCH', 'FLOAT', 'FLOAT4', 'FLOAT8', 'FOR', 'FORCE', 'FOREIGN', 'FROM', 'FULLTEXT', 'GOTO', 'GRANT', 'GROUP', 'HAVING', 'HIGH_PRIORITY', 'HOUR_MICROSECOND', 'HOUR_MINUTE', 'HOUR_SECOND', 'IF', 'IGNORE', 'IN', 'INDEX', 'INFILE', 'INNER', 'INOUT', 'INSENSITIVE', 'INSERT', 'INT', 'INT1', 'INT2', 'INT3', 'INT4', 'INT8', 'INTEGER', 'INTERVAL', 'INTO', 'IS', 'ITERATE', 'JOIN', 'KEY', 'KEYS', 'KILL', 'LABEL', 'LEADING', 'LEAVE', 'LEFT', 'LIKE', 'LIMIT', 'LINEAR', 'LINES', 'LOAD', 'LOCALTIME', 'LOCALTIMESTAMP', 'LOCK', 'LONG', 'LONGBLOB', 'LONGTEXT', 'LOOP', 'LOW_PRIORITY', 'MATCH', 'MEDIUMBLOB', 'MEDIUMINT', 'MEDIUMTEXT', 'MIDDLEINT', 'MINUTE_MICROSECOND', 'MINUTE_SECOND', 'MOD', 'MODIFIES', 'NATURAL', 'NOT', 'NO_WRITE_TO_BINLOG', 'NULL', 'NUMERIC', 'ON', 'OPTIMIZE', 'OPTION', 'OPTIONALLY', 'OR', 'ORDER', 'OUT', 'OUTER', 'OUTFILE', 'PRECISION', 'PRIMARY', 'PROCEDURE', 'PURGE', 'RAID0', 'RANGE', 'READ', 'READS', 'REAL', 'REFERENCES', 'REGEXP', 'RELEASE', 'RENAME', 'REPEAT', 'REPLACE', 'REQUIRE', 'RESTRICT', 'RETURN', 'REVOKE', 'RIGHT', 'RLIKE', 'SCHEMA', 'SCHEMAS', 'SECOND_MICROSECOND', 'SELECT', 'SENSITIVE', 'SEPARATOR', 'SET', 'SHOW', 'SMALLINT', 'SPATIAL', 'SPECIFIC', 'SQL', 'SQLEXCEPTION', 'SQLSTATE', 'SQLWARNING', 'SQL_BIG_RESULT', 'SQL_CALC_FOUND_ROWS', 'SQL_SMALL_RESULT', 'SSL', 'STARTING', 'STRAIGHT_JOIN', 'TABLE', 'TERMINATED', 'THEN', 'TINYBLOB', 'TINYINT', 'TINYTEXT', 'TO', 'TRAILING', 'TRIGGER', 'TRUE', 'UNDO', 'UNION', 'UNIQUE', 'UNLOCK', 'UNSIGNED', 'UPDATE', 'USAGE', 'USE', 'USING', 'UTC_DATE', 'UTC_TIME', 'UTC_TIMESTAMP', 'VALUES', 'VARBINARY', 'VARCHAR', 'VARCHARACTER', 'VARYING', 'WHEN', 'WHERE', 'WHILE', 'WITH', 'WRITE', 'X509', 'XOR', 'YEAR_MONTH', 'ZEROFILL', 'ACTION', 'BIT', 'DATE', 'ENUM', 'NO', 'TEXT', 'TIME');
@@ -46,15 +46,15 @@ if(!$operation) {
 		$threadtypes = '';
 		$query = C::t('forum_threadtype')->fetch_all_for_order();
 		foreach($query as $type) {
-			$tmpstr = "<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=export&sortid=$type[typeid]\" class=\"act nowrap\">$lang[export]</a>";
+			$tmpstr = "<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=export&sortid={$type['typeid']}\" class=\"act nowrap\">{$lang['export']}</a>";
 			$threadtypes .= showtablerow('', array('class="td25"', 'class="td28"', 'class="td29"', 'class="td29"', 'title="'.cplang('forums_threadtypes_forums_comment').'"'), array(
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$type[typeid]\">",
-				"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayordernew[$type[typeid]]\" value=\"$type[displayorder]\">",
-				"<input type=\"text\" class=\"txt\" size=\"15\" name=\"namenew[$type[typeid]]\" value=\"".dhtmlspecialchars($type['name'])."\">",
-				"<input type=\"text\" class=\"txt\" size=\"30\" name=\"descriptionnew[$type[typeid]]\" value=\"$type[description]\">",
-				is_array($forumsarray[$type['typeid']]) ? '<ul class="lineheight"><li class="left">'.implode(',&nbsp;</li><li class="left"> ', $forumsarray[$type['typeid']])."</li></ul><input type=\"hidden\" name=\"fids[$type[typeid]]\" value=\"".implode(', ', $fidsarray[$type['typeid']])."\">" : '',
-				"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=sortdetail&sortid=$type[typeid]\" class=\"act nowrap\">$lang[detail]</a>&nbsp;&nbsp;
-				<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=sorttemplate&sortid=$type[typeid]\" class=\"act nowrap\">$lang[threadtype_template]</a>",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$type['typeid']}\">",
+				"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayordernew[{$type['typeid']}]\" value=\"{$type['displayorder']}\">",
+				"<input type=\"text\" class=\"txt\" size=\"15\" name=\"namenew[{$type['typeid']}]\" value=\"".dhtmlspecialchars($type['name'])."\">",
+				"<input type=\"text\" class=\"txt\" size=\"30\" name=\"descriptionnew[{$type['typeid']}]\" value=\"{$type['description']}\">",
+				is_array($forumsarray[$type['typeid']]) ? '<ul class="lineheight"><li class="left">'.implode(',&nbsp;</li><li class="left"> ', $forumsarray[$type['typeid']])."</li></ul><input type=\"hidden\" name=\"fids[{$type['typeid']}]\" value=\"".implode(', ', $fidsarray[$type['typeid']])."\">" : '',
+				"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=sortdetail&sortid={$type['typeid']}\" class=\"act nowrap\">{$lang['detail']}</a>&nbsp;&nbsp;
+				<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=sorttemplate&sortid={$type['typeid']}\" class=\"act nowrap\">{$lang['threadtype_template']}</a>",
 				$tmpstr,
 			), TRUE);
 		}
@@ -80,13 +80,15 @@ var rowtypedata = [
 		));
 
 		showformheader("threadtypes&", 'enctype', 'threadtypeform');
+		showboxheader();
 		showtableheader('');
-		showsubtitle(array('', 'display_order', cplang('name').' '.cplang('tiny_bbcode_support'), 'description', 'forums_relation', '', ''), 'header', array('', 'width="60"', 'width="110"', 'width="210"', '', 'width="90"', 'width="60"'));
+		showsubtitle(array('', 'display_order', cplang('name').' '.cplang('tiny_bbcode_support'), 'description', 'forums_relation', '', ''), 'header', array('', 'width="100"', 'width="200"', 'width="300"', '', 'width="90"', 'width="60"'));
 		echo $threadtypes;
 		echo '<tr><td class="td25"></td><td colspan="5"><div>'.'<span class="filebtn"><input type="hidden" name="importtype" value="file" /><input type="file" name="importfile" class="pf" size="1" onchange="uploadthreadtypexml($(\'threadtypeform\'), \''.ADMINSCRIPT.'?action=threadtypes&operation=import\');" /><a class="addtr" href="JavaScript:;">'.$lang['import'].'</a></span>'.'<a href="###" onclick="addrow(this, 0)" class="addtr">'.$lang['threadtype_infotypes_add'].'</a></div></td>';
 
 		showsubmit('typesubmit', 'submit', 'del');
 		showtablefooter();
+		showboxfooter();
 		showformfooter();
 
 	} else {
@@ -97,7 +99,7 @@ var rowtypedata = [
 
 			if($_GET['delete']) {
 				C::t('forum_typeoptionvar')->delete_by_sortid($_GET['delete']);
-				C::t('forum_typevar')->delete($_GET['delete']);
+				C::t('forum_typevar')->delete_typevar($_GET['delete']);
 				$affected_rows = C::t('forum_threadtype')->delete($_GET['delete']);
 			}
 
@@ -213,12 +215,12 @@ var rowtypedata = [
 			foreach(C::t('forum_typeoption')->fetch_all_by_classid($_GET['classid']) as $option) {
 				$option['type'] = $lang['threadtype_edit_vars_type_'. $option['type']];
 				$typeoptions .= showtablerow('', array('class="td25"', 'class="td28"'), array(
-					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$option[optionid]\">",
-					"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayorder[$option[optionid]]\" value=\"$option[displayorder]\">",
-					"<input type=\"text\" class=\"txt\" size=\"15\" name=\"title[$option[optionid]]\" value=\"".dhtmlspecialchars($option['title'])."\">",
-					"$option[identifier]<input type=\"hidden\" name=\"identifier[$option[optionid]]\" value=\"$option[identifier]\">",
+					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$option['optionid']}\">",
+					"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayorder[{$option['optionid']}]\" value=\"{$option['displayorder']}\">",
+					"<input type=\"text\" class=\"txt\" size=\"15\" name=\"title[{$option['optionid']}]\" value=\"".dhtmlspecialchars($option['title'])."\">",
+					"{$option['identifier']}<input type=\"hidden\" name=\"identifier[{$option['optionid']}]\" value=\"{$option['identifier']}\">",
 					$option['type'],
-					"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid=$option[optionid]\" class=\"act\">$lang[detail]</a>"
+					"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid={$option['optionid']}\" class=\"act\">{$lang['detail']}</a>"
 				), TRUE);
 			}
 		}
@@ -231,7 +233,7 @@ var rowtypedata = [
 			[1, '<input type="text" class="txt" size="2" name="newdisplayorder[]" value="0">', 'td28'],
 			[1, '<input type="text" class="txt" size="15" name="newtitle[]">'],
 			[1, '<input type="text" class="txt" size="15" name="newidentifier[]">'],
-			[1, '<select name="newtype[]"><option value="number">$lang[threadtype_edit_vars_type_number]</option><option value="text" selected>$lang[threadtype_edit_vars_type_text]</option><option value="textarea">$lang[threadtype_edit_vars_type_textarea]</option><option value="radio">$lang[threadtype_edit_vars_type_radio]</option><option value="checkbox">$lang[threadtype_edit_vars_type_checkbox]</option><option value="select">$lang[threadtype_edit_vars_type_select]</option><option value="calendar">$lang[threadtype_edit_vars_type_calendar]</option><option value="email">$lang[threadtype_edit_vars_type_email]</option><option value="image">$lang[threadtype_edit_vars_type_image]</option><option value="url">$lang[threadtype_edit_vars_type_url]</option><option value="range">$lang[threadtype_edit_vars_type_range]</option></select>'],
+			[1, '<select name="newtype[]"><option value="number">{$lang['threadtype_edit_vars_type_number']}</option><option value="text" selected>{$lang['threadtype_edit_vars_type_text']}</option><option value="textarea">{$lang['threadtype_edit_vars_type_textarea']}</option><option value="radio">{$lang['threadtype_edit_vars_type_radio']}</option><option value="checkbox">{$lang['threadtype_edit_vars_type_checkbox']}</option><option value="select">{$lang['threadtype_edit_vars_type_select']}</option><option value="calendar">{$lang['threadtype_edit_vars_type_calendar']}</option><option value="email">{$lang['threadtype_edit_vars_type_email']}</option><option value="image">{$lang['threadtype_edit_vars_type_image']}</option><option value="url">{$lang['threadtype_edit_vars_type_url']}</option><option value="range">{$lang['threadtype_edit_vars_type_range']}</option></select>'],
 			[1, '']
 		],
 	];
@@ -246,6 +248,7 @@ EOT;
 		));
 		showformheader("threadtypes&operation=typeoption&typeid={$_GET['typeid']}");
 		showhiddenfields(array('classid' => $_GET['classid']));
+		showboxheader();
 		showtableheader();
 
 		showsubtitle(array('', 'display_order', 'name', 'threadtype_variable', 'threadtype_type', ''));
@@ -254,13 +257,14 @@ EOT;
 		showsubmit('typeoptionsubmit', 'submit', 'del');
 
 		showtablefooter();
+		showboxfooter();
 		showformfooter();
 
 	} else {
 
 		if($ids = dimplode($_GET['delete'])) {
 			C::t('forum_typeoption')->delete($_GET['delete']);
-			C::t('forum_typevar')->delete(null, $_GET['delete']);
+			C::t('forum_typevar')->delete_typevar(null, $_GET['delete']);
 		}
 
 		if(is_array($_GET['title'])) {
@@ -345,11 +349,11 @@ EOT;
 		}
 
 		foreach(C::t('common_member_profile_setting')->fetch_all_by_available_formtype(1, 'text') as $result) {
-			$threadtype_profile = !$threadtype_profile ? "<select id='rules[text][profile]' name='rules[text][profile]'><option value=''></option>" : $threadtype_profile."<option value='{$result[fieldid]}' ".($option['rules']['profile'] == $result['fieldid'] ? "selected='selected'" : '').">{$result[title]}</option>";
+			$threadtype_profile = !$threadtype_profile ? "<select id='rules[text][profile]' name='rules[text][profile]'><option value=''></option>" : $threadtype_profile."<option value='{$result['fieldid']}' ".($option['rules']['profile'] == $result['fieldid'] ? "selected='selected'" : '').">{$result['title']}</option>";
 		}
 		$threadtype_profile .= "</select>";
 
-		showformheader("threadtypes&operation=optiondetail&optionid=$_GET[optionid]");
+		showformheader("threadtypes&operation=optiondetail&optionid={$_GET['optionid']}");
 		showtableheader();
 		showtitle('threadtype_infotypes_option_config');
 		showsetting('name', 'titlenew', $option['title'], 'text');
@@ -449,8 +453,8 @@ EOT;
 			cpmsg('threadtype_infotypes_optionvariable_invalid', '', 'error');
 		}
 
-		$_GET['protectnew']['usergroup'] = $_GET['protectnew']['usergroup'] ? implode("\t", $_GET['protectnew']['usergroup']) : '';
-		$_GET['protectnew']['verify'] = $_GET['protectnew']['verify'] ? implode("\t", $_GET['protectnew']['verify']) : '';
+		$_GET['protectnew']['usergroup'] = is_array($_GET['protectnew']['usergroup']) ? implode("\t", $_GET['protectnew']['usergroup']) : '';
+		$_GET['protectnew']['verify'] = is_array($_GET['protectnew']['verify']) ? implode("\t", $_GET['protectnew']['verify']) : '';
 
 		C::t('forum_typeoption')->update($_GET['optionid'], array(
 			'title' => $titlenew,
@@ -498,7 +502,7 @@ EOT;
 			$option['title'] = $typeoptionarr[$option['optionid']]['title'];
 			$option['type'] = $typeoptionarr[$option['optionid']]['type'];
 			$option['identifier'] = $typeoptionarr[$option['optionid']]['identifier'];
-			$jsoptionids .= "optionids.push($option[optionid]);\r\n";
+			$jsoptionids .= "optionids.push({$option['optionid']});\r\n";
 			$optiontitle[$option['identifier']] = $option['title'];
 			$showoption[$option['optionid']]['optionid'] = $option['optionid'];
 			$showoption[$option['optionid']]['title'] = $option['title'];
@@ -533,17 +537,17 @@ EOT;
 		$searchtitle = $searchvalue = $searchunit = array();
 		foreach($showoption as $optionid => $option) {
 			$sortoptions .= showtablerow('id="optionid'.$optionid.'"', array('class="td25"', 'class="td28 td23"'), array(
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$option[optionid]\">",
-				"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayorder[$option[optionid]]\" value=\"$option[displayorder]\">",
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"available[$option[optionid]]\" value=\"1\" ".($option['available'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$option['optionid']}\">",
+				"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayorder[{$option['optionid']}]\" value=\"{$option['displayorder']}\">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"available[{$option['optionid']}]\" value=\"1\" ".($option['available'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
 				dhtmlspecialchars($option['title']),
 				$option['type'],
 				"<input class=\"checkbox\" type=\"checkbox\" name=\"required[$option[optionid]]\" value=\"1\" ".($option['required'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"unchangeable[$option[optionid]]\" value=\"1\" ".($option['unchangeable'] ? 'checked' : '').">",
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"search[$option[optionid]][form]\" value=\"1\" ".(getstatus($option['search'], 1) == 1 ? 'checked' : '').">",
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"search[$option[optionid]][font]\" value=\"1\" ".(getstatus($option['search'], 2) == 1 ? 'checked' : '').">",
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"subjectshow[$option[optionid]]\" value=\"1\" ".($option['subjectshow'] ? 'checked' : '').">",
-				"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid=$option[optionid]\" class=\"act\" target=\"_blank\">".$lang['edit']."</a>"
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"unchangeable[{$option['optionid']}]\" value=\"1\" ".($option['unchangeable'] ? 'checked' : '').">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}][form]\" value=\"1\" ".(getstatus($option['search'], 1) == 1 ? 'checked' : '').">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}][font]\" value=\"1\" ".(getstatus($option['search'], 2) == 1 ? 'checked' : '').">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"subjectshow[{$option['optionid']}]\" value=\"1\" ".($option['subjectshow'] ? 'checked' : '').">",
+				"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid={$option['optionid']}\" class=\"act\" target=\"_blank\">".$lang['edit']."</a>"
 			), TRUE);
 			$searchtitle[] = '/{('.$option['identifier'].')}/e';
 			$searchvalue[] = '/\[('.$option['identifier'].')value\]/e';
@@ -564,12 +568,12 @@ EOT;
 		showsetting('threadtype_infotypes_validity', 'typeexpiration', $threadtype['expiration'], 'radio');
 		showtablefooter();
 
-		showtableheader("$threadtype[name] - $lang[threadtype_infotypes_add_option]", 'noborder fixpadding');
+		showtableheader("{$threadtype['name']} - {$lang['threadtype_infotypes_add_option']}", 'noborder fixpadding');
 		showtablerow('', 'id="classlist"', '');
 		showtablerow('', 'id="optionlist"', '');
 		showtablefooter();
 
-		showtableheader("$threadtype[name] - $lang[threadtype_infotypes_exist_option]", 'noborder fixpadding', 'id="sortlist"');
+		showtableheader("{$threadtype['name']} - {$lang['threadtype_infotypes_exist_option']}", 'noborder fixpadding', 'id="sortlist"');
 		showsubtitle(array('<input type="checkbox" name="chkall" id="chkall" class="checkbox" onclick="checkAll(\'prefix\', this.form,\'delete\')" /><label for="chkall">'.cplang('del').'</label>', 'display_order', 'available', 'name', 'type', 'required', 'unchangeable', 'threadtype_infotypes_formsearch', 'threadtype_infotypes_fontsearch', 'threadtype_infotypes_show', ''));
 		echo $sortoptions;
 		showtablefooter();
@@ -661,7 +665,7 @@ EOT;
 
 			if($delete) {
 				if($ids = dimplode($delete)) {
-					C::t('forum_typevar')->delete($_GET['sortid'], $delete);
+					C::t('forum_typevar')->delete_typevar($_GET['sortid'], $delete);
 				}
 				foreach($delete as $id) {
 					unset($addoption[$id]);
@@ -754,7 +758,7 @@ EOT;
 							}
 						}
 
-						C::t('forum_typevar')->update($_GET['sortid'], $id, array(
+						C::t('forum_typevar')->update_typevar($_GET['sortid'], $id, array(
 							'displayorder' => $_GET['displayorder'][$id],
 							'available' => $_GET['available'][$id],
 							'required' => $_GET['required'][$id],
@@ -763,7 +767,7 @@ EOT;
 							'subjectshow' => $_GET['subjectshow'][$id],
 						));
 					} else {
-						C::t('forum_typevar')->delete($_GET['sortid'], $id);
+						C::t('forum_typevar')->delete_typevar($_GET['sortid'], $id);
 					}
 				}
 			}
@@ -1034,7 +1038,7 @@ EOT;
 							if($option['condition']) {
 								$exp = $option['condition'] == 1 ? '>' : '<';
 							}
-							$sql = "$fieldname$exp'$option[value]'";
+							$sql = "$fieldname$exp'{$option['value']}'";
 						} elseif($option['type'] == 'select') {
 							$subvalues = $currentchoices = array();
 							if(!empty($sortoptionarray)) {
@@ -1058,7 +1062,7 @@ EOT;
 						} elseif($option['type'] == 'range') {
 							$sql = $option['value']['min'] || $option['value']['max'] ? "$fieldname BETWEEN ".intval($option['value']['min'])." AND ".intval($option['value']['max'])."" : '';
 						} else {
-							$sql = "$fieldname LIKE '%$option[value]%'";
+							$sql = "$fieldname LIKE '%{$option['value']}%'";
 						}
 						$selectsql .= $and."$sql ";
 						$and = 'AND ';
@@ -1077,11 +1081,11 @@ EOT;
 				if($threadcount) {
 					foreach(C::t('forum_thread')->fetch_all_by_tid($searchtids, $start_limit, $lpp) as $thread) {
 						$threads .= showtablerow('', array('class="td25"', '', '', 'class="td28"', 'class="td28"'), array(
-						"<input class=\"checkbox\" type=\"checkbox\" name=\"tidsarray[]\" value=\"$thread[tid]\"/>".
-						"<input type=\"hidden\" name=\"fidsarray[]\" value=\"$thread[fid]\"/>",
-						"<a href=\"forum.php?mod=viewthread&tid=$thread[tid]\" target=\"_blank\">$thread[subject]</a>",
-						"<a href=\"forum.php?mod=forumdisplay&fid=$thread[fid]\" target=\"_blank\">{$_G['cache'][forums][$thread[fid]][name]}</a>",
-						"<a href=\"home.php?mod=space&uid=$thread[authorid]\" target=\"_blank\">$thread[author]</a>",
+						"<input class=\"checkbox\" type=\"checkbox\" name=\"tidsarray[]\" value=\"{$thread['tid']}\"/>".
+						"<input type=\"hidden\" name=\"fidsarray[]\" value=\"{$thread['fid']}\"/>",
+						"<a href=\"forum.php?mod=viewthread&tid={$thread['tid']}\" target=\"_blank\">{$thread['subject']}</a>",
+						"<a href=\"forum.php?mod=forumdisplay&fid={$thread['fid']}\" target=\"_blank\">{$_G['cache']['forums'][$thread['fid']]['name']}</a>",
+						"<a href=\"home.php?mod=space&uid={$thread['authorid']}\" target=\"_blank\">{$thread['author']}</a>",
 						$thread['replies'],
 						$thread['views'],
 						dgmdate($thread['lastpost'], 'd'),
@@ -1097,7 +1101,7 @@ EOT;
 			showsubtitle(array('', 'subject', 'forum', 'author', 'threads_replies', 'threads_views', 'threads_lastpost'));
 			echo $threads;
 			echo $multipage;
-			showsubmit('', '', '', "<input type=\"submit\" class=\"btn\" name=\"delsortsubmit\" value=\"{$lang[threadtype_content_delete]}\"/>");
+			showsubmit('', '', '', "<input type=\"submit\" class=\"btn\" name=\"delsortsubmit\" value=\"{$lang['threadtype_content_delete']}\"/>");
 			showtablefooter();
 			showformfooter();
 
@@ -1131,7 +1135,7 @@ EOT;
 	$classid = $_GET['classid'] ? $_GET['classid'] : 0;
 	foreach(C::t('forum_typeoption')->fetch_all_by_classid($classid) as $option) {
 		$classidarray[] = $option['optionid'];
-		$classoptions .= "<a href=\"#ol\" onclick=\"ajaxget('".ADMINSCRIPT."?action=threadtypes&operation=optionlist&typeid={$_GET['typeid']}&classid=$option[optionid]', 'optionlist', 'optionlist', 'Loading...', '', checkedbox)\">$option[title]</a> &nbsp; ";
+		$classoptions .= "<a href=\"#ol\" onclick=\"ajaxget('".ADMINSCRIPT."?action=threadtypes&operation=optionlist&typeid={$_GET['typeid']}&classid={$option['optionid']}', 'optionlist', 'optionlist', 'Loading...', '', checkedbox)\">{$option['title']}</a> &nbsp; ";
 	}
 
 	include template('common/header');
@@ -1152,7 +1156,7 @@ EOT;
 
 	$optionlist = '';
 	foreach(C::t('forum_typeoption')->fetch_all_by_classid($classid) as $option) {
-		$optionlist .= "<input ".(in_array($option['optionid'], $options) ? ' checked="checked" ' : '')."class=\"checkbox\" type=\"checkbox\" name=\"typeselect[]\" id=\"typeselect_$option[optionid]\" value=\"$option[optionid]\" onclick=\"insertoption(this.value);\" /><label for=\"typeselect_$option[optionid]\">".dhtmlspecialchars($option['title'])."</label>&nbsp;&nbsp;";
+		$optionlist .= "<input ".(in_array($option['optionid'], $options) ? ' checked="checked" ' : '')."class=\"checkbox\" type=\"checkbox\" name=\"typeselect[]\" id=\"typeselect_{$option['optionid']}\" value=\"{$option['optionid']}\" onclick=\"insertoption(this.value);\" /><label for=\"typeselect_{$option['optionid']}\">".dhtmlspecialchars($option['title'])."</label>&nbsp;&nbsp;";
 	}
 	include template('common/header');
 	echo $optionlist;
@@ -1166,17 +1170,17 @@ EOT;
 	$option['type'] = $lang['threadtype_edit_vars_type_'. $option['type']];
 	$option['available'] = 1;
 	showtablerow('', array('class="td25"', 'class="td28 td23"'), array(
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$option[optionid]\" ".($option['model'] ? 'disabled' : '').">",
-		"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayorder[$option[optionid]]\" value=\"$option[displayorder]\">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"available[$option[optionid]]\" value=\"1\" ".($option['available'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$option['optionid']}\" ".($option['model'] ? 'disabled' : '').">",
+		"<input type=\"text\" class=\"txt\" size=\"2\" name=\"displayorder[{$option['optionid']}]\" value=\"{$option['displayorder']}\">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"available[{$option['optionid']}]\" value=\"1\" ".($option['available'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
 		dhtmlspecialchars($option['title']),
-		$option[type],
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"required[$option[optionid]]\" value=\"1\" ".($option['required'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"unchangeable[$option[optionid]]\" value=\"1\" ".($option['unchangeable'] ? 'checked' : '').">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[$option[optionid]][form]\" value=\"1\" ".(getstatus($option['search'], 1) == 1 ? 'checked' : '').">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[$option[optionid]][font]\" value=\"1\" ".(getstatus($option['search'], 2) == 1 ? 'checked' : '').">",
-		"<input class=\"checkbox\" type=\"checkbox\" name=\"subjectshow[$option[optionid]]\" value=\"1\" ".($option['subjectshow'] ? 'checked' : '').">",
-		"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid=$option[optionid]\" class=\"act\">".$lang['edit']."</a>"
+		$option['type'],
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"required[{$option['optionid']}]\" value=\"1\" ".($option['required'] ? 'checked' : '')." ".($option['model'] ? 'disabled' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"unchangeable[{$option['optionid']}]\" value=\"1\" ".($option['unchangeable'] ? 'checked' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}][form]\" value=\"1\" ".(getstatus($option['search'], 1) == 1 ? 'checked' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"search[{$option['optionid']}][font]\" value=\"1\" ".(getstatus($option['search'], 2) == 1 ? 'checked' : '').">",
+		"<input class=\"checkbox\" type=\"checkbox\" name=\"subjectshow[{$option['optionid']}]\" value=\"1\" ".($option['subjectshow'] ? 'checked' : '').">",
+		"<a href=\"".ADMINSCRIPT."?action=threadtypes&operation=optiondetail&optionid={$option['optionid']}\" class=\"act\">".$lang['edit']."</a>"
 	));
 	include template('common/footer');
 	exit;

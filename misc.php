@@ -51,13 +51,13 @@ require './source/class/class_core.php';
 
 $discuz = C::app();
 
-if($_GET['mod'] != 'tag'){
+if(isset($_GET['mod']) && $_GET['mod'] != 'tag'){
 	$discuz->reject_robot();
 }
 $modarray = array('seccode', 'secqaa', 'initsys', 'invite', 'faq', 'report',
 				'swfupload', 'stat', 'ranklist', 'buyinvitecode',
 				'tag', 'diyhelp', 'mobile', 'patch', 'getatuser', 'imgcropper',
-				'userstatus',);
+				'userstatus', 'secmobseccode');
 
 $modcachelist = array(
 	'ranklist' => array('forums', 'diytemplatename'),

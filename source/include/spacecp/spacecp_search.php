@@ -11,7 +11,11 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
-$myfields = array('uid','gender','birthyear','birthmonth','birthday','birthprovince','birthcity','resideprovince','residecity', 'residedist', 'residecommunity');
+if (!$_G['setting']['friendstatus']) {
+	showmessage('friend_status_off');
+}
+
+$myfields = array('uid','gender','birthyear','birthmonth','birthday','birthcountry','birthprovince','birthcity','residecountry','resideprovince','residecity', 'residedist', 'residecommunity');
 
 loadcache('profilesetting');
 $fields = array();
@@ -34,7 +38,7 @@ if(!empty($_GET['searchsubmit']) || !empty($_GET['searchmode'])) {
 		$wherearr[] = 's.'.DB::field('username', $searchkey);
 		$searchkey = dhtmlspecialchars($searchkey);
 	} else {
-		foreach (array('uid','username','videophotostatus','avatarstatus') as $value) {
+		foreach (array('uid','username','avatarstatus') as $value) {
 			if($_GET[$value]) {
 				if($value == 'username' && empty($_GET['precision'])) {
 					$_GET[$value] = stripsearchkey($_GET[$value]);
@@ -146,8 +150,8 @@ if(!empty($_GET['searchsubmit']) || !empty($_GET['searchmode'])) {
 	$marryarr = array($space['marry'] => ' selected');
 
 	include_once libfile('function/profile');
-	$birthcityhtml = showdistrict(array(0,0), array('birthprovince', 'birthcity'), 'birthcitybox', null, 'birth');
-	$residecityhtml = showdistrict(array(0,0, 0, 0), array('resideprovince', 'residecity', 'residedist', 'residecommunity'), 'residecitybox', null, 'reside');
+	$birthcityhtml = showdistrict(array(0,0,0), array('birthcountry', 'birthprovince', 'birthcity'), 'birthcitybox', null, 'birth');
+	$residecityhtml = showdistrict(array(0,0, 0, 0, 0), array('residecountry', 'resideprovince', 'residecity', 'residedist', 'residecommunity'), 'residecitybox', null, 'reside');
 
 	foreach ($fields as $fkey => $fvalue) {
 		if(empty($fvalue['choices'])) {

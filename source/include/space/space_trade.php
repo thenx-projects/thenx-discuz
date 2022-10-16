@@ -11,13 +11,18 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['forumstatus']) {
+	showmessage('forum_status_off');
+}
+
 $minhot = $_G['setting']['feedhotmin']<1?3:$_G['setting']['feedhotmin'];
 $page = empty($_GET['page'])?1:intval($_GET['page']);
 if($page<1) $page=1;
 $id = empty($_GET['id'])?0:intval($_GET['id']);
 $opactives['trade'] = 'class="a"';
 
-if(empty($_GET['view'])) $_GET['view'] = 'we';
+$_GET['view'] = in_array($_GET['view'], array('we', 'me', 'tradelog', 'eccredit', 'onlyuser')) ? $_GET['view'] : 'we';
+$_GET['order'] = in_array($_GET['order'], array('hot', 'dateline')) ? $_GET['order'] : 'dateline';
 
 $perpage = 20;
 $perpage = mob_perpage($perpage);
@@ -51,7 +56,7 @@ $need_count = true;
 
 if($_GET['view'] == 'me') {
 
-	$wheresql = "t.sellerid = '$space[uid]'";
+	$wheresql = "t.sellerid = '{$space['uid']}'";
 
 } elseif($_GET['view'] == 'tradelog') {
 
@@ -156,7 +161,7 @@ if($_GET['view'] == 'me') {
 	}
 
 	$caches = array();
-	foreach(C::t('forum_spacecache')->fetch_all($uid, array('buyercredit', 'sellercredit')) as $cache) {
+	foreach(C::t('forum_spacecache')->fetch_all_spacecache($uid, array('buyercredit', 'sellercredit')) as $cache) {
 		$caches[$cache['variable']] = dunserialize($cache['value']);
 		$caches[$cache['variable']]['expiration'] = $cache['expiration'];
 	}
@@ -191,7 +196,7 @@ if($_GET['view'] == 'me') {
 			$fuid_actives = array($fuid=>' selected');
 		} else {
 			$wheresql = 't.'.DB::field('sellerid', $space['feedfriend']);
-			$theurl = "home.php?mod=space&uid=$space[uid]&do=$do&view=we";
+			$theurl = "home.php?mod=space&uid={$space['uid']}&do=$do&view=we";
 		}
 
 		$query = C::t('home_friend')->fetch_all_by_uid($space['uid'], 0, 100, true);

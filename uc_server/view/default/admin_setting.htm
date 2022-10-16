@@ -10,7 +10,7 @@
 	<!--{/if}-->
 	<!--{if $a == 'ls'}-->
 		<div class="mainbox nomargin">
-			<form action="admin.php?m=setting&a=ls" method="post">
+			<form action="{UC_ADMINSCRIPT}?m=setting&a=ls" method="post">
 				<input type="hidden" name="formhash" value="{FORMHASH}">
 				<table class="opt">
 					<tr>
@@ -145,13 +145,38 @@
 					</td>
 					<td>{lang setting_addappbyurl_comment}</td>
 					</tr>
+					<tr>
+						<th colspan="2">{lang setting_insecureuserdelete}:</th>
+					</tr>
+					<tr>
+					<td>
+						<input type="radio" id="insecureuserdeleteyes" class="radio" name="insecureuserdelete" value="1" $insecureuserdelete[1]  /><label for="insecureuserdeleteyes">{lang yes}</label>
+						<input type="radio" id="insecureuserdeleteno" class="radio" name="insecureuserdelete" value="0" $insecureuserdelete[0] /><label for="insecureuserdeleteno">{lang no}</label>
+					</td>
+					<td>{lang setting_insecureuserdelete_comment}</td>
+					</tr>
+					<tr>
+						<th colspan="2">{lang setting_passwordalgo}:</th>
+					</tr>
+					<tr>
+						<td><input type="text" class="txt" name="passwordalgo" value="$passwordalgo" /></td>
+						<td>{lang setting_passwordalgo_comment}</td>
+					</tr>
+
+					<tr>
+						<th colspan="2">{lang setting_passwordoptions}:</th>
+					</tr>
+					<tr>
+						<td><input type="text" class="txt" name="passwordoptions" value="$passwordoptions" /></td>
+						<td>{lang setting_passwordoptions_comment}</td>
+					</tr>
 				</table>
 				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" tabindex="3" /></div>
 			</form>
 		</div>
 	<!--{elseif $a == 'register'}-->
 		<div class="mainbox nomargin">
-			<form action="admin.php?m=setting&a=register" method="post">
+			<form action="{UC_ADMINSCRIPT}?m=setting&a=register" method="post">
 				<input type="hidden" name="formhash" value="{FORMHASH}">
 				<table class="opt">
 					<tr>
@@ -190,7 +215,7 @@
 		</div>
 	<!--{else}-->
 		<div class="mainbox nomargin">
-			<form action="admin.php?m=setting&a=mail" method="post">
+			<form action="{UC_ADMINSCRIPT}?m=setting&a=mail" method="post">
 				<input type="hidden" name="formhash" value="{FORMHASH}">
 				<table class="opt">
 					<tr>

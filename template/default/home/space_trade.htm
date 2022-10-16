@@ -1,14 +1,15 @@
 <!--{template common/header}-->
 <!--{eval
+	$space_uid = $space['uid'];
 	$_G['home_tpl_spacemenus'][] = "<a href=\"home.php?mod=space&do=trade\">{lang trade}</a>";
 }-->
 <!--{if $_GET[view] == 'eccredit'}-->
 	<!--{eval
-			$_G['home_tpl_spacemenus'][] = "<a href=\"home.php?mod=space&uid=$space[uid]&do=$do&view=eccredit\">{lang they_credit_rating}</a>";
+			$_G['home_tpl_spacemenus'][] = "<a href=\"home.php?mod=space&uid=$space_uid&do=$do&view=eccredit\">{lang they_credit_rating}</a>";
 	}-->
 <!--{else}-->
 	<!--{eval
-		$_G['home_tpl_spacemenus'][] = "<a href=\"home.php?mod=space&uid=$space[uid]&do=$do&view=onlyuser\">{lang they_trade}</a>";
+		$_G['home_tpl_spacemenus'][] = "<a href=\"home.php?mod=space&uid=$space_uid&do=$do&view=onlyuser\">{lang they_trade}</a>";
 	}-->
 <!--{/if}-->
 
@@ -30,7 +31,7 @@
 		<!--[diy=diycontenttop]--><div id="diycontenttop" class="area"></div><!--[/diy]-->
 		<div class="bm bw0">
 		<!--{if (!$_G['uid'] && !$space[uid]) || $space[self]}-->
-			<h1 class="mt"><img alt="trade" src="{IMGDIR}/tradesmall.gif" class="vm" /> {lang trade}</h1>
+			<h1 class="mt"><i class="fico-cart fic4 fc-p vm"></i>{lang trade}</h1>
 		<!--{/if}-->
 		<!--{if $space[self]}-->
 			<ul class="tb cl">
@@ -54,7 +55,7 @@
 			<p class="tbmu cl">
 				<span class="y">
 					<!--{if $_GET[view]=='me'}-->
-					<!--{eval $actives[onlyuser]=' class="a"';}-->
+					<!--{eval $actives['onlyuser']=' class="a"';}-->
 					<!--{/if}-->
 					<!--{if $space[uid] > 0}-->
 					<a href="home.php?mod=space&do=trade&view=onlyuser"$actives[onlyuser]>{lang sale_of_goods}</a><span class="pipe">|</span>
@@ -112,8 +113,8 @@
 				<!--{if $tradeloglist}-->
 					<!--{loop $tradeloglist $tradelog}-->
 						<tr>
-							<td>
-								<a href="forum.php?mod=viewthread&tid=$tradelog[tid]&do=tradeinfo&pid=$tradelog[pid]"><!--{if $tradelog['aid']}--><img src="{echo getforumimg($tradelog[aid])}" width="90" /><!--{else}--><img src="{IMGDIR}/nophotosmall.gif" /><!--{/if}--></a>
+							<td class="tradl trads">
+								<a href="forum.php?mod=viewthread&tid=$tradelog[tid]&do=tradeinfo&pid=$tradelog[pid]"><!--{if $tradelog['aid']}--><img src="{echo getforumimg($tradelog[aid])}" width="90" /><!--{else}--><div class="nophoto"></div><!--{/if}--></a>
 							</td>
 							<td>
 								<a href="forum.php?mod=trade&orderid=$tradelog[orderid]">$tradelog[subject]</a><br />
@@ -121,9 +122,9 @@
 							</td>
 							<td>
 								<!--{if $item == 'buytrades'}-->
-									<a target="_blank" href="home.php?mod=space&uid=$tradelog[sellerid]">$tradelog[seller]</a>
-								<!--{else}-->
 									<!--{if $tradelog['buyerid']}--><a target="_blank" href="home.php?mod=space&uid=$tradelog[buyerid]">$tradelog[buyer]</a><!--{else}-->$tradelog[buyer]<!--{/if}-->
+								<!--{else}-->
+									<a target="_blank" href="home.php?mod=space&uid=$tradelog[sellerid]">$tradelog[seller]</a>
 								<!--{/if}-->
 							</td>
 							<td>
@@ -176,7 +177,7 @@
 						<p class="u xg1"><a href="home.php?mod=space&uid=$value[sellerid]" title="$value[seller]" target="_blank">$value[seller]</a></p>
 						<a href="forum.php?mod=viewthread&tid=$value[tid]&do=tradeinfo&pid=$value[pid]" class="tn" target="_blank">
 							<!--{if $value[displayorder] > 0}--><em class="hot">{lang post_trade_sticklist}</em><!--{/if}-->
-							<img src="{if $value[aid]}{echo getforumimg($value[aid])}{else}{IMGDIR}/nophoto.gif{/if}" alt="$value[subject]" />
+							<!--{if $value[aid]}--><img src="{echo getforumimg($value[aid])}" alt="$value[subject]" /><!--{else}--><div class="nophoto" title="$value[subject]"></div><!--{/if}-->
 						</a>
 						<!--{if $value[expiration] && $value[expiration] < $_G[timestamp] || $value[closed]}-->
 						<p class="stat">- {lang trade_closing} -</p>

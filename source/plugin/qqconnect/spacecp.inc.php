@@ -66,7 +66,7 @@ if ($pluginop == 'config') {
 	}
 
 	if($_GET['sh_type'] == 4){
-		if($_G['setting']['rewritestatus'] && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
+		if($_G['setting']['rewritestatus'] && is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
 			$url = rewriteoutput('forum_viewthread', 1, $_G['siteurl'], $tid);
 		} else {
 			$url = $_G['siteurl'].'forum.php?mod=viewthread&tid='.$tid;
@@ -101,7 +101,7 @@ if ($pluginop == 'config') {
 
 	$connectService->connectMergeMember();
 
-	if($_G['setting']['rewritestatus'] && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
+	if($_G['setting']['rewritestatus'] && is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus'])) {
 		$url = rewriteoutput('forum_viewthread', 1, $_G['siteurl'], $tid);
 	} else {
 		$url = $_G['siteurl'].'forum.php?mod=viewthread&tid='.$tid;
@@ -167,7 +167,7 @@ if ($pluginop == 'config') {
 		$aid = intval($_POST['attach_image_id']);
 		if ($aid) {
 			$method = 'connectAddPicT';
-			$attach = C::t('forum_attachment_n')->fetch('aid:'.$aid, $aid);
+			$attach = C::t('forum_attachment_n')->fetch_attachment('aid:'.$aid, $aid);
 			if($attach['remote']) {
 				$t_params['pic'] = $_G['setting']['ftp']['attachurl'].'forum/'.$attach['attachment'];
 				$t_params['remote'] = true;
@@ -207,7 +207,7 @@ if ($pluginop == 'config') {
 				$connectService->connectErrlog($code, lang('plugin/qqconnect', 'connect_errlog_server_no_response'));
 			}
 		} else {
-			$thread = C::t('forum_thread')->fetch($tid);
+			$thread = C::t('forum_thread')->fetch_thread($tid);
 			if($response['data']['id'] && $_G['setting']['connect']['t']['reply'] && $thread['tid'] && !$thread['closed'] && !getstatus($thread['status'], 3) && empty($_G['forum']['replyperm'])) {
 
 				C::t('#qqconnect#connect_tthreadlog')->insert(array(
@@ -240,7 +240,7 @@ if ($pluginop == 'config') {
 	if(discuz_process::islocked($processname, 600)) {
 		exit;
 	}
-	$thread = C::t('forum_thread')->fetch($tid);
+	$thread = C::t('forum_thread')->fetch_thread($tid);
 	if(!$thread || $thread['closed'] == 1 || getstatus($thread['status'], 3) || $thread['displayorder'] < 0 || !empty($_G['forum']['replyperm'])) {
 		discuz_process::unlock($processname);
 		exit;
@@ -348,7 +348,7 @@ if ($pluginop == 'config') {
 			$postionid = C::t('forum_post')->fetch_maxposition_by_tid($thread['posttableid'], $tid);
 			C::t('forum_thread')->update($tid, array('maxposition' => $postionid));
 
-			$lastpost = "$thread[tid]\t$thread[subject]\t$_G[timestamp]\t".'';
+			$lastpost = "{$thread['tid']}\t{$thread['subject']}\t{$_G['timestamp']}\t".'';
 			C::t('forum_forum')->update($thread['fid'], array('lastpost' => $lastpost));
 			C::t('forum_forum')->update_forum_counter($thread['fid'], 0, count($pids), count($pids));
 			if($forum['type'] == 'sub') {

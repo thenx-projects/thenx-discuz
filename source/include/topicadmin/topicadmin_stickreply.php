@@ -25,7 +25,7 @@ if(empty($topiclist)) {
 $sticktopiclist = $posts = array();
 $authorids = array();
 foreach($topiclist as $pid) {
-	$post = C::t('forum_post')->fetch('tid:'.$_G['tid'], $pid, false);
+	$post = C::t('forum_post')->fetch_post('tid:'.$_G['tid'], $pid, false);
 	$authorids[] = array('authorid' => $post['authorid']);
 	$sticktopiclist[$pid] = $post['position'];
 }
@@ -56,7 +56,7 @@ if(!submitcheck('modsubmit')) {
 		}
 	} else {
 		foreach($sticktopiclist as $pid => $postnum) {
-			C::t('forum_poststick')->delete($_G['tid'], $pid);
+			C::t('forum_poststick')->delete_stick($_G['tid'], $pid);
 		}
 	}
 
@@ -71,7 +71,7 @@ if(!submitcheck('modsubmit')) {
 	$reason = checkreasonpm();
 
 	$resultarray = array(
-	'redirect'	=> "forum.php?mod=viewthread&tid=$_G[tid]&page=$page",
+	'redirect'	=> "forum.php?mod=viewthread&tid={$_G['tid']}&page=$page",
 	'reasonpm'	=> ($sendreasonpm ? array('data' => $authorids, 'var' => 'post', 'notictype' => 'post', 'item' => $_GET['stickreply'] ? 'reason_stickreply': 'reason_stickdeletereply') : array()),
 	'reasonvar'	=> array('tid' => $thread['tid'], 'subject' => $thread['subject'], 'modaction' => $modaction, 'reason' => $reason),
 	'modlog'	=> $thread

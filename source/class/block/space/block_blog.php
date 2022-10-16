@@ -12,7 +12,7 @@ if(!defined('IN_DISCUZ')) {
 }
 class block_blog extends discuz_block {
 	var $setting = array();
-	function block_blog() {
+	function __construct() {
 		$this->setting = array(
 			'blogids'	=> array(
 				'title' => 'bloglist_blogids',
@@ -224,7 +224,7 @@ class block_blog extends discuz_block {
 				'id' => $data['blogid'],
 				'idtype' => 'blogid',
 				'title' => cutstr($data['subject'], $titlelength, ''),
-				'url' => 'home.php?mod=space&uid='.$data[uid].'&do=blog&id='.$data['blogid'],
+				'url' => 'home.php?mod=space&uid='.$data['uid'].'&do=blog&id='.$data['blogid'],
 				'pic' => $data['pic'],
 				'picflag' => $data['picflag'],
 				'summary' => $data['message'] ? preg_replace("/&amp;[a-z]+\;/i", '', cutstr(strip_tags($data['message']), $summarylength, '')) : '',

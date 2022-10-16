@@ -81,27 +81,12 @@ class control extends adminbase {
 			$newpw = getgpc('newpw', 'P');
 			$newpw2 = getgpc('newpw2', 'P');
 			$reconfkey = getgpc('reconfkey', 'P');
-			if(UC_FOUNDERPW == md5(md5($oldpw).UC_FOUNDERSALT)) {
-				$configfile = UC_ROOT.'./data/config.inc.php';
-				if(!is_writable($configfile)) {
-					$status = -4;
+			if($_ENV['user']->verify_password($oldpw, UC_FOUNDERPW, UC_FOUNDERSALT) || hash_equals(UC_FOUNDERPW, md5(md5($oldpw).UC_FOUNDERSALT))) {
+				if($newpw != $newpw2) {
+					$status = -6;
 				} else {
-					if($newpw != $newpw2) {
-						$status = -6;
-					} else {
-						$config = file_get_contents($configfile);
-						$salt = substr(uniqid(rand()), 0, 6);
-						$md5newpw = md5(md5($newpw).$salt);
-						$config = preg_replace("/define\('UC_FOUNDERSALT',\s*'.*?'\);/i", "define('UC_FOUNDERSALT', '$salt');", $config);
-						$config = preg_replace("/define\('UC_FOUNDERPW',\s*'.*?'\);/i", "define('UC_FOUNDERPW', '$md5newpw');", $config);
-						if($reconfkey) {
-							$uckey = $this->generate_key(64);
-							$config = preg_replace("/define\('UC_KEY',\s*'.*?'\);/i", "define('UC_KEY', '$uckey');", $config);
-						}
-						$fp = @fopen($configfile, 'w');
-						@fwrite($fp, $config);
-						@fclose($fp);
-						$status = 2;
+					$status = $_ENV['user']->reset_founderpw($newpw, $reconfkey);
+					if($status === 2) {
 						$this->writelog('admin_pw_edit');
 					}
 				}
@@ -122,7 +107,7 @@ class control extends adminbase {
 		$totalnum = $this->db->result_first("SELECT COUNT(*) FROM ".UC_DBTABLEPRE."admins");
 		$start = $this->page_get_start($page, $ppp, $totalnum);
 		$userlist = $this->db->fetch_all("SELECT a.*,m.* FROM ".UC_DBTABLEPRE."admins a LEFT JOIN ".UC_DBTABLEPRE."members m USING(uid) LIMIT $start, $ppp");
-		$multipage = $this->page($totalnum, $ppp, $page, 'admin.php?m=admin&a=admin');
+		$multipage = $this->page($totalnum, $ppp, $page, UC_ADMINSCRIPT.'?m=admin&a=admin');
 		if($userlist) {
 			foreach($userlist as $key => $user) {
 				$user['regdate'] = $this->date($user['regdate']);

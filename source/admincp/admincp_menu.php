@@ -32,9 +32,18 @@ $topmenu = array (
 	'tools' => '',
 );
 
+if(!$_G['setting']['portalstatus']) {
+	unset($topmenu['portal']);
+}
+
+if(!$_G['setting']['groupstatus']) {
+	unset($topmenu['group']);
+}
+
 $menu['index'] = array(
 	array('menu_home', 'index'),
 	array('menu_custommenu_manage', 'misc_custommenu'),
+	(defined('DISCUZ_DEBUG') && DISCUZ_DEBUG && $isfounder) ? array('menu_setting_runtests', 'runtests') : null,
 );
 
 $custommenu = get_custommenu();
@@ -47,7 +56,7 @@ $menu['global'] = array(
 	array('menu_setting_optimize', 'setting_cachethread'),
 	array('menu_setting_seo', 'setting_seo'),
 	array('menu_setting_domain', 'domain'),
-	array('menu_setting_follow', 'setting_follow'),
+	$_G['setting']['followstatus'] ? array('menu_setting_follow', 'setting_follow') : null,
 	array('menu_setting_home', 'setting_home'),
 	array('menu_setting_user', 'setting_permissions'),
 	array('menu_setting_credits', 'setting_credits'),
@@ -57,7 +66,7 @@ $menu['global'] = array(
 	array('menu_posting_attachtypes', 'misc_attachtype'),
 	array('menu_setting_search', 'setting_search'),
 	array('menu_setting_district', 'district'),
-	array('menu_setting_ranklist', 'setting_ranklist'),
+	$_G['setting']['rankliststatus'] ? array('menu_setting_ranklist', 'setting_ranklist') : null,
 	array('menu_setting_mobile', 'setting_mobile'),
 	array('menu_setting_antitheft', 'setting_antitheft'),
 );
@@ -72,39 +81,40 @@ $menu['style'] = array(
 	array('menu_misc_onlinelist', 'misc_onlinelist'),
 );
 
+$show_home = $_G['setting']['doingstatus'] || $_G['setting']['blogstatus'] || $_G['setting']['feedstatus'] || $_G['setting']['albumstatus'] || $_G['setting']['wallstatus'] || $_G['setting']['sharestatus'];
 $menu['topic'] = array(
 	array('menu_moderate_posts', 'moderate'),
 	array('menu_remoderate', 'remoderate'),
 	array('menu_posting_censors', 'misc_censor'),
 	array('menu_maint_report', 'report'),
 	array('menu_setting_tag', 'tag'),
-	array('menu_setting_collection', 'collection'),
+	$_G['setting']['collectionstatus'] ? array('menu_setting_collection', 'collection') : null,
 	array(cplang('nav_forum'), '', 1),
 		array('menu_maint_threads', 'threads'),
 		array('menu_maint_prune', 'prune'),
 		array('menu_maint_attaches', 'attach'),
 	array(cplang('nav_forum'), '', 2),
-	array(cplang('nav_group'), '', 1),
-		array('menu_maint_threads_group', 'threads_group'),
-		array('menu_maint_prune_group', 'prune_group'),
-		array('menu_maint_attaches_group', 'attach_group'),
-	array(cplang('nav_group'), '', 2),
+	$_G['setting']['groupstatus'] ? array(cplang('nav_group'), '', 1) : null,
+		$_G['setting']['groupstatus'] ? array('menu_maint_threads_group', 'threads_group') : null,
+		$_G['setting']['groupstatus'] ? array('menu_maint_prune_group', 'prune_group') : null,
+		$_G['setting']['groupstatus'] ? array('menu_maint_attaches_group', 'attach_group') : null,
+	$_G['setting']['groupstatus'] ? array(cplang('nav_group'), '', 2) : null,
 	array(cplang('thread'), '', 1),
     		array('menu_moderate_recyclebin', 'recyclebin'),
 		array('menu_moderate_recyclebinpost', 'recyclebinpost'),
 		array('menu_threads_forumstick', 'threads_forumstick'),
 		array('menu_postcomment', 'postcomment'),
 	array(cplang('thread'), '', 2),
-	array(cplang('nav_home'), '', 1),
-		array('menu_maint_doing', 'doing'),
-		array('menu_maint_blog', 'blog'),
-		array('menu_maint_blog_recycle_bin', 'blogrecyclebin'),
-		array('menu_maint_feed', 'feed'),
-		array('menu_maint_album', 'album'),
-		array('menu_maint_pic', 'pic'),
-		array('menu_maint_comment', 'comment'),
-		array('menu_maint_share', 'share'),
-	array(cplang('nav_home'), '', 2),
+	$show_home ? array(cplang('nav_home'), '', 1) : null,
+		$_G['setting']['doingstatus'] ? array('menu_maint_doing', 'doing') : null,
+		$_G['setting']['blogstatus'] ? array('menu_maint_blog', 'blog') : null,
+		$_G['setting']['blogstatus'] ? array('menu_maint_blog_recycle_bin', 'blogrecyclebin') : null,
+		$_G['setting']['feedstatus'] ? array('menu_maint_feed', 'feed') : null,
+		$_G['setting']['albumstatus'] ? array('menu_maint_album', 'album') : null,
+		$_G['setting']['albumstatus'] ? array('menu_maint_pic', 'pic') : null,
+		$_G['setting']['wallstatus'] ? array('menu_maint_comment', 'comment') : null,
+		$_G['setting']['sharestatus'] ? array('menu_maint_share', 'share') : null,
+	$show_home ? array(cplang('nav_home'), '', 2) : null,
 );
 
 $menu['user'] = array(
@@ -114,6 +124,7 @@ $menu['user'] = array(
 	array('menu_members_stat', 'members_stat'),
 	array('menu_members_newsletter', 'members_newsletter'),
 	array('menu_members_mobile', 'members_newsletter_mobile'),
+	array('menu_members_sms', 'members_newsletter_sms'),
 	array('menu_usertag', 'usertag'),
 	array('menu_members_edit_ban_user', 'members_ban'),
 	array('menu_members_ipban', 'members_ipban'),
@@ -123,7 +134,7 @@ $menu['user'] = array(
 	array('menu_usergroups', 'usergroups'),
 	array('menu_follow', 'specialuser_follow'),
 	array('menu_defaultuser', 'specialuser_defaultuser'),
-	array('members_verify_profile', 'verify_verify'),
+	array('menu_members_verify_profile', 'verify_verify'),
 	array('menu_members_verify_setting', 'verify'),
 );
 
@@ -176,9 +187,10 @@ $menu['safe'] = array(
 $menu['extended'] = array(
 	array('menu_misc_announce', 'announce'),
 	array('menu_adv_custom', 'adv'),
-	array('menu_tasks', 'tasks'),
-	array('menu_magics', 'magics'),
-	array('menu_medals', 'medals'),
+	$_G['setting']['taskstatus'] ? array('menu_tasks', 'tasks') : null,
+	$_G['setting']['magicstatus'] ? array('menu_magics', 'magics') : null,
+	$_G['setting']['medalstatus'] ? array('menu_medals', 'medals') : null,
+	$isfounder ? array('menu_smsgw', 'smsgw') : null,
 	array('menu_misc_help', 'faq'),
 	array('menu_ec', 'setting_ec'),
 	array('menu_misc_link', 'misc_link'),

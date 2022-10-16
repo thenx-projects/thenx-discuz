@@ -12,7 +12,7 @@ if(!defined('IN_DISCUZ') || !defined('IN_ADMINCP')) {
 
 cpheader();
 
-$setting = C::t('common_setting')->fetch_all(null);
+$setting = C::t('common_setting')->fetch_all_setting(null);
 
 if(!$isfounder) {
 	unset($setting['ftp']);
@@ -79,12 +79,15 @@ if(!submitcheck('settingsubmit')) {
 	} elseif($operation == 'ec') {
 		showsubmenu('nav_ec', array(
 			array('nav_ec_config', 'setting&operation=ec', 1),
-			array('nav_ec_tenpay', 'ec&operation=tenpay', 0),
+			array('nav_ec_qpay', 'ec&operation=qpay', 0),
+			array('nav_ec_wechat', 'ec&operation=wechat', 0),
 			array('nav_ec_alipay', 'ec&operation=alipay', 0),
 			array('nav_ec_credit', 'ec&operation=credit', 0),
 			array('nav_ec_orders', 'ec&operation=orders', 0),
 			array('nav_ec_tradelog', 'tradelog&mod=forum', 0),
-			array('nav_ec_inviteorders', 'ec&operation=inviteorders', 0)
+			array('nav_ec_inviteorders', 'ec&operation=inviteorders', 0),
+			array('nav_ec_paymentorders', 'ec&operation=paymentorders', 0),
+			array('nav_ec_transferorders', 'ec&operation=transferorders', 0)
 		));
 	} elseif($operation == 'access') {
 		$_GET['anchor'] = in_array($_GET['anchor'], array('register', 'access')) ? $_GET['anchor'] : 'register';
@@ -179,9 +182,11 @@ if(!submitcheck('settingsubmit')) {
 			array('setting_imgwater_album', 'album', $_GET['anchor'] == 'album'),
 		));
 	} elseif($operation == 'mobile') {
-		$_GET['anchor'] = in_array($_GET['anchor'], array('status')) ? $_GET['anchor'] : 'status';
+		$_GET['anchor'] = in_array($_GET['anchor'], array('status', 'portal', 'forum')) ? $_GET['anchor'] : 'status';
 		showsubmenuanchors('setting_mobile', array(
-			array('setting_mobile_status', 'status', $_GET['anchor'] == 'status')
+			array('setting_mobile_status', 'status', $_GET['anchor'] == 'status'),
+			array('setting_mobile_portal', 'portal', $_GET['anchor'] == 'portal'),
+			array('setting_mobile_forum', 'forum', $_GET['anchor'] == 'forum')
 		));
 	} elseif($operation == 'antitheft') {
 		$_GET['anchor'] = in_array($_GET['anchor'], array('iplist'), true) ? $_GET['anchor'] : '';
@@ -205,6 +210,7 @@ if(!submitcheck('settingsubmit')) {
 		showsetting('setting_basic_adminemail', 'settingnew[adminemail]', $setting['adminemail'], 'text');
 		showsetting('setting_basic_site_qq', 'settingnew[site_qq]', $setting['site_qq'], 'text',$disabled = '', $hidden = 0, $comment = '', $extra = 'id="settingnew[site_qq]"');
 		showsetting('setting_basic_icp', 'settingnew[icp]', $setting['icp'], 'text');
+		showsetting('setting_basic_mps', 'settingnew[mps]', $setting['mps'], 'text');
 		showsetting('setting_basic_boardlicensed', 'settingnew[boardlicensed]', $setting['boardlicensed'], 'radio');
 		showsetting('setting_basic_stat', 'settingnew[statcode]', $setting['statcode'], 'textarea');
 		showtablefooter();
@@ -363,7 +369,7 @@ if(!submitcheck('settingsubmit')) {
 
 			$varname = array('settingnew[profile][field]', array(), 'isfloat');
 			foreach(C::t('common_member_profile_setting')->fetch_all_by_available(1) as $value) {
-				if(!in_array($value['fieldid'], array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'resideprovince', 'birthprovince', 'residedist', 'residecommunity'))) {
+				if(!in_array($value['fieldid'], array('constellation', 'zodiac', 'birthyear', 'birthmonth', 'residecountry', 'resideprovince', 'birthcountry', 'birthprovince', 'residedist', 'residecommunity'))) {
 					$varname[1][] = array($value['fieldid'], $value['title'], $value['fieldid']);
 				}
 			}
@@ -372,7 +378,7 @@ if(!submitcheck('settingsubmit')) {
 			$varname[1][] = array('timeoffset', $lang['setting_profile_time_zone'], 'timeoffset');
 
 			showsetting('setting_profile_field', $varname, $groupinfo['field'], 'omcheckbox');
-			echo "<input type=\"hidden\" name=\"settingnew[profile][type]\" value=\"$_GET[type]\" />";
+			echo "<input type=\"hidden\" name=\"settingnew[profile][type]\" value=\"{$_GET['type']}\" />";
 			showtablefooter();
 
 		} else {
@@ -414,7 +420,7 @@ if(!submitcheck('settingsubmit')) {
 
 		$groupselect = '';
 		foreach(C::t('common_usergroup')->fetch_all_by_type('special') as $group) {
-			$groupselect .= "<option value=\"$group[groupid]\" ".($group['groupid'] == $setting['inviteconfig']['invitegroupid'] ? 'selected' : '').">$group[grouptitle]</option>\n";
+			$groupselect .= "<option value=\"{$group['groupid']}\" ".($group['groupid'] == $setting['inviteconfig']['invitegroupid'] ? 'selected' : '').">{$group['grouptitle']}</option>\n";
 		}
 
 		$taskarray = array(array('', cplang('select')));
@@ -643,6 +649,8 @@ if(!submitcheck('settingsubmit')) {
 		showsetting('setting_styles_viewthread_collection_number', 'settingnew[collectionnum]', $setting['collectionnum'], 'text');
 		showsetting('setting_styles_viewthread_relate_number', 'settingnew[relatenum]', $setting['relatenum'], 'text');
 		showsetting('setting_styles_viewthread_relate_time', 'settingnew[relatetime]', $setting['relatetime'], 'text');
+		showsetting('setting_styles_viewthread_hideattachdown', 'settingnew[hideattachdown]', $setting['hideattachdown'], 'radio');
+		showsetting('setting_styles_viewthread_hideattachtips', 'settingnew[hideattachtips]', $setting['hideattachtips'], 'radio');
 		showsetting('setting_styles_viewthread_show_signature', 'settingnew[showsignatures]', $setting['showsignatures'], 'radio');
 		showsetting('setting_styles_viewthread_show_face', 'settingnew[showavatars]', $setting['showavatars'], 'radio');
 		showsetting('setting_styles_viewthread_show_images', 'settingnew[showimages]', $setting['showimages'], 'radio');
@@ -698,13 +706,14 @@ if(!submitcheck('settingsubmit')) {
 
 		/*search={"setting_styles":"action=setting&operation=styles","setting_styles_threadprofile":"action=setting&operation=styles&anchor=threadprofile"}*/
 		loadcache('usergroups');
-		$threadprofiles = C::t('forum_threadprofile')->fetch_all();
-		$threadprofile_group = C::t('forum_threadprofile_group')->fetch_all();
+		$threadprofiles = C::t('forum_threadprofile')->fetch_all_threadprofile();
+		$threadprofile_group = C::t('forum_threadprofile_group')->fetch_all_threadprofile();
 		showtagheader('div', 'threadprofile', $_GET['anchor'] == 'threadprofile');
 
-		echo '<table><tr><td valign="top" width="350">';
+		echo '<div class="drow"><div class="dcol d-12">';
 
-		showtableheader('setting_styles_threadprofile_group', 'nobottom');
+		showboxheader('setting_styles_threadprofile_group');
+		showtableheader('', 'nobottom');
 		showsubtitle(array('setting_styles_threadprofile_name', 'setting_styles_threadprofile_plan'));
 		foreach($_G['cache']['usergroups'] as $gid => $usergroup) {
 			$select = '<select name="threadprofile['.$gid.']"><option value="0">'.$lang['nav_global'].'</option>';
@@ -727,10 +736,12 @@ if(!submitcheck('settingsubmit')) {
 			}
 		}
 		showtablefooter();
+		showboxfooter();
 
-		echo '</td><td width="10"></td><td valign="top" width="350">';
+		echo '</div><div class="dcol d-12">';
 
-		showtableheader('setting_styles_threadprofile_project', 'nobottom');
+		showboxheader('setting_styles_threadprofile_project');
+		showtableheader('', 'nobottom');
 		$setting['threadprofile'] = !empty($setting['threadprofile']) ? dunserialize($setting['threadprofile']) : array();
 		showsubtitle(array('setting_styles_threadprofile_name', 'nav_global', ''));
 		foreach($threadprofiles as $id => $threadprofile) {
@@ -743,8 +754,9 @@ if(!submitcheck('settingsubmit')) {
 		}
 		echo '<tr><td colspan="3"><a href="'.ADMINSCRIPT.'?action=setting&operation=threadprofile&do=add" class="addtr">'.$lang['setting_styles_threadprofile_addplan'].'</td></tr>';
 		showtablefooter();
+		showboxfooter();
 
-		echo '</td></tr></table>';
+		echo '</div></div>';
 
 		showtagfooter('div');
 		/*search*/
@@ -895,56 +907,37 @@ if(!submitcheck('settingsubmit')) {
 		$setting['seokeywords'] = dunserialize($setting['seokeywords']);
 
 		$rewritedata = rewritedata();
-		$setting['rewritestatus'] = isset($setting['rewritestatus']) ? dunserialize($setting['rewritestatus']) : '';
+		$setting['rewritestatus'] = isset($setting['rewritestatus']) ? dunserialize($setting['rewritestatus']) : array();
 		$setting['rewriterule'] = isset($setting['rewriterule']) ? dunserialize($setting['rewriterule']) : '';
 		/*search={"setting_optimize":"action=setting&operation=seo","setting_seo":"action=setting&operation=seo"}*/
 		echo '<div id="rewrite"'.($_GET['anchor'] != 'rewrite' ? ' style="display: none"' : '').'>';
 			showtips('setting_tips', 'tips_rewrite');
+			showboxheader('<em class="right">'.cplang('setting_seo_rewritestatus_viewrule').'</em>'.cplang('setting_seo_rewritestatus'));
 			showtableheader('', 'nobottom');
-			showtitle('<em class="right">'.cplang('setting_seo_rewritestatus_viewrule').'</em>'.cplang('setting_seo_rewritestatus'));
 			showtablerow('', array('class="vtop tips2" colspan="3"'), array(cplang('setting_seo_rewritestatus_comment')));
 			showsubtitle(array('setting_seo_pages', 'setting_seo_vars', 'setting_seo_rule', 'available'));
 			foreach($rewritedata['rulesearch'] as $k => $v) {
-				$v = !$setting['rewriterule'][$k] ? $v : $setting['rewriterule'][$k];
+				$v = empty($setting['rewriterule'][$k]) ? $v : $setting['rewriterule'][$k];
 				showtablerow('', array('class="td24"', 'class="td31"', 'class="longtxt"', 'class="td25"'), array(
 					cplang('setting_seo_rewritestatus_'.$k),
 					implode(', ', array_keys($rewritedata['rulevars'][$k])),
 					'<input onclick="doane(event)" name="settingnew[rewriterule]['.$k.']" class="txt" value="'.dhtmlspecialchars($v).'"/>',
-					'<input type="checkbox" name="settingnew[rewritestatus][]" class="checkbox" value="'.$k.'" '.(in_array($k, $setting['rewritestatus']) ? 'checked="checked"' : '').'/>'
+					'<input type="checkbox" name="settingnew[rewritestatus][]" class="checkbox" value="'.$k.'" '.((is_array($setting['rewritestatus']) ? in_array($k, $setting['rewritestatus']) : false) ? 'checked="checked"' : '').'/>'
 				));
 			}
 			showtablefooter();
+			showboxfooter();
 			showtableheader();
 			showsetting('setting_seo_rewritecompatible', 'settingnew[rewritecompatible]', $setting['rewritecompatible'], 'radio');
 			showsetting('setting_seo_rewriteguest', 'settingnew[rewriteguest]', $setting['rewriteguest'], 'radio');
+			showsetting('setting_seo_rewritemobile', 'settingnew[rewritemobile]', $setting['rewritemobile'], 'radio');
 			showtablefooter();
 		echo '</div>';
 
 		echo '<div id="other"'.($_GET['anchor'] != 'other' ? ' style="display: none"' : '').'>';
-			showtableheader();
-			showtitle('<em class="right">'.cplang('setting_seo_robots_output').'</em>'.cplang('setting_seo'));
-			showtablerow('', array('class="vtop tips2" colspan="4" style="padding-left:20px;"'), array('<ul><li>'.cplang('setting_seo_seotitle_comment').'</li><li>'.cplang('setting_seo_seodescription_comment').'</li><li>'.cplang('setting_seo_seokeywords_comment').'</li></ul>'));
-
-			if($_G['setting']['navs'][5]['navname']) {
-				showtitle($_G['setting']['navs'][5]['navname']);
-				showtablerow('', array('width="80"', ''), array(
-						cplang('setting_seo_seotitle'),
-						'<input type="text" name="settingnew[seotitle][userapp]" value="'.$setting['seotitle']['userapp'].'" class="txt" style="width:280px;" />',
-					)
-				);
-				showtablerow('', array('width="80"', ''), array(
-						cplang('setting_seo_seokeywords'),
-						'<input type="text" name="settingnew[seokeywords][userapp]" value="'.$setting['seokeywords']['userapp'].'" class="txt" style="width:280px;" />'
-					)
-				);
-				showtablerow('', array('width="80"', ''), array(
-						cplang('setting_seo_seodescription'),
-						'<input type="text" name="settingnew[seodescription][userapp]" value="'.$setting['seodescription']['userapp'].'" class="txt" style="width:280px;" />',
-					)
-				);
-			}
-
-			showtablefooter();
+			showboxheader('<em class="right">'.cplang('setting_seo_robots_output').'</em>'.cplang('setting_seo'));
+			echo '<div class="tips2"><ul><li>'.cplang('setting_seo_seotitle_comment').'</li><li>'.cplang('setting_seo_seodescription_comment').'</li><li>'.cplang('setting_seo_seokeywords_comment').'</li></ul></div>';
+			showboxfooter();
 			showtableheader();
 			showsetting('setting_seo_seohead', 'settingnew[seohead]', $setting['seohead'], 'textarea');
 			showtablefooter();
@@ -976,8 +969,9 @@ if(!submitcheck('settingsubmit')) {
 				$jscodenames .= "codenames['{$key}_{$code}'] = '{$cname}';\r\n";
 			}
 		}
+		$staticurl = STATICURL;
 		print <<<EOF
-		<div id="codediv" style="display:none; top: 707px;background: url('./static/image/common/mdly.png') no-repeat scroll 0 0 transparent; height: 100px; line-height: 32px; margin-top: -16px; overflow: hidden; padding: 10px 25px; position: absolute; left: 500px; width: 250px;">
+		<div id="codediv" style="display:none; top: 707px;background: url('{$staticurl}image/common/mdly.png') no-repeat scroll 0 0 transparent; height: 100px; line-height: 32px; margin-top: -16px; overflow: hidden; padding: 10px 25px; position: absolute; left: 500px; width: 250px;">
 		<p>
 EOF;
 		echo cplang('setting_seo_insallowcode');
@@ -989,7 +983,7 @@ EOF;
 		<a onclick="insertcode('forum');return false;" href="javascript:;">{forum}</a>
 		</p>
 		</div>
-		<script src="static/js/home.js" type="text/javascript"></script>
+		<script src="{$staticurl}js/home.js" type="text/javascript"></script>
 		<script language="javascript">
 		var codediv = $('codediv');
 		var codetypes = new Array(), codenames = new Array();
@@ -1051,9 +1045,9 @@ EOF;
 		foreach($seotypes as $type => $subtypes) {
 			echo '<div id="'.$type.'"'.($_GET['anchor'] != $type ? ' style="display: none"' : '').'>';
 			showtips(cplang('setting_seo_global_tips').cplang('setting_seo_'.$type.'_tips'), 'tips_'.$type);
-			showtableheader();
 			foreach($subtypes as $subtype) {
-				showtitle(cplang('setting_seo_'.$subtype).($subtype == 'threadlist' || $subtype == 'articlelist' ? ' &nbsp; <a href="javascript:;" class="act" onclick="if($(\''.$subtype.'_detail\').style.display){$(\''.$subtype.'_detail\').style.display=\'\';this.innerHTML=\''.cplang('setting_seo_closedetail').'\';}else{$(\''.$subtype.'_detail\').style.display=\'none\';this.innerHTML=\''.cplang('setting_seo_opendetail').'\';};return false;">'.cplang('setting_seo_opendetail').'</a>' : ''));
+				showboxheader(cplang('setting_seo_'.$subtype).($subtype == 'threadlist' || $subtype == 'articlelist' ? ' &nbsp; <a href="javascript:;" class="act" onclick="if($(\''.$subtype.'_detail\').style.display){$(\''.$subtype.'_detail\').style.display=\'\';this.innerHTML=\''.cplang('setting_seo_closedetail').'\';}else{$(\''.$subtype.'_detail\').style.display=\'none\';this.innerHTML=\''.cplang('setting_seo_opendetail').'\';};return false;">'.cplang('setting_seo_opendetail').'</a>' : ''));
+				showtableheader();
 				showtablerow('', array('width="12%"', ''), array(
 						cplang('setting_seo_seotitle'),
 						'<input type="text" id="t_'.$type.$subtype.'" onfocus="getcodetext(this, \''.$subtype.'\');" name="settingnew[seotitle]['.$subtype.']" value="'.dhtmlspecialchars($setting['seotitle'][$subtype]).'" class="txt" style="width:280px;" />',
@@ -1075,8 +1069,9 @@ EOF;
 				if($subtype == 'articlelist') {
 					showlist($afirst, $aseconds, $athirds, $subtype);
 				}
+				showtablefooter();
+				showboxfooter();
 			}
-			showtablefooter();
 			echo '</div>';
 		}
 		showtagfooter('tbody');
@@ -1093,7 +1088,7 @@ EOF;
 		showsetting('setting_cachethread_dir', 'settingnew[cachethreaddir]', $setting['cachethreaddir'], 'text');
 
 		showtitle('setting_cachethread_coefficient_set');
-		showsetting('setting_cachethread_coefficient', 'settingnew[threadcaches]', '', "<input type=\"text\" class=\"txt\" size=\"30\" name=\"settingnew[threadcaches]\" value=\"$setting[threadcaches]\">");
+		showsetting('setting_cachethread_coefficient', 'settingnew[threadcaches]', '', "<input type=\"text\" class=\"txt\" size=\"30\" name=\"settingnew[threadcaches]\" value=\"{$setting['threadcaches']}\">");
 		showsetting('setting_cachethread_coefficient_forum', '', '', $forumselect);
 		/*search*/
 
@@ -1130,22 +1125,22 @@ EOF;
 		showsetting('setting_serveropti_jspath', '', '', '<ul class="nofloat" onmouseover="altStyle(this);">
 			<li'.($tjspath['default'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[jspath]" value="static/js/" '.$tjspath['default'].'> '.$lang['setting_serveropti_jspath_default'].'</li>
 			<li'.($tjspath['cache'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[jspath]" value="data/cache/" '.$tjspath['cache'].'> '.$lang['setting_serveropti_jspath_cache'].'</li>
-			<li'.($tjspath['custom'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[jspath]" value="" '.$tjspath['custom'].'> '.$lang['setting_serveropti_jspath_custom'].' <input type="text" class="txt" style="width: 100px" name="settingnew[jspathcustom]" value="'.$setting['jspath'].'" size="6"></li></ul>'
+			<li'.($tjspath['custom'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[jspath]" value="" '.$tjspath['custom'].'> '.$lang['setting_serveropti_jspath_custom'].' <input type="text" class="txt" style="width: 150px" name="settingnew[jspathcustom]" value="'.$setting['jspath'].'" size="6"></li></ul>'
 		);
 		showsetting('setting_serveropti_csspath', '', '', '<ul class="nofloat" onmouseover="altStyle(this);">
 			<li'.($tcsspath['cache'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[csspathv]" value="data/cache/" '.$tcsspath['cache'].'> '.$lang['setting_serveropti_csspath_cache'].'</li>
-			<li'.($tcsspath['custom'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[csspathv]" value="" '.$tcsspath['custom'].'> '.$lang['setting_serveropti_csspath_custom'].' <input type="text" class="txt" style="width: 100px" name="settingnew[csspathcustom]" value="'.$setting['csspathv'].'" size="6"></li></ul>'
+			<li'.($tcsspath['custom'] ? ' class="checked"' : '').'><input class="radio" type="radio" name="settingnew[csspathv]" value="" '.$tcsspath['custom'].'> '.$lang['setting_serveropti_csspath_custom'].' <input type="text" class="txt" style="width: 150px" name="settingnew[csspathcustom]" value="'.$setting['csspathv'].'" size="6"></li></ul>'
 		);
 		showsetting('setting_serveropti_lazyload', 'settingnew[lazyload]', $setting['lazyload'], 'radio');
 		showsetting('setting_serveropti_blockmaxaggregationitem', 'settingnew[blockmaxaggregationitem]', $setting['blockmaxaggregationitem'], 'text');
 		$setting['blockcachetimerange'] = empty($setting['blockcachetimerange']) ? array('0', '23') : explode(',', $setting['blockcachetimerange']);
 		$blockcachetimerange = range(0, 23);
 		$point = $lang['setting_serveropti_blockcachetimerangepoint'];
-		$html = '<select name="settingnew[blockcachetimerange][0]" class="ps" style="width:60px;" >';
+		$html = '<select name="settingnew[blockcachetimerange][0]" class="ps" style="width:90px;" >';
 		foreach($blockcachetimerange as $value) {
 			$html .= '<option value="'.$value.'"'.($value == $setting['blockcachetimerange'][0] ? ' selected="selected"' : '').'>'.$value.$point.'</option>';
 		}
-		$html .= '</select>- &nbsp;<select name="settingnew[blockcachetimerange][1]" class="ps" style="width:60px;" >';
+		$html .= '</select>- &nbsp;<select name="settingnew[blockcachetimerange][1]" class="ps" style="width:90px;" >';
 		foreach($blockcachetimerange as $value) {
 			$html .= '<option value="'.$value.'"'.($value == $setting['blockcachetimerange'][1] ? ' selected="selected"' : '').'>'.$value.$point.'</option>';
 		}
@@ -1179,13 +1174,15 @@ EOF;
 		/*search*/
 
 	} elseif($operation == 'functions') {
-		$allowfuntype = array('portal', 'group', 'follow', 'collection', 'guide', 'feed', 'blog', 'doing', 'album', 'share', 'wall', 'homepage', 'ranklist');
+		$allowfuntype = array('portal', 'forum', 'friend', 'group', 'follow', 'collection', 'guide', 'feed', 'blog', 'doing', 'album', 'share', 'wall', 'homepage', 'ranklist', 'medal', 'task', 'magic', 'favorite');
 		$_GET['type'] = in_array($_GET['type'], $allowfuntype) ? trim($_GET['type']) : '';
-		echo "<script>disallowfloat = '{$_G[setting][disallowfloat]}';</script>";
+		echo "<script>disallowfloat = '{$_G['setting']['disallowfloat']}';</script>";
 
 		/*search={"setting_functions":"action=setting&operation=functions","setting_functions_curscript":"action=setting&operation=functions&anchor=curscript"}*/
-		showtableheader('setting_functions_curscript_list', 'nobottom', 'id="curscript"'.($_GET['anchor'] != 'curscript' ? ' style="display: none"' : ''));
+		showboxheader('setting_functions_curscript_list', '', 'id="curscript"'.($_GET['anchor'] != 'curscript' ? ' style="display: none"' : ''));
+		showtableheader('', 'nobottom');
 		$modulehtml = array();
+		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/dzwap_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_forum'].'</td><td width="370">'.$lang['setting_functions_curscript_forum_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['forumstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['forumstatus'] ? 'close':'open').'&type=forum" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['forumstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/portal_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_portal'].'</td><td width="370">'.$lang['setting_functions_curscript_portal_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['portalstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['portalstatus'] ? 'close':'open').'&type=portal" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['portalstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/group_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_group'].'</td><td width="370">'.$lang['setting_functions_curscript_group_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['groupstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['groupstatus'] ? 'close':'open').'&type=group" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['groupstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/follow_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_follow'].'</td><td width="370">'.$lang['setting_functions_curscript_follow_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['followstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['followstatus'] ? 'close':'open').'&type=follow" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['followstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
@@ -1193,13 +1190,19 @@ EOF;
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/guide_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_guide'].'</td><td width="370">'.$lang['setting_functions_curscript_guide_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['guidestatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['guidestatus'] ? 'close':'open').'&type=guide" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['guidestatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/feed_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_feed'].'</td><td width="370">'.$lang['setting_functions_curscript_feed_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['feedstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['feedstatus'] ? 'close':'open').'&type=feed" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['feedstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/blog_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_blog'].'</td><td width="370">'.$lang['setting_functions_curscript_blog_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['blogstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['blogstatus'] ? 'close':'open').'&type=blog" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['blogstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
+		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/friend_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_friend'].'</td><td width="370">'.$lang['setting_functions_curscript_friend_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['friendstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['friendstatus'] ? 'close':'open').'&type=friend" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['friendstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/album_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_album'].'</td><td width="370">'.$lang['setting_functions_curscript_album_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['albumstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['albumstatus'] ? 'close':'open').'&type=album" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['albumstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/share_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_share'].'</td><td width="370">'.$lang['setting_functions_curscript_share_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['sharestatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['sharestatus'] ? 'close':'open').'&type=share" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['sharestatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/doing_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_doing'].'</td><td width="370">'.$lang['setting_functions_curscript_doing_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['doingstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['doingstatus'] ? 'close':'open').'&type=doing" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['doingstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/wall_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_message'].'</td><td width="370">'.$lang['setting_functions_curscript_message_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['wallstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['wallstatus'] ? 'close':'open').'&type=wall" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['wallstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/ranklist_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_ranklist'].'</td><td width="370">'.$lang['setting_functions_curscript_ranklist_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['rankliststatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['rankliststatus'] ? 'close':'open').'&type=ranklist" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['rankliststatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
+		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/task_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_task'].'</td><td width="370">'.$lang['setting_functions_curscript_task_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['taskstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['taskstatus'] ? 'close':'open').'&type=task" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['taskstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
+		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/medal_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_medal'].'</td><td width="370">'.$lang['setting_functions_curscript_medal_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['medalstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['medalstatus'] ? 'close':'open').'&type=medal" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['medalstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
+		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/magic_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_magic'].'</td><td width="370">'.$lang['setting_functions_curscript_magic_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['magicstatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['magicstatus'] ? 'close':'open').'&type=magic" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['magicstatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
+		$modulehtml[] = '<td class="td25"><img src="'.STATICURL.'image/feed/favorite_b.png"/></td><td class="td23">'.$lang['setting_functions_curscript_favorite'].'</td><td width="370">'.$lang['setting_functions_curscript_favorite_intro'].'</td><td class="td30"><img class="vm" src="'.$_G['style']['imgdir'].'/data_'.($setting['favoritestatus'] ? 'valid':'invalid').'.gif"></td><td><a href="forum.php?mod=ajax&action=setnav&do='.($setting['favoritestatus'] ? 'close':'open').'&type=favorite" onclick="showWindow(\'setnav\', this.href, \'get\', 0);return false;">'.($setting['favoritestatus'] ? $lang['setting_functions_curscript_close']:$lang['setting_functions_curscript_open']).'</a></td>';
 		echo '<tr>'.implode('</tr><tr>', $modulehtml).'</tr>';
 		showtablefooter();
+		showboxfooter();
 		/*search*/
 
 		/*search={"setting_functions":"action=setting&operation=functions","setting_functions_mod":"action=setting&operation=functions&anchor=mod"}*/
@@ -1214,6 +1217,7 @@ EOF;
 		showsetting('setting_functions_mod_losslessdel', 'settingnew[losslessdel]', $setting['losslessdel'], 'text');
 		showsetting('setting_functions_mod_reasons', 'settingnew[modreasons]', $setting['modreasons'], 'textarea');
 		showsetting('setting_functions_mod_reasons_public', 'settingnew[modreasons_public]', $setting['modreasons_public'], 'radio');
+		showsetting('setting_functions_mod_user_public', 'settingnew[moduser_public]', $setting['moduser_public'], 'radio');
 		showsetting('setting_functions_user_reasons', 'settingnew[userreasons]', $setting['userreasons'], 'textarea');
 		showsetting('setting_functions_mod_bannedmessages', array('settingnew[bannedmessages]', array(
 			$lang['setting_functions_mod_bannedmessages_thread'],
@@ -1275,7 +1279,7 @@ EOF;
 			array(2, $lang['setting_functions_comment_allow_2']))), $setting['allowpostcomment'], 'mcheckbox');
 		showsetting('setting_functions_comment_number', 'settingnew[commentnumber]', $setting['commentnumber'], 'text');
 		showsetting('setting_functions_comment_postself', 'settingnew[commentpostself]', $setting['commentpostself'], 'radio');
-		showtagheader('tbody', 'commentextra', in_array(1, $setting['allowpostcomment']));
+		showtagheader('tbody', 'commentextra', is_array($setting['allowpostcomment']) ? in_array(1, $setting['allowpostcomment']) : false);
 		showsetting('setting_functions_comment_firstpost', 'settingnew[commentfirstpost]', $setting['commentfirstpost'], 'radio');
 		showsetting('setting_functions_comment_commentitem_0', 'settingnew[commentitem][0]', $setting['commentitem'][0], 'textarea');
 		showsetting('setting_functions_comment_commentitem_1', 'settingnew[commentitem][1]', $setting['commentitem'][1], 'textarea');
@@ -1305,8 +1309,8 @@ EOF;
 		/*search={"setting_functions":"action=setting&operation=functions","setting_functions_other":"action=setting&operation=functions&anchor=other"}*/
 		showtips('setting_tips', 'other_tips', $_GET['anchor'] == 'other');
 		showtableheader('', 'nobottom', 'id="other"'.($_GET['anchor'] != 'other' ? ' style="display: none"' : ''));
-		showsetting('setting_functions_other_pwdsafety', 'settingnew[pwdsafety]', $setting['pwdsafety'], 'radio');
 		showsetting('setting_functions_other_uidlogin', 'settingnew[uidlogin]', $setting['uidlogin'], 'radio');
+		showsetting('setting_functions_other_secmobilelogin', 'settingnew[secmobilelogin]', $setting['secmobilelogin'], 'radio');
 		showsetting('setting_functions_other_autoidselect', 'settingnew[autoidselect]', $setting['autoidselect'], 'radio');
 		showsetting('setting_functions_other_submitlock', 'settingnew[submitlock]', $setting['submitlock'], 'radio');
 		showsetting('setting_functions_other_rssstatus', 'settingnew[rssstatus]', $setting['rssstatus'], 'radio');
@@ -1345,7 +1349,7 @@ EOF;
 		showtableheader('', 'nobottom', 'id="activity"'.($_GET['anchor'] != 'activity' ? ' style="display: none"' : ''));
 		showsetting('setting_functions_activity_type', 'settingnew[activitytype]', $setting['activitytype'], 'textarea');
 		$varname = array('settingnew[activityfield]', array(), 'isfloat');
-		$ignorearray = array('birthyear', 'birthmonth', 'resideprovince', 'birthprovince', 'residedist', 'residecommunity', 'constellation', 'zodiac');
+		$ignorearray = array('birthyear', 'birthmonth', 'residecountry', 'resideprovince', 'birthcountry', 'birthprovince', 'residedist', 'residecommunity', 'constellation', 'zodiac');
 		foreach(C::t('common_member_profile_setting')->fetch_all_by_available(1) as $row) {
 			if(in_array($row['fieldid'], $ignorearray)) continue;
 			$varname[1][] = array($row['fieldid'], $row['title'], $row['title']);
@@ -1390,6 +1394,8 @@ EOF;
 		showtagfooter('tbody');
 		showsetting('setting_permissions_allowmoderatingthread', 'settingnew[allowmoderatingthread]', $setting['allowmoderatingthread'], 'radio');
 		showsetting('setting_permissions_memliststatus', 'settingnew[memliststatus]', $setting['memliststatus'], 'radio');
+		showsetting('setting_permissions_minsubjectsize', 'settingnew[minsubjectsize]', $setting['minsubjectsize'], 'text');
+		showsetting('setting_permissions_maxsubjectsize', 'settingnew[maxsubjectsize]', $setting['maxsubjectsize'], 'text');
 		showsetting('setting_permissions_minpostsize', 'settingnew[minpostsize]', $setting['minpostsize'], 'text');
 		showsetting('setting_permissions_minpostsize_mobile', 'settingnew[minpostsize_mobile]', $setting['minpostsize_mobile'], 'text');
 		showsetting('setting_permissions_maxpostsize', 'settingnew[maxpostsize]', $setting['maxpostsize'], 'text');
@@ -1405,6 +1411,7 @@ EOF;
 		showsetting('setting_permissions_mailinterval', 'settingnew[mailinterval]', $setting['mailinterval'], 'text');
 		showsetting('setting_permissions_maxpolloptions', 'settingnew[maxpolloptions]', $setting['maxpolloptions'], 'text');
 		showsetting('setting_permissions_editby', 'settingnew[editedby]', $setting['editedby'], 'radio');
+		showsetting('setting_permissions_profilehistory', 'settingnew[profilehistory]', $setting['profilehistory'], 'radio');
 		showsetting('setting_permissions_nsprofiles', 'settingnew[nsprofiles]', $setting['nsprofiles'], 'radio');
 		showsetting('setting_permissions_modasban', 'settingnew[modasban]', $setting['modasban'], 'radio');
 
@@ -1498,21 +1505,21 @@ EOF;
 <?php
 		print <<<EOF
 			<tr>
-				<td class="td27" colspan="2">$lang[setting_credits_formula]:</td>
+				<td class="td27" colspan="2">{$lang['setting_credits_formula']}:</td>
 			</tr>
 			<tr>
-				<td colspan="2">
+				<td colspan="2" class="rowform">
 					<div class="extcredits">
 						$extcreditsbtn
-						<a href="###" onclick="creditinsertunit(' posts ')">$lang[setting_credits_formula_posts]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' threads ')">$lang[setting_credits_formula_threads]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' digestposts ')">$lang[setting_credits_formula_digestposts]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' oltime ')">$lang[setting_credits_formula_oltime]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' friends ')">$lang[setting_credits_formula_friends]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' doings ')">$lang[setting_credits_formula_doings]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' blogs ')">$lang[setting_credits_formula_blogs]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' albums ')">$lang[setting_credits_formula_albums]</a>&nbsp;
-						<a href="###" onclick="creditinsertunit(' sharings ')">$lang[setting_credits_formula_sharings]</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' posts ')">{$lang['setting_credits_formula_posts']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' threads ')">{$lang['setting_credits_formula_threads']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' digestposts ')">{$lang['setting_credits_formula_digestposts']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' oltime ')">{$lang['setting_credits_formula_oltime']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' friends ')">{$lang['setting_credits_formula_friends']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' doings ')">{$lang['setting_credits_formula_doings']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' blogs ')">{$lang['setting_credits_formula_blogs']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' albums ')">{$lang['setting_credits_formula_albums']}</a>&nbsp;
+						<a href="###" onclick="creditinsertunit(' sharings ')">{$lang['setting_credits_formula_sharings']}</a>&nbsp;
 						<a href="###" onclick="creditinsertunit(' + ')">&nbsp;+&nbsp;</a>&nbsp;
 						<a href="###" onclick="creditinsertunit(' - ')">&nbsp;-&nbsp;</a>&nbsp;
 						<a href="###" onclick="creditinsertunit(' * ')">&nbsp;*&nbsp;</a>&nbsp;
@@ -1520,9 +1527,9 @@ EOF;
 						<a href="###" onclick="creditinsertunit(' (', ') ')">&nbsp;(&nbsp;)&nbsp;</a>&nbsp;
 					</div>
 					<div id="formulapermexp" class="margintop marginbot diffcolor2">$formulapermexp</div>
-					<textarea name="settingnew[creditsformula]" id="creditsformula" class="marginbot" style="width:80%" rows="3" onkeyup="formulaexp()" onkeydown="textareakey(this, event)">$setting[creditsformula]</textarea>
+					<textarea name="settingnew[creditsformula]" id="creditsformula" class="marginbot" style="width:80%" rows="3" onkeyup="formulaexp()" onkeydown="textareakey(this, event)">{$setting['creditsformula']}</textarea>
 					<script type="text/JavaScript">formulaexp()</script>
-					<br /><span class="smalltxt">$lang[setting_credits_formula_comment]</span>
+					<br /><span class="smalltxt">{$lang['setting_credits_formula_comment']}</span>
 				</td>
 			</tr>
 EOF;
@@ -1544,7 +1551,6 @@ EOF;
 		showhiddenfields(array('settingnew[creditstrans][4]' => 0));
 		showsetting('setting_credits_trans5', '', '' ,'<select name="settingnew[creditstrans][5]"><option value="-1">'.$lang['setting_credits_trans5_none'].'</option>'.$_G['setting']['creditstrans'][5].'</select>');
 		showsetting('setting_credits_trans6', '', '' ,'<select name="settingnew[creditstrans][6]">'.$_G['setting']['creditstrans'][6].'</select>');
-		showsetting('setting_credits_trans7', '', '' ,'<select name="settingnew[creditstrans][7]">'.$_G['setting']['creditstrans'][7].'</select>');
 		$setting['report_reward'] = dunserialize($setting['report_reward']);
 		showsetting('setting_credits_trans10', '', '' ,'<select name="settingnew[creditstrans][10]">'.$_G['setting']['creditstrans'][10].'</select>');
 		showsetting('setting_credits_trans8', '', '' ,'<select name="settingnew[creditstrans][8]">'.$_G['setting']['creditstrans'][8].'</select><br \><br \>'.cplang('report_reward_min').': <input type="text" size="3" name="settingnew[report_reward][min]" value="'.$setting['report_reward']['min'].'">&nbsp;&nbsp;'.cplang('report_reward_max').': <input type="text" size="3" name="settingnew[report_reward][max]" value="'.$setting['report_reward']['max'].'">&nbsp;&nbsp;<br \>'.cplang('report_reward_comment'));
@@ -1571,9 +1577,10 @@ EOF;
 		showtableheader('', '', 'id="mailsetting"'.($_GET['anchor'] != 'setting' ? ' style="display: none"' : ''));
 
 		showsetting('setting_mail_setting_send', array('settingnew[mail][mailsend]', array(
-			array(1, $lang['setting_mail_setting_send_1'], array('hidden1' => 'none', 'hidden2' => 'none')),
-			array(2, $lang['setting_mail_setting_send_2'], array('hidden1' => 'none', 'hidden2' => '')),
-			array(3, $lang['setting_mail_setting_send_3'], array('hidden1' => '', 'hidden2' => 'none'))
+			array(1, $lang['setting_mail_setting_send_1'], array('hidden1' => 'none', 'hidden2' => 'none', 'hidden3' => 'none')),
+			array(2, $lang['setting_mail_setting_send_2'], array('hidden1' => 'none', 'hidden2' => '', 'hidden3' => 'none')),
+			array(3, $lang['setting_mail_setting_send_3'], array('hidden1' => '', 'hidden2' => 'none', 'hidden3' => 'none')),
+			array(4, $lang['setting_mail_setting_send_4'], array('hidden1' => 'none', 'hidden2' => 'none', 'hidden3' => ''))
 		)), $setting['mail']['mailsend'], 'mradio');
 		$sendtype = $setting['mail']['mailsend'] == 2 ? 0 : 1;
 		showtagheader('tbody', 'hidden1', $setting['mail']['mailsend'] == 3, 'sub');
@@ -1589,10 +1596,12 @@ EOF;
 							[1,'', 'td25'],
 							[1,'<input type="text" class="txt" name="newsmtp[server][]" style="width: 90%;">', 'td28'],
 							[1,'<input type="text" class="txt" name="newsmtp[port][]" value="25">', 'td28'],
+							[1,'<input type="text" class="txt" name="newsmtp[timeout][]" value="30">', 'td28'],
 							[1,'<input type="checkbox" name="newsmtp[auth][]" value="1">', 'td25'],
 							[1,'<input type="text" class="txt" name="newsmtp[from][]" style="width: 90%;">'],
 							[1,'<input type="text" class="txt" name="newsmtp[auth_username][]" style="width: 90%;">'],
 							[1,'<input type="text" class="txt" name="newsmtp[auth_password][]" style="width: 90%;">'],
+							[1,'<input type="text" class="txt" name="newsmtp[precedence][]" style="width: 90%;">'],
 						]
 					];
 				} else {
@@ -1600,7 +1609,8 @@ EOF;
 						[
 							[1,'', 'td25'],
 							[1,'<input type="text" class="txt" name="newsmtp[server][]" style="width: 90%;">', 'td28'],
-							[1,'<input type="text" class="txt" name="newsmtp[port][]" value="25">', 'td28']
+							[1,'<input type="text" class="txt" name="newsmtp[port][]" value="25">', 'td28'],
+							[1,'<input type="text" class="txt" name="newsmtp[timeout][]" value="30">', 'td28']
 						]
 					];
 				}
@@ -1611,9 +1621,10 @@ EOF;
 
 		<table style="margin-top: 0px;" class="tb tb2">
 			<tr class="header">
-				<th class="td25">$lang[delete]</th>
-				<th class="td28">$lang[setting_mail_setting_server]</th>
-				<th class="td28">$lang[setting_mail_setting_port]</th>
+				<th class="td25">{$lang['delete']}</th>
+				<th class="td28">{$lang['setting_mail_setting_server']}</th>
+				<th class="td28">{$lang['setting_mail_setting_port']}</th>
+				<th class="td28">{$lang['setting_mail_setting_timeout']}</th>
 			</tr>
 EOF;
 		foreach($setting['mail']['smtp'] as $id => $smtp) {
@@ -1621,8 +1632,9 @@ EOF;
 			$smtp['auth_password'] = $smtp['auth_password'] ? $smtp['auth_password'][0].'********'.substr($smtp['auth_password'], -2) : '';
 			showtablerow('', array('class="td25"', 'class="td28"', 'class="td28"'), array(
 				"<input class=\"checkbox\" type=\"checkbox\" name=\"settingnew[mail][smtp][delete][]\" value=\"$id\">",
-				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][server]\" value=\"$smtp[server]\" style=\"width: 90%;\">",
-				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][port]\" value=\"$smtp[port]\">"
+				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][server]\" value=\"{$smtp['server']}\" style=\"width: 90%;\">",
+				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][port]\" value=\"{$smtp['port']}\">",
+				"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][smtp][$id][timeout]\" value=\"{$smtp['timeout']}\">"
 			));
 		}
 		echo '<tr><td colspan="7"><div><a href="###" onclick="setrowtypedata(0);addrow(this, 0);" class="addtr">'.$lang['setting_mail_setting_edit_addnew'].'</a></div></td></tr>';
@@ -1636,13 +1648,15 @@ EOF;
 		<tr><td colspan="2" style="border-top:0px dotted #DEEFFB;">
 		<table style="margin-top: 0px;" class="tb tb2">
 			<tr class="header">
-				<th class="td25">$lang[delete]</th>
-				<th class="td28">$lang[setting_mail_setting_server]</th>
-				<th class="td28">$lang[setting_mail_setting_port]</th>
-				<th id="auth_0">$lang[setting_mail_setting_validate]</th>
-				<th id="from_0">$lang[setting_mail_setting_from]</th>
-				<th id="username_0">$lang[setting_mail_setting_username]</th>
-				<th id="password_0">$lang[setting_mail_setting_password]</th>
+				<th class="td25">{$lang['delete']}</th>
+				<th class="td28">{$lang['setting_mail_setting_server']}</th>
+				<th class="td28">{$lang['setting_mail_setting_port']}</th>
+				<th class="td28">{$lang['setting_mail_setting_timeout']}</th>
+				<th id="auth_0">{$lang['setting_mail_setting_validate']}</th>
+				<th id="from_0">{$lang['setting_mail_setting_from']}</th>
+				<th id="username_0">{$lang['setting_mail_setting_username']}</th>
+				<th id="password_0">{$lang['setting_mail_setting_password']}</th>
+				<th id="precedence_0">{$lang['setting_mail_setting_precedence']}</th>
 			</tr>
 EOF;
 		foreach($setting['mail']['smtp'] as $id => $smtp) {
@@ -1651,12 +1665,14 @@ EOF;
 
 			showtablerow('', array('class="td25"', 'class="td28"', 'class="td28"', 'class="td25"'), array(
 			"<input class=\"checkbox\" type=\"checkbox\" name=\"settingnew[mail][esmtp][delete][]\" value=\"$id\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][server]\" value=\"$smtp[server]\" style=\"width: 90%;\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][port]\" value=\"$smtp[port]\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][server]\" value=\"{$smtp['server']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][port]\" value=\"{$smtp['port']}\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][timeout]\" value=\"{$smtp['timeout']}\">",
 			"<input type=\"checkbox\" name=\"settingnew[mail][esmtp][$id][auth]\" value=\"1\" $checkauth>",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][from]\" value=\"$smtp[from]\" style=\"width: 90%;\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_username]\" value=\"$smtp[auth_username]\" style=\"width: 90%;\">",
-			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_password]\" value=\"$smtp[auth_password]\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][from]\" value=\"{$smtp['from']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_username]\" value=\"{$smtp['auth_username']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][auth_password]\" value=\"{$smtp['auth_password']}\" style=\"width: 90%;\">",
+			"<input type=\"text\" class=\"txt\" name=\"settingnew[mail][esmtp][$id][precedence]\" value=\"{$smtp['precedence']}\" style=\"width: 90%;\">",
 			));
 		}
 		echo '<tr><td colspan="7"><div><a href="###" onclick="setrowtypedata(1);addrow(this, 0);" class="addtr">'.$lang['setting_mail_setting_edit_addnew'].'</a></div></td></tr>';
@@ -1664,6 +1680,9 @@ EOF;
 		showtablefooter();
 		echo '</td></tr>';
 
+		showtagfooter('tbody');
+		showtagheader('tbody', 'hidden3', $setting['mail']['mailsend'] == 4, 'sub');
+		showsetting('setting_mail_setting_plugin', 'settingnew[mail][plugin]', $setting['mail']['plugin'], 'text');
 		showtagfooter('tbody');
 		showsetting('setting_mail_setting_delimiter', array('settingnew[mail][maildelimiter]', array(
 			array(1, $lang['setting_mail_setting_delimiter_crlf']),
@@ -1716,9 +1735,11 @@ EOF;
 		showsetting('setting_sec_accountguard_loginoutofdate', 'settingnew[accountguard][loginoutofdate]', $setting['accountguard']['loginoutofdate'], 'radio');
 		showsetting('setting_sec_accountguard_loginoutofdatenum', 'settingnew[accountguard][loginoutofdatenum]', $setting['accountguard']['loginoutofdatenum'], 'text');
 		showtablefooter();
-		showtableheader('setting_sec_accountguard_forcelogin', 'nobottom');
+		showboxheader('setting_sec_accountguard_forcelogin');
+		showtableheader('', 'nobottom');
 		echo $forcelogin;
 		showtablefooter();
+		showboxfooter();
 		/*search*/
 
 	} elseif($operation == 'seccheck') {
@@ -1850,7 +1871,9 @@ EOT;
 		showsetting('setting_sec_secqaa_status', array('settingnew[secqaa][status]', array(
 			cplang('setting_sec_seccode_status_register'),
 			cplang('setting_sec_seccode_status_post'),
-			cplang('setting_sec_seccode_status_password')
+			cplang('setting_sec_seccode_status_password'),
+			cplang('setting_sec_seccode_status_login'),
+			cplang('setting_sec_seccode_status_card')
 		)), $setting['secqaa']['status'], 'binmcheckbox');
 		showsetting('setting_sec_secqaa_minposts', 'settingnew[secqaa][minposts]', $setting['secqaa']['minposts'], 'text');
 		showtablefooter();
@@ -1859,7 +1882,7 @@ EOT;
 		showsubtitle(array('', 'setting_sec_secqaa_question', 'setting_sec_secqaa_answer'));
 
 		$qaaext = array();
-		foreach(C::t('common_secquestion')->fetch_all($start_limit, 10) as $item) {
+		foreach(C::t('common_secquestion')->fetch_all_secquestion($start_limit, 10) as $item) {
 			if(!$item['type']) {
 				showtablerow('', array('', 'class="td26"'), array(
 					'<input class="checkbox" type="checkbox" name="delete[]" value="'.$item['id'].'">',
@@ -1888,7 +1911,10 @@ EOT;
 		showtableheader('', '', 'id="base"'.($_GET['anchor'] != 'base' ? ' style="display: none"' : ''));
 		showsetting('setting_sec_floodctrl', 'settingnew[floodctrl]', $setting['floodctrl'], 'text');
 		showsetting('setting_sec_base_need_email', 'settingnew[need_email]', $setting['need_email'], 'radio');
+		showsetting('setting_sec_base_need_secmobile', 'settingnew[need_secmobile]', $setting['need_secmobile'], 'radio');
 		showsetting('setting_sec_base_need_avatar', 'settingnew[need_avatar]', $setting['need_avatar'], 'radio');
+		showsetting('setting_sec_base_change_email', 'settingnew[change_email]', $setting['change_email'], 'radio');
+		showsetting('setting_sec_base_change_secmobile', 'settingnew[change_secmobile]', $setting['change_secmobile'], 'radio');
 		showsetting('setting_sec_base_need_friendnum', 'settingnew[need_friendnum]', $setting['need_friendnum'], 'text');
 		showtablefooter();
 		/*search*/
@@ -2344,7 +2370,7 @@ EOT;
 		showtablefooter();
 
 		if(!isset($setting['memory'])) {
-			C::t('common_setting')->update('memory', '');
+			C::t('common_setting')->update_setting('memory', '');
 			$setting['memory'] = '';
 		}
 
@@ -2389,7 +2415,7 @@ EOT;
 					} elseif($k == 'forumindex') {
 						memory('rm', 'forum_index_page_'.$id);
 					} elseif($k == 'diyblock' || $k == 'diyblockoutput') {
-						C::t('common_block')->clear_cache($id);
+						C::t('common_block')->clear_blockcache($id);
 					} else {
 						C::t($k)->clear_cache($id);
 					}
@@ -2428,7 +2454,6 @@ EOT;
 		/*search={"setting_ranklist":"action=setting&operation=ranklist"}*/
 		$setting['ranklist'] = dunserialize($setting['ranklist']);
 		showtableheader('', 'nobottom', 'id="all"');
-		showsetting('setting_ranklist_status', 'settingnew[ranklist][status]', $setting['ranklist']['status'], 'radio');
 		showsetting('setting_ranklist_index_cache_time', 'settingnew[ranklist][cache_time]', $setting['ranklist']['cache_time'], 'text');
 		showsetting('setting_ranklist_index_select', array('settingnew[ranklist][index_select]', array(array('all',cplang('dateline_all')), array('thismonth',cplang('thismonth')), array('thisweek',cplang('thisweek')), array('today',cplang('today')))), $setting['ranklist']['index_select'], 'select');
 		showsetting('setting_ranklist_ignorefid', 'settingnew[ranklist][ignorefid]', $setting['ranklist']['ignorefid'], 'text');
@@ -2479,7 +2504,7 @@ EOT;
 		exit;
 
 	} elseif ($operation == 'mobile'){
-		/*search={"setting_mobile":"action=setting&operation=mobile"}*/
+		/*search={"setting_mobile":"action=setting&operation=mobile","setting_mobile_status":"action=setting&operation=mobile&anchor=status"}*/
 		$setting['mobile'] = dunserialize($setting['mobile']);
 		showtips('setting_mobile_status_tips');
 		showtableheader('setting_mobile_status', '', 'id="status"'.($_GET['anchor'] != 'status' ? ' style="display: none"' : ''));
@@ -2489,22 +2514,40 @@ EOT;
 			), TRUE), $setting['mobile']['allowmobile'] ? $setting['mobile']['allowmobile'] : 0, 'mradio');
 		showtagheader('tbody', 'mobileext', $setting['mobile']['allowmobile'], 'sub');
 		showsetting('setting_mobile_mobileforward', 'settingnew[mobile][mobileforward]', $setting['mobile']['mobileforward'], 'radio');
-        	showsetting('setting_mobile_otherindex', 'settingnew[mobile][otherindex]', $setting['mobile']['otherindex'], 'radio');
 		showsetting('setting_mobile_register', 'settingnew[mobile][mobileregister]', $setting['mobile']['mobileregister'], 'radio');
-		showsetting('setting_mobile_hotthread', 'settingnew[mobile][mobilehotthread]', $setting['mobile']['mobilehotthread'], 'radio');
-		showsetting('setting_mobile_displayorder3', 'settingnew[mobile][mobiledisplayorder3]', $setting['mobile']['mobiledisplayorder3'], 'radio');
 		showsetting('setting_mobile_simpletype', 'settingnew[mobile][mobilesimpletype]', $setting['mobile']['mobilesimpletype'], 'radio');
-		showsetting('setting_mobile_topicperpage', 'settingnew[mobile][mobiletopicperpage]', $setting['mobile']['mobiletopicperpage'] ? $setting['mobile']['mobiletopicperpage'] : 10, 'text');
-		showsetting('setting_mobile_postperpage', 'settingnew[mobile][mobilepostperpage]', $setting['mobile']['mobilepostperpage'] ? $setting['mobile']['mobilepostperpage'] : 5, 'text');
 		showsetting('setting_mobile_cachetime', 'settingnew[mobile][mobilecachetime]', $setting['mobile']['mobilecachetime'] ? $setting['mobile']['mobilecachetime'] : 0, 'text');
-		showsetting('setting_mobile_index_forumview', array('settingnew[mobile][mobileforumview]', array(
+		showsetting('setting_mobile_come_from', 'settingnew[mobile][mobilecomefrom]', $setting['mobile']['mobilecomefrom'], 'textarea');
+		showtagfooter('tbody');
+		showsubmit('settingsubmit');
+		showformfooter();
+		showtablefooter();
+		/*search*/
+
+		/*search={"setting_mobile":"action=setting&operation=mobile","setting_mobile_portal":"action=setting&operation=mobile&anchor=portal"}*/
+		showtableheader('setting_mobile_portal', '', 'id="portal"'.($_GET['anchor'] != 'portal' ? ' style="display: none"' : ''));
+		showsetting('setting_mobile_portal_catnav', 'settingnew[mobile][portal][catnav]', $setting['mobile']['portal']['catnav'], 'radio');
+		showsubmit('settingsubmit');
+		showformfooter();
+		showtablefooter();
+		/*search*/
+
+		/*search={"setting_mobile":"action=setting&operation=mobile","setting_mobile_forum":"action=setting&operation=mobile&anchor=forum"}*/
+		showtableheader('setting_mobile_forum', '', 'id="forum"'.($_GET['anchor'] != 'forum' ? ' style="display: none"' : ''));
+		showsetting('setting_mobile_forum_forumindex', array('settingnew[mobile][forum][index]', array(
+				array(1, $lang['setting_mobile_forum_forumindex_guide']),
+				array(2, $lang['setting_mobile_forum_forumindex_grid']),
+				array(0, $lang['setting_mobile_forum_forumindex_forumlist']),
+				array(3, $lang['setting_mobile_forum_forumindex_forumgrid']),
+			)), $setting['mobile']['forum']['index'] ? $setting['mobile']['forum']['index'] : 0, 'mradio');
+		showsetting('setting_mobile_forum_statshow', 'settingnew[mobile][forum][statshow]', $setting['mobile']['forum']['statshow'], 'radio');
+		showsetting('setting_mobile_forum_displayorder3', 'settingnew[mobile][forum][displayorder3]', $setting['mobile']['forum']['displayorder3'], 'radio');
+		showsetting('setting_mobile_forum_topicperpage', 'settingnew[mobile][forum][topicperpage]', $setting['mobile']['forum']['topicperpage'] ? $setting['mobile']['forum']['topicperpage'] : 10, 'text');
+		showsetting('setting_mobile_forum_postperpage', 'settingnew[mobile][forum][postperpage]', $setting['mobile']['forum']['postperpage'] ? $setting['mobile']['forum']['postperpage'] : 5, 'text');
+		showsetting('setting_mobile_forum_forumview', array('settingnew[mobile][forum][forumview]', array(
 				array(1, $lang['pack']),
 				array(0, $lang['unwind'])
-			)), $setting['mobile']['mobileforumview'] ? $setting['mobile']['mobileforumview'] : 0, 'mradio');
-		showsetting('setting_mobile_come_from', 'settingnew[mobile][mobilecomefrom]', $setting['mobile']['mobilecomefrom'], 'textarea');
-		showsetting('setting_mobile_wml', 'settingnew[mobile][wml]', $setting['mobile']['wml'], 'radio');
-		showsetting('setting_mobile_allowmnew', 'settingnew[mobile][allowmnew]', $setting['mobile']['allowmnew'], 'radio');
-		showtagfooter('tbody');
+			)), $setting['mobile']['forum']['forumview'] ? $setting['mobile']['forum']['forumview'] : 0, 'mradio');
 		showsubmit('settingsubmit');
 		showformfooter();
 		showtablefooter();
@@ -2516,18 +2559,17 @@ EOT;
 		if($_GET['anchor'] == 'iplist') {
 
 			if(submitcheck('antitheftsubmit', true)) {
-				$_GET['ips'] = dintval($_GET['ips'], true);
 				$url = 'action=setting&operation=antitheft&anchor=iplist&page='.$page;
 				if(empty($_GET['ips'])) {
 					cpmsg('setting_antitheft_choose_ip', $url, 'error');
 				}
-				$antitheftsetting = C::t('common_setting')->fetch('antitheftsetting', true);
+				$antitheftsetting = C::t('common_setting')->fetch_setting('antitheftsetting', true);
 				if($_GET['optype'] == 'white' || $_GET['optype'] == 'black') {
 					$ips = explode("\n", $antitheftsetting[$_GET['optype']]);
-					$ips = array_diff(array_map('long2ip', $_GET['ips']), $ips);
+					$ips = array_diff($_GET['ips'], $ips);
 					if($ips) {
 						$antitheftsetting[$_GET['optype']] = $antitheftsetting[$_GET['optype']]."\n".implode("\n", $ips);
-						C::t('common_setting')->update('antitheftsetting', $antitheftsetting);
+						C::t('common_setting')->update_setting('antitheftsetting', $antitheftsetting);
 						updatecache('antitheft');
 					}
 					C::t('common_visit')->delete($_GET['ips']);
@@ -2546,22 +2588,21 @@ EOT;
 				$mpurl = ADMINSCRIPT.'?action=setting&operation=antitheft&anchor='.$_GET['anchor'];
 
 				showformheader('setting&operation=antitheft&anchor='.$_GET['anchor']);
-				showtableheader('setting_antitheft_iplist');
+				showboxheader('setting_antitheft_iplist');
+				showtableheader();
 				showsubtitle(array('', 'setting_antitheft_ip', 'setting_antitheft_view', 'setting_antitheft_op'));
 
 				$multipage = '';
 				$count = C::t('common_visit')->count();
 				if($count) {
-					require_once libfile('function/misc');
 					foreach(C::t('common_visit')->range($start, $perpage) as $value) {
-						$ip = long2ip($value['ip']);
 						showtablerow('', array('class="td25"', 'class=""', 'class="td28"'), array(
-								"<input type=\"checkbox\" class=\"checkbox\" name=\"ips[]\" value=\"$value[ip]\">",
-								"$ip ".convertip($ip),
+								"<input type=\"checkbox\" class=\"checkbox\" name=\"ips[]\" value=\"{$value['ip']}\">",
+								"{$value['ip']} ".ip::convert($value['ip']),
 								$value['view'],
-								"<a href=\"$mpurl&optype=white&ips[]=$value[ip]&antitheftsubmit=yes\">$lang[setting_antitheft_addwhitelist]</a> |
-								 <a href=\"$mpurl&optype=black&ips[]=$value[ip]&antitheftsubmit=yes\">$lang[setting_antitheft_addblacklist]</a> |
-								 <a href=\"$mpurl&optype=delete&ips[]=$value[ip]&antitheftsubmit=yes\">$lang[delete]</a>
+								"<a href=\"$mpurl&optype=white&ips[]={$value['ip']}&antitheftsubmit=yes\">{$lang['setting_antitheft_addwhitelist']}</a> |
+								 <a href=\"$mpurl&optype=black&ips[]={$value['ip']}&antitheftsubmit=yes\">{$lang['setting_antitheft_addblacklist']}</a> |
+								 <a href=\"$mpurl&optype=delete&ips[]={$value['ip']}&antitheftsubmit=yes\">{$lang['delete']}</a>
 								",
 							));
 					}
@@ -2574,6 +2615,7 @@ EOT;
 				showsubmit('', '', '', '<input type="checkbox" name="chkall" id="chkall" class="checkbox" onclick="checkAll(\'prefix\', this.form, \'ips\')" /><label for="chkall">'.cplang('select_all').'</label>&nbsp;&nbsp;'
 							.$batchradio.'<input type="submit" class="btn" name="antitheftbutton" value="'.cplang('submit').'" />', $multipage);
 				showtablefooter();
+				showboxfooter();
 				showformfooter();
 			}
 		} else {
@@ -2664,20 +2706,15 @@ EOT;
 			cpmsg('uc_config_ip_error', '', 'error');
 		}
 
-		if(function_exists("mysql_connect") && ini_get("mysql.allow_local_infile")=="1" && constant("UC_DBHOST") != $settingnew['uc']['dbhost']){
-			cpmsg('uc_config_load_data_local_infile_error', '', 'error');
-		}
-
 		if($settingnew['uc']['connect']) {
-			$uc_dblink = function_exists("mysql_connect") ? @mysql_connect($settingnew['uc']['dbhost'], $settingnew['uc']['dbuser'], $ucdbpassnew, 1) : new mysqli($settingnew['uc']['dbhost'], $settingnew['uc']['dbuser'], $ucdbpassnew);
+
+			mysqli_report(MYSQLI_REPORT_OFF);
+
+			$uc_dblink = new mysqli($settingnew['uc']['dbhost'], $settingnew['uc']['dbuser'], $ucdbpassnew);
 			if(!$uc_dblink) {
 				cpmsg('uc_database_connect_error', '', 'error');
 			} else {
-				if(function_exists("mysql_connect")) {
-					mysql_close($uc_dblink);
-				} else {
-					$uc_dblink->close();
-				}
+				$uc_dblink->close();
 			}
 		}
 
@@ -2710,12 +2747,9 @@ EOT;
 		$configfile = str_replace("define('UC_IP', '".addslashes(UC_IP)."')", "define('UC_IP', '".$settingnew['uc']['ip']."')", $configfile);
 		$configfile = str_replace("define('UC_APPID', '".addslashes(UC_APPID)."')", "define('UC_APPID', '".$settingnew['uc']['appid']."')", $configfile);
 
-		$fp = fopen('./config/config_ucenter.php', 'w');
-		if(!($fp = @fopen('./config/config_ucenter.php', 'w'))) {
+		if(file_put_contents('./config/config_ucenter.php', trim($configfile)) === false) {
 			cpmsg('uc_config_write_error', '', 'error');
 		}
-		@fwrite($fp, trim($configfile));
-		@fclose($fp);
 	}
 
 	isset($settingnew['regname']) && empty($settingnew['regname']) && $settingnew['regname'] = 'register';
@@ -2923,6 +2957,8 @@ EOT;
 		$settingnew['creditsformulaexp'] = addslashes('<u>'.$lang['setting_credits_formula_credits'].'</u>='.$settingnew['creditsformulaexp']);
 
 		$initformula = str_replace('posts', '0', $settingnew['creditsformula']);
+		$initformula = str_replace('digest0', '0', $initformula);
+
 		for($i = 1; $i <= 8; $i++) {
 			$settingnew['initcredits'][$i] = intval($settingnew['initcredits'][$i]);
 			$initformula = str_replace('extcredits'.$i, $settingnew['initcredits'][$i], $initformula);
@@ -3020,7 +3056,7 @@ EOT;
 
 		updatecache('secqaa');
 
-		$settingnew['secqaa']['status'] = bindec(intval($settingnew['secqaa']['status'][3]).intval($settingnew['secqaa']['status'][2]).intval($settingnew['secqaa']['status'][1]));
+		$settingnew['secqaa']['status'] = bindec(intval($settingnew['secqaa']['status'][5]).intval($settingnew['secqaa']['status'][4]).intval($settingnew['secqaa']['status'][3]).intval($settingnew['secqaa']['status'][2]).intval($settingnew['secqaa']['status'][1]));
 		$settingnew['secqaa'] = serialize($settingnew['secqaa']);
 
 	} elseif($operation == 'sec') {
@@ -3157,8 +3193,8 @@ EOT;
 		$settingnew['accountguard'] = serialize($settingnew['accountguard']);
 	}
 
-	if(!empty($_G['gp_aggid'])) {
-		foreach($_G['gp_aggid'] as $gid => $v) {
+	if(!empty($_POST['aggid'])) {
+		foreach(daddslashes($_POST['aggid']) as $gid => $v) {
 			C::t('common_usergroup_field')->update($gid, array('forcelogin' => $v));
 		}
 		updatecache('usergroups');
@@ -3198,10 +3234,12 @@ EOT;
 					$settingnew['mail']['smtp'][] = array(
 							'server' => $server,
 							'port' => $_GET['newsmtp']['port'][$id] ? intval($_GET['newsmtp']['port'][$id]) : 25,
+							'timeout' => isset($_GET['newsmtp']['timeout'][$id]) ? intval($_GET['newsmtp']['timeout'][$id]) : 30,
 							'auth' => $_GET['newsmtp']['auth'][$id] ? 1 : 0,
 							'from' => $_GET['newsmtp']['from'][$id],
 							'auth_username' => $_GET['newsmtp']['auth_username'][$id],
-							'auth_password' => $_GET['newsmtp']['auth_password'][$id]
+							'auth_password' => $_GET['newsmtp']['auth_password'][$id],
+							'precedence' => $_GET['newsmtp']['precedence'][$id]
 						);
 				}
 
@@ -3312,7 +3350,7 @@ EOT;
 	if($operation == 'styles') {
 		C::t('common_member_profile_setting')->clear_showinthread();
 		$showinthreadfields = array();
-		if(array_key_exists('field_birthday', $settingnew['customauthorinfo'])) {
+		if(is_array($settingnew['customauthorinfo']) && array_key_exists('field_birthday', $settingnew['customauthorinfo'])) {
 			$settingnew['customauthorinfo']['field_birthyear'] = $settingnew['customauthorinfo']['field_birthmonth'] = $settingnew['customauthorinfo']['field_birthday'];
 		}
 		foreach($settingnew['customauthorinfo'] as $field => $v) {
@@ -3376,21 +3414,26 @@ EOT;
 		} else {
 			C::t('common_nav')->update_by_navtype_type_identifier(1, 0, 'mobile', array('available' => 1));
 		}
-		$settingnew['mobile_arr']['allowmnew'] = intval($settingnew['mobile']['allowmnew']);
+		$settingnew['mobile_arr']['allowmnew'] = 0;
 		$settingnew['mobile_arr']['mobileforward'] = intval($settingnew['mobile']['mobileforward']);
-        	$settingnew['mobile_arr']['otherindex'] = intval($settingnew['mobile']['otherindex']);
 		$settingnew['mobile_arr']['mobileregister'] = intval($settingnew['mobile']['mobileregister']);
 		$settingnew['mobile_arr']['mobileseccode'] = intval($settingnew['mobile']['mobileseccode']);
-		$settingnew['mobile_arr']['mobilehotthread'] = intval($settingnew['mobile']['mobilehotthread']);
-		$settingnew['mobile_arr']['mobiledisplayorder3'] = intval($settingnew['mobile']['mobiledisplayorder3']);
 		$settingnew['mobile_arr']['mobilesimpletype'] = intval($settingnew['mobile']['mobilesimpletype']);
-		$settingnew['mobile_arr']['mobiletopicperpage'] = intval($settingnew['mobile']['mobiletopicperpage']) > 0 ? intval($settingnew['mobile']['mobiletopicperpage']) : 1 ;
-		$settingnew['mobile_arr']['mobilepostperpage'] = intval($settingnew['mobile']['mobilepostperpage']) > 0 ? intval($settingnew['mobile']['mobilepostperpage']) : 1 ;
 		$settingnew['mobile_arr']['mobilecachetime'] = intval($settingnew['mobile']['mobilecachetime']);
-		$settingnew['mobile_arr']['mobileforumview'] = intval($settingnew['mobile']['mobileforumview']);
 		$settingnew['mobile_arr']['mobilecomefrom'] = preg_replace(array("/\son(.*)=[\'\"](.*?)[\'\"]/i"), '', strip_tags($settingnew['mobile']['mobilecomefrom'], '<a><font><img><span><strong><b>'));
 		$settingnew['mobile_arr']['mobilepreview'] = intval($settingnew['mobile']['mobilepreview']);
-		$settingnew['mobile_arr']['wml'] = intval($settingnew['mobile']['wml']);
+		$settingnew['mobile_arr']['legacy'] = 0;
+		$settingnew['mobile_arr']['wml'] = 0;
+		
+		$settingnew['mobile_arr']['portal']['catnav'] = intval($settingnew['mobile']['portal']['catnav']);
+		
+		$settingnew['mobile_arr']['forum']['index'] = intval($settingnew['mobile']['forum']['index']);
+		$settingnew['mobile_arr']['forum']['statshow'] = intval($settingnew['mobile']['forum']['statshow']);
+		$settingnew['mobile_arr']['forum']['displayorder3'] = intval($settingnew['mobile']['forum']['displayorder3']);
+		$settingnew['mobile_arr']['forum']['topicperpage'] = intval($settingnew['mobile']['forum']['topicperpage']) > 0 ? intval($settingnew['mobile']['forum']['topicperpage']) : 1 ;
+		$settingnew['mobile_arr']['forum']['postperpage'] = intval($settingnew['mobile']['forum']['postperpage']) > 0 ? intval($settingnew['mobile']['forum']['postperpage']) : 1 ;
+		$settingnew['mobile_arr']['forum']['forumview'] = intval($settingnew['mobile']['forum']['forumview']);
+		
 		$settingnew['mobile'] = $settingnew['mobile_arr'];
 		unset($settingnew['mobile_arr']);
 	}
@@ -3541,9 +3584,9 @@ EOT;
 				'maxpolloptions', 'karmaratelimit', 'losslessdel', 'smcols', 'allowdomain', 'feedday', 'feedmaxnum', 'feedhotday', 'feedhotmin',
 				'feedtargetblank', 'updatestat', 'namechange', 'namecheck', 'networkpage', 'maxreward', 'groupnum', 'starlevelnum', 'friendgroupnum',
 				'pollforumid', 'tradeforumid', 'rewardforumid', 'activityforumid', 'debateforumid', 'maxpage',
-				'starcredit', 'topcachetime', 'newspacevideophoto', 'newspacerealname', 'newspaceavatar', 'newspacenum', 'shownewuser',
-				'feedhotnum', 'showallfriendnum', 'feedread',
-				'need_friendnum', 'need_avatar', 'uniqueemail', 'need_email', 'allowquickviewprofile', 'preventrefresh',
+				'starcredit', 'topcachetime', 'newspacerealname', 'newspaceavatar', 'newspacenum', 'shownewuser',
+				'feedhotnum', 'showallfriendnum', 'feedread', 'maxsubjectsize', 'minsubjectsize',
+				'need_friendnum', 'need_avatar', 'need_secmobile', 'uniqueemail', 'need_email', 'allowquickviewprofile', 'preventrefresh',
 				'jscachelife', 'maxmodworksmonths', 'maxonlinelist'))) {
 				$val = (float)$val;
 			}
@@ -3558,6 +3601,10 @@ EOT;
 				foreach($val['feed'] as $var => $value) {
 					$val['feed'][$var] = 1;
 				}
+			}
+
+			if($key == 'maxsubjectsize' && $val > 255) {
+				cpmsg('maxsubjectsize_no_more', '', 'error');
 			}
 
 			$settings[$key] = $val;
@@ -3678,17 +3725,17 @@ function showdetial(&$forum, $varname, $type = '', $last = '', $toggle = false) 
 			echo '<tr class="header"><td colspan="2">'.$tab1.$forum['name'].'</td></tr>';
 			showtablerow('', array('width="12%"', ''), array(
 					$tab2.cplang('setting_seo_seotitle'),
-					'<input type="text" id="t_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum[id].'][seotitle]" value="'.dhtmlspecialchars($forum['seotitle']).'" class="txt" style="width:280px;" />',
+					'<input type="text" id="t_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum['id'].'][seotitle]" value="'.dhtmlspecialchars($forum['seotitle']).'" class="txt" style="width:280px;" />',
 				)
 			);
 			showtablerow('', array('width="12%"', ''), array(
 					$tab2.cplang('setting_seo_seokeywords'),
-					'<input type="text" id="k_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum[id].'][keywords]" value="'.dhtmlspecialchars($forum['keywords']).'" class="txt" style="width:280px;" />',
+					'<input type="text" id="k_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum['id'].'][keywords]" value="'.dhtmlspecialchars($forum['keywords']).'" class="txt" style="width:280px;" />',
 				)
 			);
 			showtablerow('', array('width="12%"', ''), array(
 					$tab2.cplang('setting_seo_seodescription'),
-					'<input type="text" id="d_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum[id].'][description]" value="'.dhtmlspecialchars($forum['description']).'" class="txt" style="width:280px;" />',
+					'<input type="text" id="d_'.$forum['id'].'_'.$varname.'" onfocus="getcodetext(this, \''.$varname.'\');" name="seo'.$varname.'['.$forum['id'].'][description]" value="'.dhtmlspecialchars($forum['description']).'" class="txt" style="width:280px;" />',
 				)
 			);
 	} else {
@@ -3802,11 +3849,11 @@ function showsetting_threadprfile($authorinfoitems, $template = array()) {
 	$template_left = dhtmlspecialchars($template['left']);
 	$buttons = threadprofile_buttons('tleft', $authorinfoitems);
 	echo '<tr><td class="td27" colspan="2">'.cplang('setting_styles_threadprofile_leftinfoprofile').':</td></tr>
-		<tr><td colspan="2"><div class="threadprofilenode">'.$buttons.'</div><textarea name="templatenew[left]" id="tleft" class="marginbot" style="width:80%" rows="10" onkeyup="textareasize(this)" onkeydown="textareakey(this, event)">'.$template_left.'</textarea></td></tr>';
+		<tr><td colspan="2" class="rowform"><div class="threadprofilenode">'.$buttons.'</div><textarea name="templatenew[left]" id="tleft" class="marginbot" style="width:80%" rows="10" onkeyup="textareasize(this)" onkeydown="textareakey(this, event)">'.$template_left.'</textarea></td></tr>';
 	$template_top = dhtmlspecialchars($template['top']);
 	$buttons = threadprofile_buttons('ttop', $authorinfoitems);
 	echo '<tr><td class="td27" colspan="2">'.cplang('setting_styles_threadprofile_avatarprofile').':</td></tr>
-		<tr><td colspan="2"><div class="threadprofilenode">'.$buttons.'</div><textarea name="templatenew[top]" id="ttop" class="marginbot" style="width:80%" rows="10" onkeyup="textareasize(this)" onkeydown="textareakey(this, event)">'.$template_top.'</textarea></td></tr>';
+		<tr><td colspan="2" class="rowform"><div class="threadprofilenode">'.$buttons.'</div><textarea name="templatenew[top]" id="ttop" class="marginbot" style="width:80%" rows="10" onkeyup="textareasize(this)" onkeydown="textareakey(this, event)">'.$template_top.'</textarea></td></tr>';
 }
 
 ?>

@@ -26,7 +26,7 @@ class control extends adminbase {
 	function onindex() {
 		$this->view->assign('sid', $this->view->sid);
 		$mainurl = getgpc('mainurl');
-		$mainurl = !empty($mainurl) && preg_match("/^admin\.php\?(&*\w+=\w+)*$/i", $mainurl) ? $mainurl : 'admin.php?m=frame&a=main&sid='.$this->view->sid;
+		$mainurl = !empty($mainurl) && preg_match("/^".UC_ADMINSCRIPT."\.php\?(&*\w+=\w+)*$/i", $mainurl) ? $mainurl : UC_ADMINSCRIPT.'?m=frame&a=main&sid='.$this->view->sid;
 		$this->view->assign('mainurl', $mainurl);
 		$this->view->display('admin_frame_index');
 	}
@@ -59,8 +59,11 @@ class control extends adminbase {
 		}
 
 		$serverinfo = PHP_OS.' / PHP v'.PHP_VERSION;
-		$serverinfo .= @ini_get('safe_mode') ? ' Safe Mode' : NULL;
-		$dbversion = $this->db->result_first("SELECT VERSION()");
+		$dbversion = $this->db->version();
+		$servername = $_SERVER['SERVER_NAME'];
+		if(isset($_SERVER['SERVER_ADDR']) && isset($_SERVER['SERVER_PORT'])) {
+			$servername .= ' ('.$_SERVER['SERVER_ADDR'].':'.$_SERVER['SERVER_PORT'].')';
+		}
 		$fileupload = @ini_get('file_uploads') ? (min(min(ini_get('upload_max_filesize'), ini_get('post_max_size')), ini_get('memory_limit'))) : '<font color="red">'.$lang['no'].'</font>';
 		$dbsize = 0;
 		$tablepre = UC_DBTABLEPRE;
@@ -69,14 +72,13 @@ class control extends adminbase {
 			$dbsize += $table['Data_length'] + $table['Index_length'];
 		}
 		$dbsize = $dbsize ? $this->_sizecount($dbsize) : $lang['unknown'];
-		$magic_quote_gpc = get_magic_quotes_gpc() ? 'On' : 'Off';
 		$allow_url_fopen = ini_get('allow_url_fopen') ? 'On' : 'Off';
 		$envstatus = $this->_get_uc_envstatus();
 		$this->view->assign('serverinfo', $serverinfo);
 		$this->view->assign('fileupload', $fileupload);
 		$this->view->assign('dbsize', $dbsize);
 		$this->view->assign('dbversion', $dbversion);
-		$this->view->assign('magic_quote_gpc', $magic_quote_gpc);
+		$this->view->assign('servername', $servername);
 		$this->view->assign('allow_url_fopen', $allow_url_fopen);
 		$this->view->assign('envstatus', $envstatus);
 
@@ -196,10 +198,9 @@ class control extends adminbase {
 	function _get_uc_envstatus() {
 		$version = constant('UC_SERVER_VERSION');
 		$now_ver_gd = function_exists('gd_info')? gd_info() : false;
-		$now_ver = array('PHP' => constant('PHP_VERSION'), 'MySQL' => $this->db->result_first("SELECT VERSION()"), 'gethostbyname' => function_exists('gethostbyname'), 'file_get_contents' => function_exists('file_get_contents'), 'xml_parser_create' => function_exists('xml_parser_create'),
-		'FileSock Function' => (function_exists('fsockopen') || function_exists('pfsockopen') || function_exists('stream_socket_client') || function_exists('curl_init')), 'GD' => ($now_ver_gd ? preg_replace('/[^0-9.]+/', '', $now_ver_gd['GD Version']) : false));
-		$req_ver = array('PHP' => '5.3', 'MySQL' => '5.0', 'filter_var' => true, 'gethostbyname' => true, 'file_get_contents' => true, 'xml_parser_create' => true, 'FileSock Function' => true, 'GD' => '1.0');
-		$sug_ver = array('PHP' => '7.1', 'MySQL' => '5.7', 'filter_var' => true, 'gethostbyname' => true, 'file_get_contents' => true, 'xml_parser_create' => true, 'FileSock Function' => true, 'GD' => '2.0');
+		$now_ver = array('PHP' => constant('PHP_VERSION'), 'MySQL' => $this->db->version(), 'XML' => function_exists('xml_parser_create'), 'JSON' => function_exists('json_encode'), 'FileSock Function' => (function_exists('fsockopen') || function_exists('pfsockopen') || function_exists('stream_socket_client') || function_exists('curl_init')), 'GD' => ($now_ver_gd ? preg_replace('/[^0-9.]+/', '', $now_ver_gd['GD Version']) : false));
+		$req_ver = array('PHP' => '5.6.0', 'MySQL' => '5.5.3', 'XML' => true, 'JSON' => true, 'FileSock Function' => true, 'GD' => '1.0');
+		$sug_ver = array('PHP' => '7.3.0', 'MySQL' => '5.7.0', 'XML' => true, 'JSON' => true, 'FileSock Function' => true, 'GD' => '2.0');
 		foreach ($now_ver as $key => $value) {
 			if($req_ver[$key] === true) {
 				if (!$value) {

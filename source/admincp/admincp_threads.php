@@ -41,7 +41,7 @@ if((!$operation && !$optype) || ($operation == 'group' && empty($optype))) {
 	$forumselect = '<b>'.$lang['threads_search_forum'].':</b><br><br><select name="inforum" onchange="ajaxget(\'forum.php?mod=ajax&action=getthreadtypes&selectname=intype&fid=\' + this.value, \'forumthreadtype\')"><option value="all">&nbsp;&nbsp;> '.$lang['all'].'</option><option value="">&nbsp;</option>'.forumselect(FALSE, 0, 0, TRUE).'</select>';
 	$typeselect = $lang['threads_move_type'].' <span id="forumthreadtype"><select name="intype"><option value=""></option>'.$intypes.'</select></span>';
 	if(isset($_GET['inforum'])) {
-		$forumselect = preg_replace("/(\<option value=\"$_GET[inforum]\")(\>)/", "\\1 selected=\"selected\" \\2", $forumselect);
+		$forumselect = preg_replace("/(\<option value=\"{$_GET['inforum']}\")(\>)/", "\\1 selected=\"selected\" \\2", $forumselect);
 	}
 
 	$sortselect = '';
@@ -56,8 +56,9 @@ if((!$operation && !$optype) || ($operation == 'group' && empty($optype))) {
 		$sortselect = preg_replace("/(\<option value=\"{$_GET['insort']}\")(\>)/", "\\1 selected=\"selected\" \\2", $sortselect);
 	}
 
+	$staticurl = STATICURL;
 	echo <<<EOT
-<script src="static/js/calendar.js"></script>
+<script type="text/javascript" src="{$staticurl}js/calendar.js"></script>
 <script type="text/JavaScript">
 	function page(number) {
 		$('threadforum').page.value=number;
@@ -66,13 +67,12 @@ if((!$operation && !$optype) || ($operation == 'group' && empty($optype))) {
 </script>
 EOT;
 	shownav('topic', 'nav_maint_threads'.($operation ? '_'.$operation : ''));
-	showsubmenu('nav_maint_threads'.($operation ? '_'.$operation : ''), array(
-		array('newlist', 'threads'.($operation ? '&operation='.$operation : ''), !empty($newlist)),
-		array('search', 'threads'.($operation ? '&operation='.$operation : '').'&search=true', empty($newlist)),
-	));
-	empty($newlist) && showsubmenusteps('', array(
+	showsubmenusteps('nav_maint_threads'.($operation ? '_'.$operation : ''), empty($newlist) ? array(
 		array('threads_search', !$_GET['searchsubmit']),
 		array('nav_maint_threads', $_GET['searchsubmit'])
+	) : '', '', array(
+		array('newlist', 'threads'.($operation ? '&operation='.$operation : ''), !empty($newlist)),
+		array('search', 'threads'.($operation ? '&operation='.$operation : '').'&search=true', empty($newlist)),
 	));
 	/*search={"nav_maint_threads":"action=threads","newlist":"action=threads"}*/
 	if(empty($newlist)) {
@@ -89,7 +89,7 @@ EOT;
 	if($operation != 'group') {
 		showtablerow('', array('class="rowform" colspan="2" style="width:auto;"'), array($forumselect.$typeselect));
 	}
-	showsetting('threads_search_perpage', '', $_GET['perpage'], "<select name='perpage'><option value='20'>$lang[perpage_20]</option><option value='50'>$lang[perpage_50]</option><option value='100'>$lang[perpage_100]</option></select>");
+	showsetting('threads_search_perpage', '', $_GET['perpage'], "<select name='perpage'><option value='20'>{$lang['perpage_20']}</option><option value='50'>{$lang['perpage_50']}</option><option value='100'>{$lang['perpage_100']}</option></select>");
 	if(!$fromumanage) {
 		empty($_GET['starttime']) && $_GET['starttime'] = date('Y-m-d', time() - 86400 * 30);
 	}
@@ -239,7 +239,7 @@ EOT;
 					foreach(C::t('forum_thread')->fetch_all_search($conditions, 0, $start, $perpage, 'tid', 'DESC', ' FORCE INDEX(PRIMARY) ') as $thread) {
 						$fids[] = $thread['fid'];
 						if($thread['isgroup']) {
-							$groupsfid[$thread[fid]] = $thread['fid'];
+							$groupsfid[$thread['fid']] = $thread['fid'];
 						}
 						$thread['lastpost'] = dgmdate($thread['lastpost']);
 						$threadlist[] = $thread;
@@ -247,16 +247,16 @@ EOT;
 					if($groupsfid) {
 						$query = C::t('forum_forum')->fetch_all_by_fid($groupsfid);
 						foreach($query as $row) {
-							$groupsname[$row[fid]] = $row['name'];
+							$groupsname[$row['fid']] = $row['name'];
 						}
 					}
 					if($threadlist) {
 						foreach($threadlist as $thread) {
 							$threads .= showtablerow('', array('class="td25"', '', '', '', 'class="td25"', 'class="td25"'), array(
-								"<input class=\"checkbox\" type=\"checkbox\" name=\"tidarray[]\" value=\"$thread[tid]\" />",
-								"<a href=\"forum.php?mod=viewthread&tid=$thread[tid]".($thread['displayorder'] != -4 ? '' : '&modthreadkey='.modauthkey($thread['tid']))."\" target=\"_blank\">$thread[subject]</a>".($thread['readperm'] ? " - [$lang[threads_readperm] $thread[readperm]]" : '').($thread['price'] ? " - [$lang[threads_price] $thread[price]]" : ''),
-							"<a href=\"forum.php?mod=forumdisplay&fid=$thread[fid]\" target=\"_blank\">".(empty($thread['isgroup']) ? $_G['cache']['forums'][$thread[fid]]['name'] : $groupsname[$thread[fid]])."</a>",
-								"<a href=\"home.php?mod=space&uid=$thread[authorid]\" target=\"_blank\">$thread[author]</a>",
+								"<input class=\"checkbox\" type=\"checkbox\" name=\"tidarray[]\" value=\"{$thread['tid']}\" />",
+								"<a href=\"forum.php?mod=viewthread&tid={$thread['tid']}".($thread['displayorder'] != -4 ? '' : '&modthreadkey='.modauthkey($thread['tid']))."\" target=\"_blank\">{$thread['subject']}</a>".($thread['readperm'] ? " - [{$lang['threads_readperm']} {$thread['readperm']}]" : '').($thread['price'] ? " - [{$lang['threads_price']} {$thread['price']}]" : ''),
+							"<a href=\"forum.php?mod=forumdisplay&fid={$thread['fid']}\" target=\"_blank\">".(empty($thread['isgroup']) ? $_G['cache']['forums'][$thread['fid']]['name'] : $groupsname[$thread['fid']])."</a>",
+								"<a href=\"home.php?mod=space&uid={$thread['authorid']}\" target=\"_blank\">{$thread['author']}</a>",
 								$thread['replies'],
 								$thread['views'],
 								$thread['lastpost']
@@ -286,10 +286,11 @@ EOT;
 		showformheader('threads&frame=no'.($operation ? '&operation='.$operation : ''), 'target="threadframe"');
 		showhiddenfields($_GET['detail'] ? array('fids' => $fids) : array('fids' => $fids, 'tids' => $tids));
 		if(!$search_tips) {
-			showtableheader(cplang('threads_new_result').' '.$threadcount, 'nobottom');
+			showboxheader(cplang('threads_new_result').' '.$threadcount);
 		} else {
-			showtableheader(cplang('threads_result').' '.$threadcount.' <a href="###" onclick="$(\'threadlist\').style.display=\'none\';$(\'threadsearch\').style.display=\'\';$(\'threadforum\').pp.value=\'\';$(\'threadforum\').page.value=\'\';" class="act lightlink normal">'.cplang('research').'</a>', 'nobottom');
+			showboxheader(cplang('threads_result').' '.$threadcount.' <a href="###" onclick="$(\'threadlist\').style.display=\'none\';$(\'threadsearch\').style.display=\'\';$(\'threadforum\').pp.value=\'\';$(\'threadforum\').page.value=\'\';" class="act lightlink normal">'.cplang('research').'</a>');
 		}
+		showtableheader('', 'nobottom');
 		if(!$threadcount) {
 
 			showtablerow('', 'colspan="3"', cplang('threads_thread_nonexistence'));
@@ -301,7 +302,9 @@ EOT;
 				echo $threads;
 				showtablerow('', array('class="td25" colspan="7"'), array('<input name="chkall" id="chkall" type="checkbox" class="checkbox" onclick="checkAll(\'prefix\', this.form, \'tidarray\', \'chkall\')" /><label for="chkall">'.cplang('select_all').'</label>'));
 				showtablefooter();
-				showtableheader('operation', 'notop');
+				showboxfooter();
+				showboxheader('operation');
+				showtableheader('', 'notop');
 
 			}
 			showsubtitle(array('', 'operation', 'option'));
@@ -348,6 +351,7 @@ EOT;
 
 		showsubmit('modsubmit', 'submit', '', '', $multi);
 		showtablefooter();
+		showboxfooter();
 		showformfooter();
 		echo '<script type="text/JavaScript">ajaxget(\'forum.php?mod=ajax&action=getthreadtypes&fid=\' + $("toforum").value, \'threadtypes\')</script>'; 		
 		echo '<iframe name="threadframe" style="display:none"></iframe>';
@@ -454,7 +458,7 @@ EOT;
 	} elseif($operation == 'forumstick') {
 		shownav('topic', 'threads_forumstick');
 		loadcache(array('forums', 'grouptype'));
-		$forumstickthreads = C::t('common_setting')->fetch('forumstickthreads', true);
+		$forumstickthreads = C::t('common_setting')->fetch_setting('forumstickthreads', true);
 		if(!submitcheck('forumsticksubmit')) {
 			showsubmenu('threads_forumstick', array(
 				array('admin', 'threads&operation=forumstick', !$do),
@@ -479,10 +483,10 @@ EOT;
 						}
 						showtablerow('', array('class="td25"'), array(
 							"<input type=\"checkbox\" class=\"checkbox\" name=\"delete[]\" value=\"$k\">",
-							"<a href=\"forum.php?mod=viewthread&tid=$v[tid]\" target=\"_blank\">$v[subject]</a>",
-							implode(', ', $forumnames),
-							implode(', ', $grouptypes),
-							"<a href=\"".ADMINSCRIPT."?action=threads&operation=forumstick&do=edit&id=$k\">$lang[threads_forumstick_targets_change]</a>",
+							"<a href=\"forum.php?mod=viewthread&tid={$v['tid']}\" target=\"_blank\">{$v['subject']}</a>",
+							(is_array($forumnames) ? implode(', ', $forumnames) : (string)$forumnames),
+							(is_array($grouptypes) ? implode(', ', $grouptypes) : (string)$grouptypes),
+							"<a href=\"".ADMINSCRIPT."?action=threads&operation=forumstick&do=edit&id=$k\">{$lang['threads_forumstick_targets_change']}</a>",
 						));
 					}
 				}
@@ -543,7 +547,7 @@ EOT;
 				$_GET['forumstick_url'] = rawurldecode($_GET['forumstick_url']);
 				if(preg_match('/tid=(\d+)/i', $_GET['forumstick_url'], $matches)) {
 					$forumstick_tid = $matches[1];
-				} elseif(in_array('forum_viewthread', $_G['setting']['rewritestatus']) && $_G['setting']['rewriterule']['forum_viewthread']) {
+				} elseif(is_array($_G['setting']['rewritestatus']) && in_array('forum_viewthread', $_G['setting']['rewritestatus']) && $_G['setting']['rewriterule']['forum_viewthread']) {
 					preg_match_all('/(\{tid\})|(\{page\})|(\{prevpage\})/', $_G['setting']['rewriterule']['forum_viewthread'], $matches);
 					$matches = $matches[0];
 
@@ -562,7 +566,7 @@ EOT;
 					$rewriterule = str_replace(array('{', '}'), array('\{', '\}'), $rewriterule);
 					preg_match("/$rewriterule/i", $_GET['forumstick_url'], $match_result);
 					$forumstick_tid = $match_result[$tidpos];
-				} elseif(in_array('all_script', $_G['setting']['rewritestatus']) && $_G['setting']['rewriterule']['all_script']) {
+				} elseif(is_array($_G['setting']['rewritestatus']) && in_array('all_script', $_G['setting']['rewritestatus']) && $_G['setting']['rewriterule']['all_script']) {
 					preg_match_all('/(\{script\})|(\{param\})/', $_G['setting']['rewriterule']['all_script'], $matches);
 					$matches = $matches[0];
 					$parampos = array_search('{param}', $matches);
@@ -592,7 +596,7 @@ EOT;
 				if(empty($_GET['forumsticktargets'])) {
 					cpmsg('threads_forumstick_targets_empty', "action=threads&operation=forumstick&do=add", 'error');
 				}
-				$stickthread = C::t('forum_thread')->fetch($forumstick_tid);
+				$stickthread = C::t('forum_thread')->fetch_thread($forumstick_tid);
 				$stickthread_tmp = array(
 					'subject' => $stickthread['subject'],
 					'tid' => $forumstick_tid,
@@ -608,7 +612,7 @@ EOT;
 				C::t('forum_thread')->update($forumstick_tid, array('displayorder'=>4));
 			}
 
-			C::t('common_setting')->update('forumstickthreads', $forumstickthreads);
+			C::t('common_setting')->update_setting('forumstickthreads', $forumstickthreads);
 			updatecache(array('forumstick', 'setting'));
 			cpmsg('threads_forumstick_'.$do.'_succeed', "action=threads&operation=forumstick", 'succeed');
 		}

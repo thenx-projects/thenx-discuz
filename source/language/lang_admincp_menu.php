@@ -65,6 +65,7 @@ $lang = array
 	'menu_setting_mobile' => '手机版设置',
 	'menu_setting_tag' => '标签管理',
 	'menu_setting_antitheft' => '防采集设置',
+	'menu_setting_runtests' => '测试用例',
 
 	'menu_forums' => '版块管理',
 	'menu_forums_merge' => '版块合并',
@@ -77,6 +78,7 @@ $lang = array
 	'menu_members_edit' => '用户管理',
 	'menu_members_newsletter' => '发送通知',
 	'menu_members_mobile' => '发送手机通知',
+	'menu_members_sms' => '发送手机短信',
 	'menu_usertag' => '用户标签',
 	'menu_members_edit_ban_user' => '禁止用户',
 	'menu_members_ipban' => '禁止 IP',
@@ -91,6 +93,7 @@ $lang = array
 	'menu_usergroups' => '用户组',
 	'menu_follow' => '推荐关注',
 	'menu_defaultuser' => '推荐好友',
+	'menu_members_verify_profile' => '资料审核',
 
 	'menu_moderate_posts' => '内容审核',
 	'menu_moderate_blogs' => '审核日志',
@@ -144,6 +147,7 @@ $lang = array
 	'menu_tasks' => '站点任务',
 	'menu_magics' => '道具中心',
 	'menu_medals' => '勋章中心',
+	'menu_smsgw' => '短信服务',
 	'menu_misc_help' => '站点帮助',
 	'menu_ec' => '电子商务',
 	'menu_card' => '充值卡密',
@@ -177,7 +181,7 @@ $lang = array
 	'menu_db' => '数据库',
 	'menu_postsplit' => '帖子分表',
 	'menu_threadsplit' => '主题分表',
-	'menu_membersplit' => '用户表优化',
+	'menu_membersplit' => '用户分表',
 	'menu_logs' => '运行记录',
 	'menu_custommenu_manage' => '常用操作管理',
 	'menu_misc_cron' => '计划任务',
@@ -206,10 +210,7 @@ $lang = array
 	'menu_safe_seccheck' => '验证设置',
 	'menu_safe_accountguard' => '账号保镖',
 
-	'menu_setting_manyou' => 'Manyou 设置',
 	'menu_setting_qqconnect' => 'QQ 绑定设置',
-
-	'menu_cloud_doctor' => '诊断工具',
 
 	'admincp_title' => $_G['setting']['bbname'].' 管理中心',
 

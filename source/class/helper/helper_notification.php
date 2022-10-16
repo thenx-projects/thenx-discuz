@@ -66,18 +66,13 @@ class helper_notification {
 		} elseif($category == 1 || $category == 2) {
 			$categoryname = $type;
 		}
-		$notevars['actor'] = "<a href=\"home.php?mod=space&uid=$_G[uid]\">".$_G['member']['username']."</a>";
-		if(!is_numeric($type)) {
-			$vars = explode(':', $note);
-			if(count($vars) == 2) {
-				$notestring = lang('plugin/'.$vars[0], $vars[1], $notevars);
-			} else {
-				$notestring = lang('notification', $note, $notevars);
-			}
-			$frommyapp = false;
+		$notevars['actor'] = "<a href=\"home.php?mod=space&uid={$_G['uid']}\">".$_G['member']['username']."</a>";
+
+		$vars = explode(':', $note);
+		if(count($vars) == 2) {
+			$notestring = lang('plugin/'.$vars[0], $vars[1], $notevars);
 		} else {
-			$frommyapp = true;
-			$notestring = $note;
+			$notestring = lang('notification', $note, $notevars);
 		}
 
 		$oldnote = array();
@@ -125,11 +120,11 @@ class helper_notification {
 				}
 				C::t('common_member_newprompt')->update($touid, array('data' => serialize($newprompt['data'])));
 			} else {
-				C::t('common_member_newprompt')->insert($touid, array($categoryname => 1));
+				C::t('common_member_newprompt')->insert_newprompt($touid, array($categoryname => 1));
 			}
 			require_once libfile('function/mail');
 			$mail_subject = lang('notification', 'mail_to_user');
-			sendmail_touser($touid, $mail_subject, $notestring, $frommyapp ? 'myapp' : $type);
+			sendmail_touser($touid, $mail_subject, $notestring, $type);
 		}
 
 		if(!$system && $_G['uid'] && $touid != $_G['uid']) {
@@ -156,7 +151,7 @@ class helper_notification {
 		}
 	}
 
-	public function get_categorynum($newprompt_data) {
+	public static function get_categorynum($newprompt_data) {
 		global $_G;
 		$categorynum = array();
 		if(empty($newprompt_data) || !is_array($newprompt_data)) {
@@ -177,13 +172,15 @@ class helper_notification {
 		return $categorynum;
 	}
 
-	public function update_newprompt($uid, $type) {
+	public static function update_newprompt($uid, $type) {
 		global $_G;
 		if($_G['member']['newprompt_num']) {
 			$tmpprompt = $_G['member']['newprompt_num'];
 			$num = 0;
 			$updateprompt = 0;
-			if(!empty($tmpprompt[$type])) {
+			if(!$type) {
+				$tmpprompt = [];
+			} elseif(!empty($tmpprompt[$type])) {
 				unset($tmpprompt[$type]);
 				$updateprompt = true;
 			}

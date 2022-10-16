@@ -130,7 +130,7 @@ class extend_thread_trade extends extend_thread_base {
 			}
 			$pid = $this->param['tradepid'];			
 			$this->feed['body_data'] = array(
-				'itemname'=> "<a href=\"forum.php?mod=viewthread&do=tradeinfo&tid=".$this->tid."&pid=$pid\">$_GET[item_name]</a>",
+				'itemname'=> "<a href=\"forum.php?mod=viewthread&do=tradeinfo&tid=".$this->tid."&pid=$pid\">{$_GET['item_name']}</a>",
 				'itemprice'=> $_GET['item_price'],
 				'itemcredit'=> $_GET['item_credit'],
 				'creditunit'=> $this->setting['extcredits'][$this->setting['creditstransextra'][5]]['unit'].$this->setting['extcredits'][$this->setting['creditstransextra'][5]]['title']
@@ -140,7 +140,7 @@ class extend_thread_trade extends extend_thread_base {
 				$this->feed['image_links'] = array("forum.php?mod=viewthread&do=tradeinfo&tid=".$this->tid."&pid=$pid");
 			}
 			if($_GET['tradeaid']) {
-				$attachment = C::t('forum_attachment_n')->fetch('tid:'.$this->tid, $_GET['tradeaid']);
+				$attachment = C::t('forum_attachment_n')->fetch_attachment('tid:'.$this->tid, $_GET['tradeaid']);
 				if(in_array($attachment['filetype'], array('image/gif', 'image/jpeg', 'image/png'))) {
 					$imgurl = $this->setting['attachurl'].'forum/'.($attachment['thumb'] && $attachment['filetype'] != 'image/gif' ? getimgthumbname($attachment['attachment']) : $attachment['attachment']);
 					$this->feed['images'][] = $attachment['attachment'] ? $imgurl : '';
@@ -304,9 +304,9 @@ class extend_thread_trade extends extend_thread_base {
 				}
 
 				if($trade['aid'] && $_GET['tradeaid'] && $trade['aid'] != $_GET['tradeaid']) {
-					$attach = C::t('forum_attachment_n')->fetch('tid:'.$this->thread['tid'], $trade['aid']);
+					$attach = C::t('forum_attachment_n')->fetch_attachment('tid:'.$this->thread['tid'], $trade['aid']);
 					C::t('forum_attachment')->delete($trade['aid']);
-					C::t('forum_attachment_n')->delete('tid:'.$this->thread['tid'], $trade['aid']);
+					C::t('forum_attachment_n')->delete_attachment('tid:'.$this->thread['tid'], $trade['aid']);
 					dunlink($attach);
 					$this->param['threadimageaid'] = $_GET['tradeaid'];
 					convertunusedattach($_GET['tradeaid'], $this->thread['tid'], $this->post['pid']);
@@ -326,7 +326,7 @@ class extend_thread_trade extends extend_thread_base {
 				}
 
 				$data = array('aid' => $_GET['tradeaid'], 'account' => $seller, 'tenpayaccount' => $_GET['tenpay_account'], 'subject' => $item_name, 'price' => $item_price, 'amount' => $item_number, 'quality' => $item_quality, 'locus' => $item_locus, 'transport' => $item_transport, 'ordinaryfee' => $postage_mail, 'expressfee' => $postage_express, 'emsfee' => $postage_ems, 'itemtype' => $item_type, 'expiration' => $expiration, 'closed' => $closed, 'costprice' => $item_costprice, 'credit' => $item_credit, 'costcredit' => $_GET['item_costcredit']);
-				C::t('forum_trade')->update($this->thread['tid'], $this->post['pid'], $data);
+				C::t('forum_trade')->update_trade($this->thread['tid'], $this->post['pid'], $data);
 				if(!empty($_GET['infloat'])) {
 					$viewpid = C::t('forum_post')->fetch_threadpost_by_tid_invisible($this->thread['tid']);
 					$viewpid = $viewpid['pid'];

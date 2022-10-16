@@ -21,7 +21,7 @@ class forum_upload {
 	var $error_sizelimit;
 	var $getaid;
 
-	function forum_upload($getaid = 0) {
+	function __construct($getaid = 0) {
 		global $_G;
 
 		$_G['uid'] = $this->uid = intval($_GET['uid']);
@@ -105,7 +105,7 @@ class forum_upload {
 			if((!getglobal('setting/imagelib') && $size > (getglobal('setting/gdlimit') ? getglobal('setting/gdlimit') : 16777216)) || $size < 16 ) {
 				return $this->uploadmsg(13);
 			}
-			if(!in_array($type, array(1, 2, 3, 6, 13)) || ($upload->attach['ext'] == 'swf' && $type != 4 && $type != 13)) {
+			if(!in_array($type, array(1, 2, 3, 6, 13, 18)) || ($upload->attach['ext'] == 'swf' && $type != 4 && $type != 13)) {
 				return $this->uploadmsg(7);
 			}
 		}
@@ -132,14 +132,16 @@ class forum_upload {
 			if($_G['setting']['thumbsource'] && $_G['setting']['sourcewidth'] && $_G['setting']['sourceheight']) {
 				$thumb = $image->Thumb($upload->attach['target'], '', $_G['setting']['sourcewidth'], $_G['setting']['sourceheight'], 1, 1) ? 1 : 0;
 				$width = $image->imginfo['width'];
+				$height = $image->imginfo['height'];
 				$upload->attach['size'] = $image->imginfo['size'];
 			}
 			if($_G['setting']['thumbstatus']) {
 				$thumb = $image->Thumb($upload->attach['target'], '', $_G['setting']['thumbwidth'], $_G['setting']['thumbheight'], $_G['setting']['thumbstatus'], 0) ? 1 : 0;
 				$width = $image->imginfo['width'];
+				$height = $image->imginfo['height'];
 			}
 			if($_G['setting']['thumbsource'] || !$_G['setting']['thumbstatus']) {
-				list($width) = @getimagesize($upload->attach['target']);
+				list($width, $height) = @getimagesize($upload->attach['target']);
 			}
 		}
 		if($_GET['type'] != 'image' && $upload->attach['isimage']) {
@@ -157,10 +159,11 @@ class forum_upload {
 			'thumb' => $thumb,
 			'remote' => $remote,
 			'width' => $width,
+			'height' => $height
 		);
 		C::t('forum_attachment_unused')->insert($insert);
 		if($upload->attach['isimage'] && $_G['setting']['showexif']) {
-			C::t('forum_attachment_exif')->insert($aid, $exif);
+			C::t('forum_attachment_exif')->insert_exif($aid, $exif);
 		}
 		return $this->uploadmsg(0);
 	}

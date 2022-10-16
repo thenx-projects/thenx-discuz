@@ -85,14 +85,15 @@ if($operation == 'setting') {
 ?>
 <script type="text/JavaScript">
 var rowtypedata = [
-	[[1,'<input type="text" class="txt" name="newcatorder[]" value="0" />', 'td25'], [3, '<input name="newcat[]" value="<?php echo $lang[groups_type_level_1];?>" size="20" type="text" class="txt" /> <?php echo cplang('groups_type_show_rows');?><input type="text" name="newforumcolumns[]" value="0" class="txt" style="width: 30px;" />']],
-	[[1,'<input type="text" class="txt" name="neworder[{1}][]" value="0" />', 'td25'], [3, '<div class="board"><input name="newforum[{1}][]" value="<?php echo $lang[groups_type_sub_new];?>" size="20" type="text" class="txt" /><?php echo cplang('groups_type_show_rows');?><input type="text" name="newforumcolumns[{1}][]" value="0" class="txt" style="width: 30px;" /></div>']],
-	[[1,'<input type="text" class="txt" name="neworder[{1}][]" value="0" />', 'td25'], [3, '<div class="childboard"><input name="newforum[{1}][]" value="<?php echo $lang[groups_type_sub_new];?>" size="20" type="text" class="txt" /><?php echo cplang('groups_type_show_rows');?><input type="text" name="newforumcolumns[{1}][]" value="0" class="txt" style="width: 30px;" /></div>']],
+	[[1,'<input type="text" class="txt" name="newcatorder[]" value="0" />', 'td25'], [3, '<input name="newcat[]" value="<?php echo $lang['groups_type_level_1'];?>" size="20" type="text" class="txt" /> <?php echo cplang('groups_type_show_rows');?><input type="text" name="newforumcolumns[]" value="0" class="txt" style="width: 30px;" />']],
+	[[1,'<input type="text" class="txt" name="neworder[{1}][]" value="0" />', 'td25'], [3, '<div class="board"><input name="newforum[{1}][]" value="<?php echo $lang['groups_type_sub_new'];?>" size="20" type="text" class="txt" /><?php echo cplang('groups_type_show_rows');?><input type="text" name="newforumcolumns[{1}][]" value="0" class="txt" style="width: 30px;" /></div>']],
+	[[1,'<input type="text" class="txt" name="neworder[{1}][]" value="0" />', 'td25'], [3, '<div class="childboard"><input name="newforum[{1}][]" value="<?php echo $lang['groups_type_sub_new'];?>" size="20" type="text" class="txt" /><?php echo cplang('groups_type_show_rows');?><input type="text" name="newforumcolumns[{1}][]" value="0" class="txt" style="width: 30px;" /></div>']],
 ];
 </script>
 <?php
 		showformheader('group&operation=type');
-		showtableheader('');
+		showboxheader();
+		showtableheader();
 		showsubtitle(array('display_order', 'groups_type_name', 'groups_type_count', 'groups_type_operation'));
 
 		$forums = $showedforums = array();
@@ -137,6 +138,7 @@ var rowtypedata = [
 
 		showsubmit('editsubmit');
 		showtablefooter();
+		showboxheader('', 'tb1');
 		showformfooter();
 
 	} else {
@@ -226,13 +228,13 @@ var rowtypedata = [
 			$query  = C::t('forum_forum')->fetch_all_for_search($conditions, $start_limit, $_G['setting']['group_perpage']);
 			foreach($query as $group) {
 				$groups .= showtablerow('', array('class="td25"', '', ''), array(
-					"<input type=\"checkbox\" name=\"fidarray[]\" value=\"$group[fid]\" class=\"checkbox\">",
-					"<span class=\"lightfont right\">(fid:$group[fid])</span><a href=\"forum.php?mod=forumdisplay&fid=$group[fid]\" target=\"_blank\">$group[name]</a>",
+					"<input type=\"checkbox\" name=\"fidarray[]\" value=\"{$group['fid']}\" class=\"checkbox\">",
+					"<span class=\"lightfont right\">(fid:{$group['fid']})</span><a href=\"forum.php?mod=forumdisplay&fid={$group['fid']}\" target=\"_blank\">{$group['name']}</a>",
 					$group['posts'],
 					$group['threads'],
 					$group['membernum'],
-					"<a href=\"home.php?mod=space&uid=$group[founderuid]\" target=\"_blank\">$group[foundername]</a>",
-					"<a href=\"".ADMINSCRIPT."?action=group&operation=editgroup&fid=$group[fid]\" class=\"act\">".cplang('detail')."</a>"
+					"<a href=\"home.php?mod=space&uid={$group['founderuid']}\" target=\"_blank\">{$group['foundername']}</a>",
+					"<a href=\"".ADMINSCRIPT."?action=group&operation=editgroup&fid={$group['fid']}\" class=\"act\">".cplang('detail')."</a>"
 				), TRUE);
 			}
 
@@ -380,7 +382,7 @@ var rowtypedata = [
 					$query = C::t('forum_groupuser')->fetch_all_by_fid($sourcefid, -1);
 					foreach($query as $row) {
 						if(empty($targetusers[$row['uid']])) {
-							$newgroupusers[$row[uid]] = daddslashes($row['username']);
+							$newgroupusers[$row['uid']] = daddslashes($row['username']);
 							$adduser ++;
 						}
 					}
@@ -701,7 +703,7 @@ var rowtypedata = [
 		$default_perm = array('allowstickthread' => 0, 'allowbumpthread' => 0, 'allowhighlightthread' => 0, 'allowlivethread' => 0, 'allowstampthread' => 0, 'allowclosethread' => 0, 'allowmergethread' => 0, 'allowsplitthread' => 0, 'allowrepairthread' => 0, 'allowrefund' => 0, 'alloweditpoll' => 0, 'allowremovereward' => 0, 'alloweditactivity' => 0, 'allowedittrade' => 0, 'allowdigestthread' => 0, 'alloweditpost' => 0, 'allowwarnpost' => 0, 'allowbanpost' => 0, 'allowdelpost' => 0, 'allowupbanner' => 0, 'disablepostctrl' => 0, 'allowviewip' => 0);
 		$_GET['newgroup_userperm'] = array_merge($default_perm, $_GET['newgroup_userperm']);
 		if(serialize($_GET['newgroup_userperm']) != serialize($group_userperm)) {
-			C::t('common_setting')->update('group_userperm', $_GET['newgroup_userperm']);
+			C::t('common_setting')->update_setting('group_userperm', $_GET['newgroup_userperm']);
 			updatecache('setting');
 		}
 		cpmsg('group_userperm_succeed', 'action=group&operation=userperm', 'succeed');
@@ -714,10 +716,10 @@ var rowtypedata = [
 			$query = C::t('forum_grouplevel')->fetch_all_creditslower_order();
 			foreach($query as $level) {
 				$grouplevels .= showtablerow('', array('class="td25"', '', 'class="td28"', 'class=td28'), array(
-					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[$level[levelid]]\" value=\"$level[levelid]\">",
-					"<input type=\"text\" class=\"txt\" size=\"12\" name=\"levelnew[$level[levelid]][leveltitle]\" value=\"$level[leveltitle]\">",
-					"<input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[$level[levelid]][creditshigher]\" value=\"$level[creditshigher]\" /> ~ <input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[$level[levelid]][creditslower]\" value=\"$level[creditslower]\" disabled />",
-					"<a href=\"".ADMINSCRIPT."?action=group&operation=level&levelid=$level[levelid]\" class=\"act\">$lang[detail]</a>"
+					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[{$level['levelid']}]\" value=\"{$level['levelid']}\">",
+					"<input type=\"text\" class=\"txt\" size=\"12\" name=\"levelnew[{$level['levelid']}]['leveltitle']}\" value=\"{$level['leveltitle']}\">",
+					"<input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[{$level['levelid']}]['creditshigher']}\" value=\"{$level['creditshigher']}\" /> ~ <input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[{$level['levelid']}]['creditslower']}\" value=\"{$level['creditslower']}\" disabled />",
+					"<a href=\"".ADMINSCRIPT."?action=group&operation=level&levelid={$level['levelid']}\" class=\"act\">{$lang['detail']}</a>"
 				), TRUE);
 			}
 echo <<<EOT
@@ -816,7 +818,7 @@ EOT;
 			}
 			if($ids = dimplode($_GET['delete'])) {
 				$levelcount = C::t('forum_grouplevel')->fetch_count();
-				if(count($_GET['delete']) == $levelcount) {
+				if(!empty($_GET['delete']) && is_array($_GET['delete']) && count($_GET['delete']) == $levelcount) {
 					updatecache('grouplevels');
 					cpmsg('group_level_succeed_except_all_levels', 'action=group&operation=level', 'succeed');
 
@@ -856,7 +858,7 @@ EOT;
 				} else {
 					$grouplevelicon = $_G['setting']['attachurl'].'common/'.$grouplevel['icon'].'?'.random(6);
 				}
-				$groupleveliconhtml = '<label><input type="checkbox" class="checkbox" name="deleteicon[{$grouplevel[levelid]}]" value="yes" /> '.$lang['delete'].'</label><br /><img src="'.$grouplevelicon.'" />';
+				$groupleveliconhtml = '<label><input type="checkbox" class="checkbox" name="deleteicon['.$grouplevel['levelid'].']" value="yes" /> '.$lang['delete'].'</label><br /><img src="'.$grouplevelicon.'" />';
 			}
 			showsetting('group_level_icon', 'iconnew', $grouplevel['icon'], 'filetext', '', 0, $groupleveliconhtml);
 
@@ -908,7 +910,7 @@ EOT;
 			showformfooter();
 		} else {
 			$dataarr = array();
-			$levelnew = $_GET['levelnew'];
+			$levelnew = (!empty($_GET['levelnew']) && is_array($_GET['levelnew'])) ? $_GET['levelnew'] : array();
 			$dataarr['leveltitle'] = $levelnew['leveltitle'];
 			$default_creditspolicy = array('post' => 0, 'reply' => 0, 'digest' => 0, 'postattach' => 0, 'getattach' => 0, 'tradefinished' => 0, 'joinpoll' => 0);
 			$levelnew['creditspolicy'] = empty($levelnew['creditspolicy']) ? $default_creditspolicy : array_merge($default_creditspolicy, $levelnew['creditspolicy']);
@@ -976,8 +978,8 @@ EOT;
 		$groups = array();
 		$query = C::t('forum_forum')->fetch_all_info_by_fids($_GET['fidarray']);
 		foreach($query as $group) {
-			$groups[$group[fid]] = $group;
-			$fups[$group[fup]] ++;
+			$groups[$group['fid']] = $group;
+			$fups[$group['fup']] ++;
 		}
 		if(submitcheck('validate')) {
 			C::t('forum_forum')->validate_level_for_group($_GET['fidarray']);
@@ -1006,10 +1008,10 @@ EOT;
 	$query = C::t('forum_forum')->fetch_all_validate($startlimit, $startlimit+$perpage);
 	foreach($query as $group) {
 		$groups .= showtablerow('', array('class="td25"', '', ''), array(
-			"<input type=\"checkbox\" name=\"fidarray[]\" value=\"$group[fid]\" class=\"checkbox\">",
-			"<a href=\"forum.php?mod=forumdisplay&fid=$group[fid]\" target=\"_blank\">$group[name]</a>",
-			empty($_G['cache']['grouptype']['first'][$group[fup]]) ? $_G['cache']['grouptype']['second'][$group[fup]]['name'] : $_G['cache']['grouptype']['first'][$group[fup]]['name'],
-			"<a href=\"home.php?mod=space&uid=$group[founderuid]\" target=\"_blank\">$group[foundername]</a>",
+			"<input type=\"checkbox\" name=\"fidarray[]\" value=\"{$group['fid']}\" class=\"checkbox\">",
+			"<a href=\"forum.php?mod=forumdisplay&fid={$group['fid']}\" target=\"_blank\">{$group['name']}</a>",
+			empty($_G['cache']['grouptype']['first'][$group['fup']]) ? $_G['cache']['grouptype']['second'][$group['fup']]['name'] : $_G['cache']['grouptype']['first'][$group['fup']]['name'],
+			"<a href=\"home.php?mod=space&uid={$group['founderuid']}\" target=\"_blank\">{$group['foundername']}</a>",
 			dgmdate($group['dateline'])
 		), TRUE);
 		$groups .=showtablerow('', array('','colspan="4"'), array('',cplang('group_mod_description').'&nbsp;:&nbsp;'.$group['description']), TRUE);
@@ -1051,14 +1053,14 @@ function showgroup(&$forum, $type = '', $last = '') {
 		$selectgroups = '';
 		if($type == 'group') {
 			$secondlist = array();
-			if(!empty($_G['cache']['grouptype']['first'][$forum[fid]]['secondlist'])){
-				$secondlist = $_G['cache']['grouptype']['first'][$forum[fid]]['secondlist'];
+			if(!empty($_G['cache']['grouptype']['first'][$forum['fid']]['secondlist'])){
+				$secondlist = $_G['cache']['grouptype']['first'][$forum['fid']]['secondlist'];
 			}
 			$secondlist[] = $forum['fid'];
 			foreach($secondlist as $sfid) {
 				$selectgroups .= "&selectgroupid[]=$sfid";
 			}
-			$forum['groupnum'] = $_G['cache']['grouptype']['first'][$forum[fid]]['groupnum'];
+			$forum['groupnum'] = $_G['cache']['grouptype']['first'][$forum['fid']]['groupnum'];
 		} else {
 			$selectgroups = '&selectgroupid[]='.$forum['fid'];
 		}
@@ -1099,7 +1101,7 @@ function searchgroups($submit) {
 
 	/*search={"nav_group_manage":"action=group&operation=manage"}*/
 	showtagheader('div', 'searchgroups', !$submit);
-	echo '<script src="static/js/calendar.js" type="text/javascript"></script>';
+	echo '<script src="' . STATICURL . 'js/calendar.js" type="text/javascript"></script>';
 	showformheader("group&operation=manage");
 	showtableheader();
 	showsetting('groups_manage_name', 'srchname', $srchname, 'text');
@@ -1135,6 +1137,7 @@ function countgroups() {
 		foreach($srchname as $u) {
 			$srchnameary[] = " f.name LIKE '%".str_replace(array('%', '*', '_'), array('\%', '%', '\_'), $u)."%'";
 		}
+		$srchnameary = is_array($srchnameary) ? $srchnameary : array($srchnameary);
 		$conditions .= " AND (".implode(' OR ', $srchnameary).")";
 	}
 	$conditions .= intval($_GET['srchfid']) ? " AND f.fid='".intval($_GET['srchfid'])."'" : '';
@@ -1160,6 +1163,7 @@ function countgroups() {
 		foreach($srchfounder as $fu) {
 			$srchfnameary[] = " ff.foundername LIKE '".str_replace(array('%', '*', '_'), array('\%', '%', '\_'), $fu)."'";
 		}
+		$srchfnameary = is_array($srchnameary) ? $srchfnameary : array($srchfnameary);
 		$conditions .= " AND (".implode(' OR ', $srchfnameary).")";
 	}
 
@@ -1190,8 +1194,9 @@ function delete_groupimg($fidarray) {
 
 function array_flip_keys($arr) {
 	$arr2 = array();
-	$arrkeys = @array_keys($arr);
-	list(, $first) = @each(array_slice($arr, 0, 1));
+	$arr = is_array($arr) ? $arr : array();
+	$arrkeys = is_array($arr) ? array_keys($arr) : array();
+	$first = current(array_slice($arr, 0, 1));
 	if($first) {
 		foreach($first as $k=>$v) {
 			foreach($arrkeys as $key) {
@@ -1213,7 +1218,7 @@ function cacherecommend($fidstr, $return = true) {
 			if($val['type'] == 'sub') {
 				$row = array('fid' => $val['fid'], 'name' => $val['name'], 'description' => $val['description'], 'icon' => $val['icon']);
 				$row['icon'] = get_groupimg($row['icon'], 'icon');
-				$temp[$row[fid]] = $row;
+				$temp[$row['fid']] = $row;
 			}
 		}
 		foreach($recommends as $key) {
@@ -1228,8 +1233,8 @@ function cacherecommend($fidstr, $return = true) {
 			$row['icon'] = get_groupimg($row['icon'], 'icon');
 			if(count($group_recommend) == $recommend_num) {
 				break;
-			} elseif(empty($group_recommend[$row[fid]])) {
-				$group_recommend[$row[fid]] = $row;
+			} elseif(empty($group_recommend[$row['fid']])) {
+				$group_recommend[$row['fid']] = $row;
 			}
 		}
 	}

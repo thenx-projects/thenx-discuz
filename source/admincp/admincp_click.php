@@ -28,6 +28,7 @@ if(empty($operation)) {
 		showtips('click_edit_tips');
 		/*search*/
 		showformheader('click&idtype='.$idtype);
+		showboxheader();
 		showtableheader();
 		showtablerow('', array('class="td25"', 'class="td28"', 'class="td25"', 'class="td25"', '', '', '', 'class="td23"', 'class="td25"'), array(
 			'',
@@ -56,19 +57,21 @@ EOF;
 		foreach(C::t('home_click')->fetch_all_by_idtype($idtype) as $click) {
 			$checkavailable = $click['available'] ? 'checked' : '';
 			$click['idtype'] = cplang('click_edit_'.$click['idtype']);
+			$iconurl = preg_match('/^https?:\/\//is', $click['icon']) ? $click['icon'] : STATICURL . 'image/click/' . $click['icon'];
 			showtablerow('', array('class="td25"', 'class="td28"', 'class="td25"', 'class="td25"', '', '', '', 'class="td23"', 'class="td25"'), array(
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$click[clickid]\">",
-				"<input type=\"text\" class=\"txt\" size=\"3\" name=\"displayorder[$click[clickid]]\" value=\"$click[displayorder]\">",
-				"<img src=\"static/image/click/$click[icon]\">",
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"available[$click[clickid]]\" value=\"1\" $checkavailable>",
-				"<input type=\"text\" class=\"txt\" size=\"10\" name=\"name[$click[clickid]]\" value=\"$click[name]\">",
-				"<input type=\"text\" class=\"txt\" size=\"20\" name=\"icon[$click[clickid]]\" value=\"$click[icon]\">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$click['clickid']}\">",
+				"<input type=\"text\" class=\"txt\" size=\"3\" name=\"displayorder[{$click['clickid']}]\" value=\"{$click['displayorder']}\">",
+				"<img src=\"$iconurl\">",
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"available[{$click['clickid']}]\" value=\"1\" $checkavailable>",
+				"<input type=\"text\" class=\"txt\" size=\"10\" name=\"name[{$click['clickid']}]\" value=\"{$click['name']}\">",
+				"<input type=\"text\" class=\"txt\" size=\"20\" name=\"icon[{$click['clickid']}]\" value=\"{$click['icon']}\">",
 				$click['idtype']
 			));
 		}
 		echo '<tr><td></td><td colspan="8"><div><a href="###" onclick="addrow(this, 0)" class="addtr">'.$lang['click_edit_addnew'].'</a></div></td></tr>';
 		showsubmit('clicksubmit', 'submit', 'del');
 		showtablefooter();
+		showboxfooter();
 		showformfooter();
 
 	} else {
@@ -113,7 +116,7 @@ EOF;
 
 		$keys = $ids = $_G['cache']['click'] = array();
 		foreach(C::t('home_click')->fetch_all_by_available() as $value) {
-			if(count($_G['cache']['click'][$value['idtype']]) < 8) {
+			if(!isset($_G['cache']['click'][$value['idtype']]) || count($_G['cache']['click'][$value['idtype']]) < 8) {
 				$keys[$value['idtype']] = $keys[$value['idtype']] ? ++$keys[$value['idtype']] : 1;
 				$_G['cache']['click'][$value['idtype']][$keys[$value['idtype']]] = $value;
 			} else {

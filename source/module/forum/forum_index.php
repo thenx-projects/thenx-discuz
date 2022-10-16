@@ -129,7 +129,8 @@ if(!$gid && $_G['setting']['collectionstatus'] && ($_G['setting']['collectionrec
 }
 
 if(empty($gid) && empty($_G['member']['accessmasks']) && empty($showoldetails) && !IS_ROBOT) {
-	extract(get_index_memory_by_groupid($_G['member']['groupid']));
+	$memindex = get_index_memory_by_groupid($_G['member']['groupid']);
+	extract($memindex);
 	if(defined('FORUM_INDEX_PAGE_MEMORY') && FORUM_INDEX_PAGE_MEMORY) {
 		categorycollapse();
 		if(!defined('IN_ARCHIVER')) {
@@ -236,10 +237,10 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 
 	foreach($forums as $forum) {
 		if($forum_fields[$forum['fid']]['fid']) {
-			$forum = array_merge($forum, $forum_fields[$forum['fid']]);
+			$forum = (array_key_exists('fid', $forum) && array_key_exists($forum['fid'], $forum_fields)) ? array_merge($forum, $forum_fields[$forum['fid']]) : $forum;
 		}
-		if($forum_access['fid']) {
-			$forum = array_merge($forum, $forum_access[$forum['fid']]);
+		if(!empty($forum_access['fid'])) {
+			$forum = (array_key_exists('fid', $forum) && array_key_exists($forum['fid'], $forum_access)) ? array_merge($forum, $forum_access[$forum['fid']]) : $forum;
 		}
 		$forumname[$forum['fid']] = strip_tags($forum['name']);
 		$forum['extra'] = empty($forum['extra']) ? array() : dunserialize($forum['extra']);
@@ -286,6 +287,7 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 
 	foreach($catlist as $catid => $category) {
 		$catlist[$catid]['collapseimg'] = 'collapsed_no.gif';
+		$catlist[$catid]['collapseicon'] = '_no';
 		if($catlist[$catid]['forumscount'] && $category['forumcolumns']) {
 			$catlist[$catid]['forumcolwidth'] = (floor(100 / $category['forumcolumns']) - 0.1).'%';
 			$catlist[$catid]['endrows'] = '';
@@ -306,6 +308,7 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 		$catlist[0]['type'] = 'group';
 		$catlist[0]['name'] = $_G['setting']['bbname'];
 		$catlist[0]['collapseimg'] = 'collapsed_no.gif';
+		$catlist[0]['collapseicon'] = '_no';
 	} else {
 		unset($catlist[0]);
 	}
@@ -318,7 +321,7 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 			$onlinenum = C::app()->session->count();
 			if($onlinenum > $onlineinfo[0]) {
 				$onlinerecord = "$onlinenum\t".TIMESTAMP;
-				C::t('common_setting')->update('onlinerecord', $onlinerecord);
+				C::t('common_setting')->update_setting('onlinerecord', $onlinerecord);
 				savecache('onlinerecord', $onlinerecord);
 				$onlineinfo = array($onlinenum, TIMESTAMP);
 			}
@@ -330,7 +333,7 @@ if(!$gid && (!defined('FORUM_INDEX_PAGE_MEMORY') || !FORUM_INDEX_PAGE_MEMORY)) {
 
 		$detailstatus = $showoldetails == 'yes' || (((!isset($_G['cookie']['onlineindex']) && !$_G['setting']['whosonline_contract']) || $_G['cookie']['onlineindex']) && $onlinenum < 500 && !$showoldetails);
 
-		$guestcount = $membercount = 0;
+		$guestcount = $membercount = $invisiblecount = 0;
 		if(!empty($_G['setting']['sessionclose'])) {
 			$detailstatus = false;
 			$membercount = C::app()->session->count(1);
@@ -522,9 +525,11 @@ function categorycollapse() {
 	foreach($catlist as $fid => $forum) {
 		if(!isset($_G['cookie']['collapse']) || strpos($_G['cookie']['collapse'], '_category_'.$fid.'_') === FALSE) {
 			$catlist[$fid]['collapseimg'] = 'collapsed_no.gif';
+			$catlist[$fid]['collapseicon'] = '_no';
 			$collapse['category_'.$fid] = '';
 		} else {
 			$catlist[$fid]['collapseimg'] = 'collapsed_yes.gif';
+			$catlist[$fid]['collapseicon'] = '_yes';
 			$collapse['category_'.$fid] = 'display: none';
 		}
 	}
@@ -532,9 +537,11 @@ function categorycollapse() {
 	for($i = -2; $i <= 0; $i++) {
 		if(!isset($_G['cookie']['collapse']) || strpos($_G['cookie']['collapse'], '_category_'.$i.'_') === FALSE) {
 			$collapse['collapseimg_'.$i] = 'collapsed_no.gif';
+			$collapse['collapseicon_'.$i] = '_no';
 			$collapse['category_'.$i] = '';
 		} else {
 			$collapse['collapseimg_'.$i] = 'collapsed_yes.gif';
+			$collapse['collapseicon_'.$i] = '_yes';
 			$collapse['category_'.$i] = 'display: none';
 		}
 	}

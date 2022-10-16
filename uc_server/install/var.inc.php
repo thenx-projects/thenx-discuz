@@ -30,7 +30,7 @@ $sqlfile = ROOT_PATH.'./install/uc.sql';
 $lockfile = ROOT_PATH.'./data/install.lock';
 
 define('CHARSET', 'utf-8');
-define('DBCHARSET', 'utf8');
+define('DBCHARSET', 'utf8mb4');
 
 define('ORIG_TABLEPRE', 'uc_');
 
@@ -69,14 +69,16 @@ define('UNDEFINE_FUNC', 32);
 define('MISSING_PARAMETER', 33);
 define('LOCK_FILE_NOT_TOUCH', 34);
 
-$func_items = array('mysql_connect', 'gethostbyname', 'file_get_contents', 'xml_parser_create');
+$func_items = array('mysqli_connect', 'xml_parser_create', 'json_encode');// MySQLi Only, Git新增
 
 $env_items = array
 (
 	'os' => array('c' => 'PHP_OS', 'r' => 'notset', 'b' => 'unix'),
-	'php' => array('c' => 'PHP_VERSION', 'r' => '4.0', 'b' => '5.0'),
+	'php' => array('c' => 'PHP_VERSION', 'r' => '5.6', 'b' => '7.3'),
 	'attachmentupload' => array('r' => 'notset', 'b' => '2M'),
 	'gdversion' => array('r' => '1.0', 'b' => '2.0'),
+	'curl' => array('r' => 'notset', 'b' => 'enable'),
+	'opcache' => array('r' => 'notset', 'b' => 'enable'),
 	'diskspace' => array('r' => '10M', 'b' => 'notset'),
 );
 

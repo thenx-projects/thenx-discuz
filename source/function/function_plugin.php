@@ -109,7 +109,7 @@ function pluginupgrade($pluginarray, $installtype) {
 		}
 		foreach($pluginarray['var'] as $config) {
 			if(!in_array($config['variable'], $pluginvars)) {
-				$data = array('pluginid' => $plugin[pluginid]);
+				$data = array('pluginid' => $plugin['pluginid']);
 				foreach($config as $key => $val) {
 					$data[$key] = $val;
 				}
@@ -255,9 +255,9 @@ function runquery($sql) {
 
 function createtable($sql, $dbcharset) {
 	$type = strtoupper(preg_replace("/^\s*CREATE TABLE\s+.+\s+\(.+?\).*(ENGINE|TYPE)\s*=\s*([a-z]+?).*$/isU", "\\2", $sql));
-	$type = in_array($type, array('MYISAM', 'HEAP')) ? $type : 'MYISAM';
-	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql).
-	(DB::$db->version() > '4.1' ? " ENGINE=$type DEFAULT CHARSET=$dbcharset" : " TYPE=$type");
+	$defaultengine = strtolower(getglobal("config/db/common/engine")) !== 'innodb' ? 'MyISAM' : 'InnoDB';
+	$type = in_array($type, array('INNODB', 'MYISAM', 'HEAP', 'MEMORY')) ? $type : $defaultengine;
+	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql) . " ENGINE=$type DEFAULT CHARSET=" . getglobal("config/db/1/dbcharset") . (getglobal("config/db/1/dbcharset") === 'utf8mb4' ? " COLLATE=utf8mb4_unicode_ci" : "");
 }
 
 function updatetable($sql) {
@@ -266,7 +266,8 @@ function updatetable($sql) {
 	$config = array(
 		'dbcharset' => $_G['config']['db']['1']['dbcharset'],
 		'charset' => $_G['config']['output']['charset'],
-		'tablepre' => $_G['config']['db']['1']['tablepre']
+		'tablepre' => $_G['config']['db']['1']['tablepre'],
+		'engine' => $_G['config']['db']['common']['engine']
 	);
 
 	preg_match_all("/CREATE\s+TABLE.+?pre\_(.+?)\s*\((.+?)\)\s*(ENGINE|TYPE)\s*=\s*(\w+)/is", $sql, $matches);
@@ -284,9 +285,10 @@ function updatetable($sql) {
 
 			$maths[3] = strtoupper($maths[3]);
 			if($maths[3] == 'MEMORY' || $maths[3] == 'HEAP') {
-				$type = helper_dbtool::dbversion() > '4.1' ? " ENGINE=MEMORY".(empty($config['dbcharset'])?'':" DEFAULT CHARSET=$config[dbcharset]" ): " TYPE=HEAP";
+				$type = " ENGINE=MEMORY".(empty($config['dbcharset'])?'':" DEFAULT CHARSET={$config['dbcharset']}" );
 			} else {
-				$type = helper_dbtool::dbversion() > '4.1' ? " ENGINE=MYISAM".(empty($config['dbcharset'])?'':" DEFAULT CHARSET=$config[dbcharset]" ): " TYPE=MYISAM";
+				$engine = $config['engine'] !== 'innodb' ? 'MyISAM' : 'InnoDB';
+				$type = " ENGINE=". $engine . (empty($config['dbcharset']) ? '' :" DEFAULT CHARSET={$config['dbcharset']}");
 			}
 			$usql = $maths[1].$type;
 

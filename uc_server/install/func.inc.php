@@ -59,14 +59,16 @@ function show_msg($error_no, $error_msg = 'ok', $success = 1, $quit = TRUE) {
 }
 
 function check_db($dbhost, $dbuser, $dbpw, $dbname, $tablepre) {
-	if(!function_exists('mysql_connect') && !function_exists('mysqli_connect')) {
-		show_msg('undefine_func', 'mysql_connect', 0);
+	if(!function_exists('mysqli_connect')) {
+		show_msg('undefine_func', 'mysqli_connect', 0);
 	}
-	$mysqlmode = function_exists('mysql_connect') ? 'mysql' : 'mysqli';
-	$link = ($mysqlmode == 'mysql') ? @mysql_connect($dbhost, $dbuser, $dbpw) : new mysqli($dbhost, $dbuser, $dbpw);
-	if(($mysqlmode == 'mysql' && !$link) || ($mysqlmode != 'mysql' && $link->connect_errno)) {
-		$errno = ($mysqlmode == 'mysql') ? mysql_errno() : $link->connect_errno;
-		$error = ($mysqlmode == 'mysql') ? mysql_error() : $link->connect_error;
+
+	mysqli_report(MYSQLI_REPORT_OFF);
+
+	$link = @new mysqli($dbhost, $dbuser, $dbpw);
+	if(!$link) {
+		$errno = mysqli_errno($link);
+		$error = mysqli_error($link);
 		if($errno == 1045) {
 			show_msg('database_errno_1045', $error, 0);
 		} elseif($errno == 2003) {
@@ -75,11 +77,11 @@ function check_db($dbhost, $dbuser, $dbpw, $dbname, $tablepre) {
 			show_msg('database_connect_error', $error, 0);
 		}
 	} else {
-		if($query = (($mysqlmode == 'mysql') ? @mysql_query("SHOW TABLES FROM $dbname") : $link->query("SHOW TABLES FROM $dbname"))) {
+		if($query = ($link->query("SHOW TABLES FROM $dbname"))) {
 			if(!$query) {
 				return false;
 			}
-			while($row = (($mysqlmode == 'mysql') ? mysql_fetch_row($query) : $query->fetch_row())) {
+			while($row = ($query->fetch_row())) {
 				if(preg_match("/^$tablepre/", $row[0])) {
 					return false;
 				}
@@ -184,7 +186,7 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items) {
 			}
 		}
 		if(VIEW_OFF) {
-			$env_str .= "\t\t<runCondition name=\"$key\" status=\"$status\" Require=\"$item[r]\" Best=\"$item[b]\" Current=\"$item[current]\"/>\n";
+			$env_str .= "\t\t<runCondition name=\"$key\" status=\"$status\" Require=\"{$item['r']}\" Best=\"{$item['b']}\" Current=\"{$item['current']}\"/>\n";
 		} else {
 			$env_str .= "<tr>\n";
 			$env_str .= "<td>".lang($key)."</td>\n";
@@ -203,10 +205,10 @@ function show_env_result(&$env_items, &$dirfile_items, &$func_items) {
 			if($item['status'] == 0) {
 				$error_code = ENV_CHECK_ERROR;
 			}
-			$$variable .= "\t\t\t<File name=\"$item[path]\" status=\"$item[status]\" requirePermisson=\"+r+w\" currentPermisson=\"$item[current]\" />\n";
+			$$variable .= "\t\t\t<File name=\"{$item['path']}\" status=\"{$item['status']}\" requirePermisson=\"+r+w\" currentPermisson=\"{$item['current']}\" />\n";
 		} else {
 			$$variable .= "<tr>\n";
-			$$variable .= "<td>$item[path]</td><td class=\"w pdleft1\">".lang('writeable')."</td>\n";
+			$$variable .= "<td>{$item['path']}</td><td class=\"w pdleft1\">".lang('writeable')."</td>\n";
 			if($item['status'] == 1) {
 				$$variable .= "<td class=\"w pdleft1\">".lang('writeable')."</td>\n";
 			} elseif($item['status'] == -1) {
@@ -405,20 +407,10 @@ EOT;
 	}
 }
 
-if(!function_exists('file_put_contents')) {
-	function file_put_contents($filename, $s) {
-		$fp = @fopen($filename, 'w');
-		@fwrite($fp, $s);
-		@fclose($fp);
-		return TRUE;
-	}
-}
-
 function createtable($sql) {
 	$type = strtoupper(preg_replace("/^\s*CREATE TABLE\s+.+\s+\(.+?\).*(ENGINE|TYPE)\s*=\s*([a-z]+?).*$/isU", "\\2", $sql));
-	$type = in_array($type, array('MYISAM', 'HEAP')) ? $type : 'MYISAM';
-	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql).
-	(mysql_get_server_info() > '4.1' ? " ENGINE=$type DEFAULT CHARSET=".DBCHARSET : " TYPE=$type");
+	$type = in_array($type, array('INNODB', 'MYISAM', 'HEAP', 'MEMORY')) ? $type : 'INNODB';
+	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql) . " ENGINE=$type DEFAULT CHARSET=" . DBCHARSET . (DBCHARSET === 'utf8mb4' ? " COLLATE=utf8mb4_unicode_ci" : "");
 }
 
 function dir_writeable($dir) {
@@ -461,10 +453,12 @@ function show_header() {
 	$title = lang('title_install');
 	$charset = CHARSET;
 	echo <<<EOT
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=$charset" />
+<meta charset="$charset" />
+<meta name="renderer" content="webkit" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <title>$title</title>
 <link rel="stylesheet" href="style.css" type="text/css" media="all" />
 <script type="text/javascript">
@@ -489,23 +483,16 @@ EOT;
 
 function show_footer($quit = true) {
 
+	$copy = lang('copyright');
+
 	echo <<<EOT
-		<div class="footer">Copyright &copy; 2001-2021, Tencent Cloud.</div>
+		<div class="footer">$copy</div>
 	</div>
 </div>
 </body>
 </html>
 EOT;
 	$quit && exit();
-}
-
-function loginit($logfile) {
-	global $lang;
-	showjsmessage($lang['init_log'].' '.$logfile);
-	if($fp = @fopen('./forumdata/logs/'.$logfile.'.php', 'w')) {
-		fwrite($fp, '<'.'?PHP exit(); ?'.">\n");
-		fclose($fp);
-	}
 }
 
 function showjsmessage($message) {
@@ -515,15 +502,76 @@ function showjsmessage($message) {
 	ob_flush();
 }
 
-function random($length) {
-	$hash = '';
-	$chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz';
-	$max = strlen($chars) - 1;
-	PHP_VERSION < '4.2.0' && mt_srand((double)microtime() * 1000000);
+function random($length, $numeric = 0) {
+	$seed = base_convert(md5(microtime().$_SERVER['DOCUMENT_ROOT']), 16, $numeric ? 10 : 35);
+	$seed = $numeric ? (str_replace('0', '', $seed).'012340567890') : ($seed.'zZ'.strtoupper($seed));
+	if($numeric) {
+		$hash = '';
+	} else {
+		$hash = chr(rand(1, 26) + rand(0, 1) * 32 + 64);
+		$length--;
+	}
+	$max = strlen($seed) - 1;
 	for($i = 0; $i < $length; $i++) {
-		$hash .= $chars[mt_rand(0, $max)];
+		$hash .= $seed[mt_rand(0, $max)];
 	}
 	return $hash;
+}
+
+function secrandom($length, $numeric = 0, $strong = false) {
+	// Thank you @popcorner for your strong support for the enhanced security of the function.
+	$chars = $numeric ? array('A','B','+','/','=') : array('+','/','=');
+	$num_find = str_split('CDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+	$num_repl = str_split('01234567890123456789012345678901234567890123456789');
+	$isstrong = false;
+	if(function_exists('random_bytes')) {
+		$isstrong = true;
+		$random_bytes = function($length) {
+			return random_bytes($length);
+		};
+	} elseif(extension_loaded('mcrypt') && function_exists('mcrypt_create_iv')) {
+		// for lower than PHP 7.0, Please Upgrade ASAP.
+		$isstrong = true;
+		$random_bytes = function($length) {
+			$rand = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
+			if ($rand !== false && strlen($rand) === $length) {
+				return $rand;
+			} else {
+				return false;
+			}
+		};
+	} elseif(extension_loaded('openssl') && function_exists('openssl_random_pseudo_bytes')) {
+		// for lower than PHP 7.0, Please Upgrade ASAP.
+		// openssl_random_pseudo_bytes() does not appear to cryptographically secure
+		// https://github.com/paragonie/random_compat/issues/5
+		$isstrong = true;
+		$random_bytes = function($length) {
+			$rand = openssl_random_pseudo_bytes($length, $secure);
+			if($secure === true) {
+				return $rand;
+			} else {
+				return false;
+			}
+		};
+	}
+	if(!$isstrong) {
+		return $strong ? false : random($length, $numeric);
+	}
+	$retry_times = 0;
+	$return = '';
+	while($retry_times < 128) {
+		$getlen = $length - strlen($return); // 33% extra bytes
+		$bytes = $random_bytes(max($getlen, 12));
+		if($bytes === false) {
+			return false;
+		}
+		$bytes = str_replace($chars, '', base64_encode($bytes));
+		$return .= substr($bytes, 0, $getlen);
+		if(strlen($return) == $length) {
+			return $numeric ? str_replace($num_find, $num_repl, $return) : $return;
+		}
+		$retry_times++;
+	}
 }
 
 function redirect($url) {
@@ -536,24 +584,29 @@ function redirect($url) {
 
 }
 
+function validate_ip($ip) {
+	return filter_var($ip, FILTER_VALIDATE_IP) !== false;
+}
+
 function get_onlineip() {
-	$onlineip = '';
-	if(getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-		$onlineip = getenv('HTTP_CLIENT_IP');
-	} elseif(getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-		$onlineip = getenv('HTTP_X_FORWARDED_FOR');
-	} elseif(getenv('REMOTE_ADDR') && strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-		$onlineip = getenv('REMOTE_ADDR');
-	} elseif(isset($_SERVER['REMOTE_ADDR']) && $_SERVER['REMOTE_ADDR'] && strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
-		$onlineip = $_SERVER['REMOTE_ADDR'];
+	$onlineip = $_SERVER['REMOTE_ADDR'];
+	if (isset($_SERVER['HTTP_CLIENT_IP']) && validate_ip($_SERVER['HTTP_CLIENT_IP'])) {
+		$onlineip = $_SERVER['HTTP_CLIENT_IP'];
+	} elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+		if (strpos($_SERVER['HTTP_X_FORWARDED_FOR'], ",") > 0) {
+			$exp = explode(",", $_SERVER['HTTP_X_FORWARDED_FOR']);
+			$onlineip = validate_ip(trim($exp[0])) ? $exp[0] : $onlineip;
+		} else {
+			$onlineip = validate_ip($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $onlineip;
+		}
 	}
 	return $onlineip;
 }
 
 function config_edit() {
 	extract($GLOBALS, EXTR_SKIP);
-	$ucsalt = substr(uniqid(rand()), 0, 6);
-	$ucfounderpw= md5(md5($ucfounderpw).$ucsalt);
+	$ucsalt = '';
+	$ucfounderpw = password_hash($ucfounderpw, PASSWORD_BCRYPT);
 	$regdate = time();
 
 	$ucauthkey = generate_key();
@@ -576,34 +629,41 @@ function config_edit() {
 	$config .= "define('UC_MYKEY', '$ucmykey');\r\n";
 	$config .= "define('UC_DEBUG', false);\r\n";
 	$config .= "define('UC_PPP', 20);\r\n";
-	$fp = fopen(CONFIG, 'w');
-	fwrite($fp, $config);
-	fclose($fp);
+
+	file_put_contents(CONFIG, $config);
 }
 
 function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 
+	// 动态密钥长度, 通过动态密钥可以让相同的 string 和 key 生成不同的密文, 提高安全性
 	$ckey_length = 4;
 
 	$key = md5($key ? $key : UC_KEY);
+	// a参与加解密, b参与数据验证, c进行密文随机变换
 	$keya = md5(substr($key, 0, 16));
 	$keyb = md5(substr($key, 16, 16));
 	$keyc = $ckey_length ? ($operation == 'DECODE' ? substr($string, 0, $ckey_length): substr(md5(microtime()), -$ckey_length)) : '';
 
+	// 参与运算的密钥组
 	$cryptkey = $keya.md5($keya.$keyc);
 	$key_length = strlen($cryptkey);
 
+	// 前 10 位用于保存时间戳验证数据有效性, 10 - 26位保存 $keyb , 解密时通过其验证数据完整性
+	// 如果是解码的话会从第 $ckey_length 位开始, 因为密文前 $ckey_length 位保存动态密匙以保证解密正确
 	$string = $operation == 'DECODE' ? base64_decode(substr($string, $ckey_length)) : sprintf('%010d', $expiry ? $expiry + time() : 0).substr(md5($string.$keyb), 0, 16).$string;
 	$string_length = strlen($string);
 
 	$result = '';
 	$box = range(0, 255);
 
+	// 产生密钥簿
 	$rndkey = array();
 	for($i = 0; $i <= 255; $i++) {
 		$rndkey[$i] = ord($cryptkey[$i % $key_length]);
 	}
 
+	// 打乱密钥簿, 增加随机性
+	// 类似 AES 算法中的 SubBytes 步骤
 	for($j = $i = 0; $i < 256; $i++) {
 		$j = ($j + $box[$i] + $rndkey[$i]) % 256;
 		$tmp = $box[$i];
@@ -611,6 +671,7 @@ function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 		$box[$j] = $tmp;
 	}
 
+	// 从密钥簿得出密钥进行异或，再转成字符
 	for($a = $j = $i = 0; $i < $string_length; $i++) {
 		$a = ($a + 1) % 256;
 		$j = ($j + $box[$a]) % 256;
@@ -621,19 +682,23 @@ function authcode($string, $operation = 'DECODE', $key = '', $expiry = 0) {
 	}
 
 	if($operation == 'DECODE') {
-		if((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) === substr(md5(substr($result, 26).$keyb), 0, 16)) {
+		// 这里按照算法对数据进行验证, 保证数据有效性和完整性
+		// $result 01 - 10 位是时间, 如果小于当前时间或为 0 则通过
+		// $result 10 - 26 位是加密时的 $keyb , 需要和入参的 $keyb 做比对
+		if(((int)substr($result, 0, 10) == 0 || (int)substr($result, 0, 10) - time() > 0) && substr($result, 10, 16) === substr(md5(substr($result, 26).$keyb), 0, 16)) {
 			return substr($result, 26);
 		} else {
 			return '';
 		}
 	} else {
+		// 把动态密钥保存在密文里, 并用 base64 编码保证传输时不被破坏
 		return $keyc.str_replace('=', '', base64_encode($result));
 	}
 
 }
 
 function generate_key($length = 32) {
-	$random = random($length);
+	$random = secrandom($length);
 	$info = md5($_SERVER['SERVER_SOFTWARE'].$_SERVER['SERVER_NAME'].$_SERVER['SERVER_ADDR'].$_SERVER['SERVER_PORT'].$_SERVER['HTTP_USER_AGENT'].time());
 	$return = '';
 	for($i=0; $i<$length; $i++) {
@@ -697,12 +762,7 @@ function runquery($sql) {
 }
 
 function charcovert($string) {
-	if(!get_magic_quotes_gpc()) {
-		$string = str_replace('\'', '\\\'', $string);
-	} else {
-		$string = str_replace('\"', '"', $string);
-	}
-	return $string;
+	return str_replace('\'', '\\\'', $string);
 }
 
 function insertconfig($s, $find, $replace) {
@@ -730,7 +790,7 @@ function var_to_hidden($k, $v) {
 	return "<input type=\"hidden\" name=\"$k\" value=\"$v\" />\n";
 }
 
-function fsocketopen($hostname, $port = 80, &$errno, &$errstr, $timeout = 15) {
+function fsocketopen($hostname, $port = 80, &$errno = null, &$errstr = null, $timeout = 15) {
 	$fp = '';
 	if(function_exists('fsockopen')) {
 		$fp = @fsockopen($hostname, $port, $errno, $errstr, $timeout);
@@ -798,7 +858,7 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		}
 		$boundary = $encodetype == 'URLENCODE' ? '' : '; boundary='.trim(substr(trim($post), 2, strpos(trim($post), "\n") - 2));
 		$header .= $encodetype == 'URLENCODE' ? "Content-Type: application/x-www-form-urlencoded\r\n" : "Content-Type: multipart/form-data$boundary\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= 'Content-Length: '.strlen($post)."\r\n";
 		$header .= "Connection: Close\r\n";
@@ -809,7 +869,7 @@ function dfopen($url, $limit = 0, $post = '', $cookie = '', $bysocket = FALSE, $
 		$out = "GET $path HTTP/1.0\r\n";
 		$header = "Accept: */*\r\n";
 		$header .= "Accept-Language: zh-cn\r\n";
-		$header .= "User-Agent: $_SERVER[HTTP_USER_AGENT]\r\n";
+		$header .= "User-Agent: {$_SERVER['HTTP_USER_AGENT']}\r\n";
 		$header .= "Host: $host:$port\r\n";
 		$header .= "Connection: Close\r\n";
 		$header .= "Cookie: $cookie\r\n\r\n";
@@ -886,13 +946,8 @@ function check_env() {
 	$errors = array('quit' => false);
 	$quit = false;
 
-	if(!function_exists('mysql_connect')) {
-		$errors[] = 'mysql_unsupport';
-		$quit = true;
-	}
-
-	if(PHP_VERSION < '4.3') {
-		$errors[] = 'php_version_430';
+	if(!function_exists('mysqli_connect')) {
+		$errors[] = 'mysqli_unsupport';
 		$quit = true;
 	}
 
@@ -1080,40 +1135,6 @@ function check_adminuser($username, $password, $email) {
 		$error = empty($error) ? 'error_unknow_type' : $error;
 	}
 	return array('uid' => $uid, 'username' => $username, 'password' => $password, 'email' => $email, 'error' => $error);
-}
-
-function save_uc_config($config, $file) {
-
-	$success = false;
-
-	list($appauthkey, $appid, $ucdbhost, $ucdbname, $ucdbuser, $ucdbpw, $ucdbcharset, $uctablepre, $uccharset, $ucapi, $ucip) = explode('|', $config);
-
-	if($content = file_get_contents($file)) {
-		$content = trim($content);
-		$content = substr($content, -2) == '?>' ? substr($content, 0, -2) : $content;
-		$link = mysql_connect($ucdbhost, $ucdbuser, $ucdbpw, 1);
-		$uc_connnect = $link && mysql_select_db($ucdbname, $link) ? 'mysql' : '';
-		$content = insertconfig($content, "/define\('UC_CONNECT',\s*'.*?'\);/i", "define('UC_CONNECT', '$uc_connnect');");
-		$content = insertconfig($content, "/define\('UC_DBHOST',\s*'.*?'\);/i", "define('UC_DBHOST', '$ucdbhost');");
-		$content = insertconfig($content, "/define\('UC_DBUSER',\s*'.*?'\);/i", "define('UC_DBUSER', '$ucdbuser');");
-		$content = insertconfig($content, "/define\('UC_DBPW',\s*'.*?'\);/i", "define('UC_DBPW', '$ucdbpw');");
-		$content = insertconfig($content, "/define\('UC_DBNAME',\s*'.*?'\);/i", "define('UC_DBNAME', '$ucdbname');");
-		$content = insertconfig($content, "/define\('UC_DBCHARSET',\s*'.*?'\);/i", "define('UC_DBCHARSET', '$ucdbcharset');");
-		$content = insertconfig($content, "/define\('UC_DBTABLEPRE',\s*'.*?'\);/i", "define('UC_DBTABLEPRE', '`$ucdbname`.$uctablepre');");
-		$content = insertconfig($content, "/define\('UC_DBCONNECT',\s*'.*?'\);/i", "define('UC_DBCONNECT', '0');");
-		$content = insertconfig($content, "/define\('UC_KEY',\s*'.*?'\);/i", "define('UC_KEY', '$appauthkey');");
-		$content = insertconfig($content, "/define\('UC_API',\s*'.*?'\);/i", "define('UC_API', '$ucapi');");
-		$content = insertconfig($content, "/define\('UC_CHARSET',\s*'.*?'\);/i", "define('UC_CHARSET', '$uccharset');");
-		$content = insertconfig($content, "/define\('UC_IP',\s*'.*?'\);/i", "define('UC_IP', '$ucip');");
-		$content = insertconfig($content, "/define\('UC_APPID',\s*'?.*?'?\);/i", "define('UC_APPID', '$appid');");
-		$content = insertconfig($content, "/define\('UC_PPP',\s*'?.*?'?\);/i", "define('UC_PPP', '20');");
-
-		if(@file_put_contents($file, $content)) {
-			$success = true;
-		}
-	}
-
-	return $success;
 }
 
 function dhtmlspecialchars($string, $flags = null) {

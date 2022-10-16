@@ -117,6 +117,21 @@ function mb_strlen(str) {
 	return len;
 }
 
+function dstrlen(str) {
+	var count = 0;
+	for(var i = 0; i < strlen(str); i++) {
+		value = str.charCodeAt(i);
+		if(value > 127) {
+			count++;
+			if(value >= 55296 && value <= 57343) {
+				i++;
+			}
+		}
+		count++;
+	}
+	return count;
+}
+
 function mb_cutstr(str, maxlen, dot) {
 	var len = 0;
 	var ret = '';
@@ -131,6 +146,37 @@ function mb_cutstr(str, maxlen, dot) {
 		ret += str.substr(i, 1);
 	}
 	return ret;
+}
+
+function dcutstr(str, maxlen) {
+	var len = 0;
+	var ret = '';
+	var dot = arguments.length > 2 && arguments[2] !== undefined && arguments[2] !== false ? arguments[2] : '...';
+	var flag = true;
+	var strmaxlen = maxlen - dot.length;
+	for(var i = 0; i < strlen(str); i++) {
+		value = str.charCodeAt(i);
+		if(value > 127) {
+			len++;
+		}
+		len++;
+		if(flag && len > strmaxlen) {
+			flag = false;
+			ret = str.substr(0, i);
+			ret += dot;
+		}
+		if(len > maxlen) {
+			break;
+		}
+		if(value >= 55296 && value <= 57343) {
+			i++;
+		}
+	}
+	if(len > maxlen) {
+		return ret;
+	} else {
+		return str;
+	}
 }
 
 function preg_replace(search, replace, str, regswitch) {
@@ -242,7 +288,7 @@ function Ajax(recvType, waitId) {
 	aj.showLoading = function() {
 		if(aj.waitId && (aj.XMLHttpRequest.readyState != 4 || aj.XMLHttpRequest.status != 200)) {
 			aj.waitId.style.display = '';
-			aj.waitId.innerHTML = '<span><img src="' + IMGDIR + '/loading.gif" class="vm"> ' + aj.loading + '</span>';
+			aj.waitId.innerHTML = '<span><div class="loadicon vm"></div> ' + aj.loading + '</span>';
 		}
 	};
 	aj.processHandle = function() {
@@ -1173,7 +1219,7 @@ function showWindow(k, url, mode, cache, menuv) {
 			ajaxpost(url, 'fwin_content_' + k, '', '', '', function() {initMenu();show();});
 		}
 		if(parseInt(BROWSER.ie) != 6) {
-			loadingst = setTimeout(function() {showDialog('', 'info', '<img src="' + IMGDIR + '/loading.gif"> 请稍候...')}, 500);
+			loadingst = setTimeout(function() {showDialog('', 'info', '<div class="loadicon"></div> 请稍候...')}, 500);
 		}
 	};
 	var initMenu = function() {
@@ -1716,6 +1762,10 @@ function searchFocus(obj) {
 	}
 }
 
+function sendsecmobseccode(svctype, secmobicc, secmobile) {
+	showWindow('sendsecmobseccode', 'misc.php?mod=secmobseccode&action=send&svctype=' + svctype + '&secmobicc=' + secmobicc + '&secmobile=' + secmobile);
+}
+
 function extstyle(css) {
 	$F('_extstyle', arguments);
 }
@@ -1743,10 +1793,6 @@ function createPalette(colorid, id, func) {
 
 function showForummenu(fid) {
 	$F('_showForummenu', arguments);
-}
-
-function showUserApp() {
-	$F('_showUserApp', arguments);
 }
 
 function cardInit() {
@@ -1802,6 +1848,21 @@ function strLenCalc(obj, checklen, maxlen) {
 		$(checklen).innerHTML = curlen - len;
 	} else {
 		obj.value = mb_cutstr(v, maxlen, 0);
+	}
+}
+
+function dstrLenCalc(obj, checklen, maxlen) {
+	var v = obj.value, charlen = 0, maxlen = !maxlen ? 200 : maxlen, curlen = maxlen, len = strlen(v);
+	for(var i = 0; i < v.length; i++) {
+		value = v.charCodeAt(i);
+		if((value > 127 && value < 55296) || value > 57343) {
+			curlen--;
+		}
+	}
+	if(curlen >= len) {
+		$(checklen).innerHTML = curlen - len;
+	} else {
+		obj.value = dcutstr(v, maxlen, '');
 	}
 }
 

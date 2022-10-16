@@ -10,7 +10,7 @@
 if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
-if(!$_G['uid'] && $_G['setting']['privacy']['view']['profile']) {
+if(!$_G['uid'] && getglobal('setting/privacy/view/profile')) {
 	showmessage('home_no_privilege', '', array(), array('login' => true));
 }
 
@@ -24,10 +24,12 @@ space_merge($space, 'profile', $inarchive);
 space_merge($space, 'status', $inarchive);
 getonlinemember(array($space['uid']));
 
-if($space['videophoto'] && ckvideophoto($space, 1)) {
-	$space['videophoto'] = getvideophoto($space['videophoto']);
-} else {
-	$space['videophoto'] = '';
+if($_G['uid'] != $space['uid'] && !$_G['group']['allowviewprofile']) {
+	if(!$_G['uid']) {
+		showmessage('home_no_privilege', '', array(), array('login' => true));
+	} else {
+		showmessage('no_privilege_profile');
+	}
 }
 
 $space['admingroup'] = $_G['cache']['usergroups'][$space['adminid']];
@@ -56,10 +58,11 @@ if($space['lastpost']) $space['lastpost'] = dgmdate($space['lastpost']);
 if($space['lastsendmail']) $space['lastsendmail'] = dgmdate($space['lastsendmail']);
 
 
-if($_G['uid'] == $space['uid'] || $_G['group']['allowviewip']) {
-	require_once libfile('function/misc');
-	$space['regip_loc'] = convertip($space['regip']);
-	$space['lastip_loc'] = convertip($space['lastip']);
+if($_G['uid'] == $space['uid'] || getglobal('group/allowviewip')) {
+	$space['regip_loc'] = ip::convert($space['regip']);
+	$space['lastip_loc'] = ip::convert($space['lastip']);
+	$space['regip'] = ip::to_display($space['regip']);
+	$space['lastip'] = ip::to_display($space['lastip']);
 }
 
 $space['buyerrank'] = 0;
@@ -91,10 +94,10 @@ if(strtotime($space['regdate']) + $space['oltime'] * 3600 > TIMESTAMP) {
 require_once libfile('function/friend');
 $isfriend = friend_check($space['uid'], 1);
 if(!$_G['adminid']){
-	if($_G['setting']['privacy']['view']['profile'] == 1 && !$isfriend && !$space['self']) {
+	if(getglobal('setting/privacy/view/profile') == 1 && !$isfriend && !$space['self']) {
 		showmessage('specified_user_is_not_your_friend', '', array(), array());
 	}
-	if($_G['setting']['privacy']['view']['profile'] == 2 && !$space['self']) {
+	if(getglobal('setting/privacy/view/profile') == 2 && !$space['self']) {
 		showmessage('is_blacklist', '', array(), array());
 	}
 }
@@ -111,11 +114,11 @@ foreach($_G['cache']['profilesetting'] as $fieldid => $field) {
 	if($_G['setting']['nsprofiles']) {
 		break;
 	}
-	if(!$field['available'] || in_array($fieldid, array('birthprovince', 'birthdist', 'birthcommunity', 'resideprovince', 'residedist', 'residecommunity'))) {
+	if(!$field['available'] || in_array($fieldid, array('birthcountry', 'birthprovince', 'birthdist', 'birthcommunity', 'residecountry', 'resideprovince', 'residedist', 'residecommunity'))) {
 			continue;
 	}
 	if(
-		$field['available'] && (strlen($space[$fieldid]) > 0 || ($fieldid == 'birthcity' && strlen($space['birthprovince']) || $fieldid == 'residecity' && strlen($space['resideprovince']))) &&
+		$field['available'] && (strlen($space[$fieldid]) > 0 || ($fieldid == 'birthcity' && strlen($space['birthcountry']) && strlen($space['birthprovince']) || $fieldid == 'residecity' && strlen($space['residecountry']) && strlen($space['resideprovince']))) &&
 		($space['self'] || empty($privacy[$fieldid]) || ($isfriend && $privacy[$fieldid] == 1)) &&
 		(!$_G['inajax'] && !$field['invisible'] || $_G['inajax'] && $field['showincard'])
 	) {
@@ -174,11 +177,6 @@ $navtitle = lang('space', 'sb_profile', array('who' => $space['username']));
 $metakeywords = lang('space', 'sb_profile', array('who' => $space['username']));
 $metadescription = lang('space', 'sb_profile', array('who' => $space['username']));
 
-$showvideophoto = true;
-if($space['videophotostatus'] > 0 && $_G['uid'] != $space['uid'] && !ckvideophoto($space, 1)) {
-	$showvideophoto = false;
-}
-
 $clist = array();
 if(in_array($_G['adminid'], array(1, 2, 3))) {
 	include_once libfile('function/member');
@@ -187,7 +185,7 @@ if(in_array($_G['adminid'], array(1, 2, 3))) {
 
 show_view();
 
-if(!$_G['privacy']) {
+if(!getglobal('privacy')) {
 	if(!$_G['inajax']) {
 		include_once template("home/space_profile");
 	} else {

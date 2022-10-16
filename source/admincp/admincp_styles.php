@@ -61,7 +61,7 @@ if($operation == 'export' && $id) {
 
 cpheader();
 
-$predefinedvars = array('available' => array(), 'boardimg' => array(), 'imgdir' => array(), 'styleimgdir' => array(), 'stypeid' => array(),
+$predefinedvars = array('available' => array(), 'boardimg' => array(), 'searchimg' => array(), 'imgdir' => array(), 'styleimgdir' => array(), 'stypeid' => array(),
 	'headerbgcolor' => array(0, $lang['styles_edit_type_bg']),
 	'bgcolor' => array(0),
 	'sidebgcolor' => array(0, '', '#FFF sidebg.gif repeat-y 100% 0'),
@@ -94,6 +94,7 @@ $predefinedvars = array('available' => array(), 'boardimg' => array(), 'imgdir' 
 
 	'menubgcolor' => array(0, $lang['styles_edit_type_menu']),
 	'menutext' => array(0),
+	'menucurbgcolor' => array(0),
 	'menuhoverbgcolor' => array(0),
 	'menuhovertext' => array(0),
 
@@ -125,10 +126,10 @@ if($operation == 'admin') {
 		$tpldirs[] = realpath($row['directory']);
 	}
 
-	$defaultid = C::t('common_setting')->fetch('styleid');
-	$defaultid1 = C::t('common_setting')->fetch('styleid1');
-	$defaultid2 = C::t('common_setting')->fetch('styleid2');
-	$defaultid3 = C::t('common_setting')->fetch('styleid3');
+	$defaultid = C::t('common_setting')->fetch_setting('styleid');
+	$defaultid1 = C::t('common_setting')->fetch_setting('styleid1');
+	$defaultid2 = C::t('common_setting')->fetch_setting('styleid2');
+	$defaultid3 = C::t('common_setting')->fetch_setting('styleid3');
 
 	if(!submitcheck('stylesubmit')) {
 		$narray = array();
@@ -171,11 +172,9 @@ if($operation == 'admin') {
 			$isdefault1 = $id == $defaultid1 ? 'checked' : '';
 			$isdefault2 = $id == $defaultid2 ? 'checked' : '';
 			$isdefault3 = $id == $defaultid3 ? 'checked' : '';
-			$d1exists = file_exists($style['directory'].'/mobile');
-			$d2exists = file_exists($style['directory'].'/touch') || file_exists($style['directory'].'/m');
-			$d3exists = file_exists($style['directory'].'/wml');
+			$d2exists = file_exists($style['directory'].'/touch');
 			$available = $style['available'] ? 'checked' : NULL;
-			$preview = file_exists($style['directory'].'/preview.jpg') ? $style['directory'].'/preview.jpg' : './static/image/admincp/stylepreview.gif';
+			$preview = file_exists($style['directory'].'/preview.jpg') ? $style['directory'].'/preview.jpg' : STATICURL.'image/admincp/stylepreview.gif';
 			$previewlarge = file_exists($style['directory'].'/preview_large.jpg') ? $style['directory'].'/preview_large.jpg' : '';
 			$styleicons = isset($styleicons[$id]) ? $styleicons[$id] : '';
 			if($addonids[$style['styleid']]) {
@@ -187,23 +186,21 @@ if($operation == 'admin') {
 			}
 			$stylelist .=
 				'<table cellspacing="0" cellpadding="0" style="margin-left: 10px; width: 250px;height: 200px;" class="left"><tr><th class="partition" colspan="2">'.($addonids[$id] ? "<a href=\"".ADMINSCRIPT."?action=cloudaddons&frame=no&id=".basename($style['directory']).".template\" target=\"_blank\" title=\"$lang[cloudaddons_linkto]\">$style[tplname]</a>" : $style['tplname']).'</th></tr><tr><td style="width: 130px;height:150px" valign="top">'.
-				($id > 0 ? "<p style=\"margin-bottom: 12px;\"><img width=\"110\" height=\"120\" ".($previewlarge ? 'style="cursor:pointer" title="'.$lang['preview_large'].'" onclick="zoom(this, \''.$previewlarge.'\', 1)" ' : '')."src=\"$preview\" alt=\"$lang[preview]\"/></p>
-				<p style=\"margin: 2px 0\"><input type=\"text\" class=\"txt\" name=\"namenew[$id]\" value=\"$style[name]\" style=\"margin:0; width: 104px;\"></p></td><td valign=\"top\">
-				<p> $lang[styles_default]</p>
-				<p style=\"margin: 1px 0\"><label><input type=\"radio\" class=\"radio\" name=\"defaultnew\" value=\"$id\" $isdefault /> $lang[styles_default0]</label></p>
-				".($d1exists ? "<p style=\"margin: 1px 0\"><label><input type=\"radio\" class=\"radio\" name=\"defaultnew1\" value=\"$id\" $isdefault1 /> $lang[styles_default1]</label></p>" : "<p style=\"margin: 1px 0\" class=\"lightfont\"><label><input type=\"radio\" class=\"radio\" disabled readonly /> $lang[styles_default1]</label></p>")."
-				".($d2exists ? "<p style=\"margin: 1px 0\"><label><input type=\"radio\" class=\"radio\" name=\"defaultnew2\" value=\"$id\" $isdefault2 /> $lang[styles_default2]</label></p>" : "<p style=\"margin: 1px 0\" class=\"lightfont\"><label><input type=\"radio\" class=\"radio\" disabled readonly /> $lang[styles_default2]</label></p>")."
-				".($d3exists ? "<p style=\"margin: 1px 0\"><label><input type=\"radio\" class=\"radio\" name=\"defaultnew3\" value=\"$id\" $isdefault3 /> $lang[styles_default3]</label></p>" : "<p style=\"margin: 1px 0\" class=\"lightfont\"><label><input type=\"radio\" class=\"radio\" disabled readonly /> $lang[styles_default3]</label></p>")."
-				<p style=\"margin: 8px 0 0 0\"><label>".($isdefault || $isdefault1 || $isdefault2 || $isdefault3 ? '<input class="checkbox" type="checkbox" disabled="disabled" />' : '<input class="checkbox" type="checkbox" name="delete[]" value="'.$id.'" />')." $lang[styles_uninstall]</label></p>
-				<p style=\"margin: 8px 0 2px 0\"><a href=\"".ADMINSCRIPT."?action=styles&operation=edit&id=$id\">$lang[edit]</a> &nbsp;".
-					(($isplugindeveloper && $isfounder) || !$addonids[$style['styleid']] || !cloudaddons_getmd5($addonids[$style['styleid']]) ? " <a href=\"".ADMINSCRIPT."?action=styles&operation=export&id=$id\">$lang[export]</a><br />" : '<br />').
-					"<a href=\"".ADMINSCRIPT."?action=styles&operation=copy&id=$id\">$lang[copy]</a> &nbsp; <a href=\"".ADMINSCRIPT."?action=styles&operation=import&dir=yes&restore=$id\">$lang[restore]</a>
-					".($isfounder && $addonids[$id] ? " &nbsp; <a href=\"".ADMINSCRIPT."?action=cloudaddons&frame=no&id=".basename($style['directory']).".template&from=comment\" target=\"_blank\" title=\"$lang[cloudaddons_linkto]\">$lang[plugins_visit]</a>" : '')."
+				($id > 0 ? "<p style=\"margin-bottom: 12px;\"><img width=\"110\" height=\"120\" ".($previewlarge ? 'style="cursor:pointer" title="'.$lang['preview_large'].'" onclick="zoom(this, \''.$previewlarge.'\', 1)" ' : '')."src=\"$preview\" alt=\"{$lang['preview']}\"/></p>
+				<p style=\"margin: 2px 0\"><input type=\"text\" class=\"txt\" name=\"namenew[$id]\" value=\"{$style['name']}\" style=\"margin:0; width: 104px;\"></p></td><td valign=\"top\">
+				<p> {$lang['styles_default']}</p>
+				<p style=\"margin: 1px 0\"><label><input type=\"radio\" class=\"radio\" name=\"defaultnew\" value=\"$id\" $isdefault /> {$lang['styles_default0']}</label></p>
+				".($d2exists ? "<p style=\"margin: 1px 0\"><label><input type=\"radio\" class=\"radio\" name=\"defaultnew2\" value=\"$id\" $isdefault2 /> {$lang['styles_default2']}</label></p>" : "<p style=\"margin: 1px 0\" class=\"lightfont\"><label><input type=\"radio\" class=\"radio\" disabled readonly /> {$lang['styles_default2']}</label></p>")."
+				<p style=\"margin: 8px 0 0 0\"><label>".($isdefault || $isdefault1 || $isdefault2 || $isdefault3 ? '<input class="checkbox" type="checkbox" disabled="disabled" />' : '<input class="checkbox" type="checkbox" name="delete[]" value="'.$id.'" />')." {$lang['styles_uninstall']}</label></p>
+				<p style=\"margin: 8px 0 2px 0\"><a href=\"".ADMINSCRIPT."?action=styles&operation=edit&id=$id\">{$lang['edit']}</a> &nbsp;".
+					(($isplugindeveloper && $isfounder) || !$addonids[$style['styleid']] || !cloudaddons_getmd5($addonids[$style['styleid']]) ? " <a href=\"".ADMINSCRIPT."?action=styles&operation=export&id=$id\">{$lang['export']}</a><br />" : '<br />').
+					"<a href=\"".ADMINSCRIPT."?action=styles&operation=copy&id=$id\">{$lang['copy']}</a> &nbsp; <a href=\"".ADMINSCRIPT."?action=styles&operation=import&dir=yes&restore=$id\">{$lang['restore']}</a>
+					".($isfounder && $addonids[$id] ? " &nbsp; <a href=\"".ADMINSCRIPT."?action=cloudaddons&frame=no&id=".basename($style['directory']).".template&from=comment\" target=\"_blank\" title=\"{$lang['cloudaddons_linkto']}\">{$lang['plugins_visit']}</a>" : '')."
 				</p>"
 				:
 				"<img src=\"$preview\" /></td><td valign=\"top\">
-				<p style=\"margin: 2px 0\"><a href=\"".ADMINSCRIPT."?action=styles&operation=import&dir=$style[name]\">$lang[styles_install]</a></p>
-				<p style=\"margin: 2px 0\">$lang[styles_stylecount]: $style[stylecount]</p>".
+				<p style=\"margin: 2px 0\"><a href=\"".ADMINSCRIPT."?action=styles&operation=import&dir={$style['name']}\">{$lang['styles_install']}</a></p>
+				<p style=\"margin: 2px 0\">{$lang['styles_stylecount']}: {$style['stylecount']}</p>".
 				($style['filemtime'] > $timestamp - 86400 ? '<p style=\"margin-bottom: 2px;\"><font color="red">New!</font></p>' : '')).
 				"</td></tr><tr><td colspan=\"2\">".$updatestring[$addonids[$style['styleid']]]."</td></tr></table>\n".($i == 3 ? '</tr>' : '');
 			$i++;
@@ -240,13 +237,13 @@ if($operation == 'admin') {
 			array('styles_import', 'styles&operation=import', 0),
 			$isfounder ? array('plugins_validator'.($updatecount ? '_new' : ''), 'styles&operation=upgradecheck', 0) : array(),
 			$isfounder ? array('cloudaddons_style_link', 'cloudaddons&frame=no&operation=templates&from=more', 0, 1) : array(),
-		), '<a href="https://www.dismall.com/?from=templates_question" target="_blank" class="bold" style="float:right;padding-right:40px;">'.$lang['templates_question'].'</a>', array('updatecount' => $updatecount));
+		), '<a href="https://www.dismall.com/?from=templates_question" target="_blank" class="rlink">'.$lang['templates_question'].'</a>', array('updatecount' => $updatecount));
 		showtips('styles_home_tips');
 		showformheader('styles');
 		showhiddenfields(array('updatecsscache' => 0));
-		showtableheader();
+		showboxheader();
 		echo $stylelist;
-		showtablefooter();
+		showboxfooter();
 		showtableheader();
 		showsubmit('stylesubmit', 'submit', 'del', '<input onclick="this.form.updatecsscache.value=1" type="submit" class="btn" name="stylesubmit" value="'.cplang('styles_csscache_update').'">'.($isfounder ? '&nbsp;&nbsp;<a href="'.ADMINSCRIPT.'?action=cloudaddons&frame=no&operation=templates&from=more" target="_blank">'.cplang('cloudaddons_style_link').'</a>' : ''));
 		showtablefooter();
@@ -286,7 +283,7 @@ if($operation == 'admin') {
 						}
 						$defaultids[] = $defaultnew;
 					}
-					C::t('common_setting')->update('styleid'.$dfid, $defaultnew);
+					C::t('common_setting')->update_setting('styleid'.$dfid, $defaultnew);
 				}
 			}
 
@@ -325,7 +322,7 @@ if($operation == 'admin') {
 						foreach(C::t('common_template')->fetch_all($tplids) as $tpl) {
 							cloudaddons_uninstall(basename($tpl['directory']).'.template', $tpl['directory']);
 						}
-						C::t('common_template')->delete($tplids);
+						C::t('common_template')->delete_tpl($tplids);
 					}
 				}
 			}
@@ -355,7 +352,7 @@ if($operation == 'admin') {
 			array('styles_list', 'styles', 0),
 			array('styles_import', 'styles&operation=import', 1),
 			$isfounder ? array('cloudaddons_style_link', 'cloudaddons&frame=no&operation=templates&from=more', 0, 1) : array(),
-		), '<a href="https://www.dismall.com/?from=templates_question" target="_blank" class="bold" style="float:right;padding-right:40px;">'.$lang['templates_question'].'</a>');
+		), '<a href="https://www.dismall.com/?from=templates_question" target="_blank" class="rlink">'.$lang['templates_question'].'</a>');
 		showformheader('styles&operation=import', 'enctype');
 		showtableheader('styles_import');
 		showimportdata();
@@ -405,7 +402,7 @@ if($operation == 'admin') {
 		if(empty($id)) {
 			$stylelist = "<select name=\"id\" style=\"width: 150px\">\n";
 			foreach(C::t('common_style')->fetch_all_data() as $style) {
-				$stylelist .= "<option value=\"$style[styleid]\">$style[name]</option>\n";
+				$stylelist .= "<option value=\"{$style['styleid']}\">{$style['name']}</option>\n";
 			}
 			$stylelist .= '</select>';
 			cpmsg('styles_nonexistence', 'action=styles&operation=edit'.(!empty($highlight) ? "&highlight=$highlight" : ''), 'form', array(), $stylelist);
@@ -435,17 +432,18 @@ if($operation == 'admin') {
 		}
 
 		$stylecustom = '';
-		$stylestuff = $existvars = array();
+		$stylestuff = $existvars = $stylecustomvars = array();
 		foreach(C::t('common_stylevar')->fetch_all_by_styleid($id) as $stylevar) {
 			if(array_key_exists($stylevar['variable'], $predefinedvars)) {
 				$stylestuff[$stylevar['variable']] = array('id' => $stylevar['stylevarid'], 'subst' => $stylevar['substitute']);
 				$existvars[] = $stylevar['variable'];
 			} else {
 				$stylecustom .= showtablerow('', array('class="td25"', 'class="td24 bold"', 'class="td26"'), array(
-					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$stylevar[stylevarid]\">",
+					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$stylevar['stylevarid']}\">",
 					'{'.strtoupper($stylevar['variable']).'}',
-					"<textarea name=\"stylevar[$stylevar[stylevarid]]\" style=\"height: 45px\" cols=\"50\" rows=\"2\">$stylevar[substitute]</textarea>",
+					"<textarea name=\"stylevar[{$stylevar['stylevarid']}]\" style=\"height: 45px\" cols=\"50\" rows=\"2\">{$stylevar['substitute']}</textarea>",
 				), TRUE);
+				$stylecustomvars[$stylevar['stylevarid']] = $stylevar;
 			}
 		}
 		if($diffvars = array_diff(array_keys($predefinedvars), $existvars)) {
@@ -498,11 +496,11 @@ function imgpre_update(id, obj) {
 		re = /^(https?:)?\/\//i;
 		var matches = re.exec(url);
 		if(matches == null) {
-			url = ($('styleimgdir').value ? $('styleimgdir').value : ($('imgdir').value ? $('imgdir').value : 'static/image/common')) + '/' + url;
+			url = ($('styleimgdir').value ? $('styleimgdir').value : ($('imgdir').value ? $('imgdir').value : '<?php echo STATICURL; ?>image/common')) + '/' + url;
 		}
 		$('bgpre_' + id).style.backgroundImage = 'url(' + url + ')';
 	} else {
-		$('bgpre_' + id).style.backgroundImage = 'url(static/image/common/none.gif)';
+		$('bgpre_' + id).style.backgroundImage = 'url(<?php echo STATICURL; ?>image/common/none.gif)';
 	}
 }
 function imgpre_switch(id) {
@@ -517,75 +515,91 @@ function imgpre_switch(id) {
 	}
 }
 </script>
-<br />
-<iframe class="preview" frameborder="0" src="<?php echo ADMINSCRIPT;?>?action=styles&preview=yes&styleid=<?php echo $id;?>"></iframe>
 <?php
 
-		showtips('styles_tips');
-
-		showformheader("styles&operation=edit&id=$id");
-		showtableheader($lang['styles_edit'], 'nobottom');
-		showsetting('styles_edit_name', 'namenew', $style['name'], 'text');
-		showsetting('styles_edit_tpl', array('templateidnew', $tplselect), $style['templateid'], 'select');
-		showsetting('styles_edit_extstyle', array('extstylenew', $extstyle), $style['extstyle'], 'mcheckbox');
-		if($extstyle) {
-			showsetting('styles_edit_defaultextstyle', array('defaultextstylenew', $defaultextstyle), $style['defaultextstyle'], 'select');
-		}
-		showsetting('styles_edit_smileytype', array("stylevar[{$stylestuff[stypeid][id]}]", $smileytypes), $stylestuff['stypeid']['subst'], 'select');
-		showsetting('styles_edit_imgdir', '', '', '<input type="text" class="txt" name="stylevar['.$stylestuff['imgdir']['id'].']" id="imgdir" value="'.$stylestuff['imgdir']['subst'].'" />');
-		showsetting('styles_edit_styleimgdir', '', '', '<input type="text" class="txt" name="stylevar['.$stylestuff['styleimgdir']['id'].']" id="styleimgdir" value="'.$stylestuff['styleimgdir']['subst'].'" />');
-		showsetting('styles_edit_logo', "stylevar[{$stylestuff[boardimg][id]}]", $stylestuff['boardimg']['subst'], 'text');
-
-		foreach($predefinedvars as $predefinedvar => $v) {
-			if($v !== array()) {
-				if(!empty($v[1])) {
-					showtitle($v[1]);
-				}
-				$type = $v[0] == 1 ? 'text' : 'color';
-				$extra = '';
-				$comment = ($type == 'text' ? $lang['styles_edit_'.$predefinedvar.'_comment'] : $lang['styles_edit_hexcolor']).$lang['styles_edit_'.$predefinedvar.'_comment'];
-				if(substr($predefinedvar, -7, 7) == 'bgcolor') {
-					$stylestuff[$predefinedvar]['subst'] = explode(' ', $stylestuff[$predefinedvar]['subst']);
-					$bgimg = $stylestuff[$predefinedvar]['subst'][1];
-					$bgextra = implode(' ', array_slice($stylestuff[$predefinedvar]['subst'], 2));
-					$stylestuff[$predefinedvar]['subst'] = $stylestuff[$predefinedvar]['subst'][0];
-					$bgimgpre = $bgimg ? (preg_match('/^(https?:)?\/\//i', $bgimg) ? $bgimg : ($stylestuff['styleimgdir']['subst'] ? $stylestuff['styleimgdir']['subst'] : ($stylestuff['imgdir']['subst'] ? $stylestuff['imgdir']['subst'] : 'static/image/common')).'/'.$bgimg) : 'static/image/common/none.gif';
-					$comment .= '<div id="bgpre_'.$stylestuff[$predefinedvar]['id'].'" onclick="imgpre_switch('.$stylestuff[$predefinedvar]['id'].')" style="background-image:url('.$bgimgpre.');cursor:pointer;float:right;width:350px;height:40px;overflow:hidden;border: 1px solid #ccc"></div>'.$lang['styles_edit_'.$predefinedvar.'_comment'].$lang['styles_edit_bg'];
-					$extra = '<br /><input name="stylevarbgimg['.$stylestuff[$predefinedvar]['id'].']" value="'.$bgimg.'" onchange="imgpre_update('.$stylestuff[$predefinedvar]['id'].', this)" type="text" class="txt" style="margin:5px 0;" />'.
-						'<br /><input name="stylevarbgextra['.$stylestuff[$predefinedvar]['id'].']" value="'.$bgextra.'" type="text" class="txt" />';
-					$varcomment = ' {'.strtoupper($predefinedvar).'},{'.strtoupper(substr($predefinedvar, 0, -7)).'BGCODE}:';
-				} else {
-					$varcomment = ' {'.strtoupper($predefinedvar).'}:';
-				}
-				showsetting(cplang('styles_edit_'.$predefinedvar).$varcomment, 'stylevar['.$stylestuff[$predefinedvar]['id'].']', $stylestuff[$predefinedvar]['subst'], $type, '', 0, $comment, $extra);
+		//是否有自定义配置文件
+		$configflag = false;
+		if(preg_match('/^.?\/template\/([a-z]+[a-z0-9_]*)$/', $style['directory'], $a)) {
+			$configfile = DISCUZ_ROOT . './template/' . $a[1] . '/config.inc.php';
+			if(file_exists($configfile)) {
+				$configflag = true;
+				include $configfile;
 			}
 		}
-		showtablefooter();
 
-		showtableheader('styles_edit_customvariable', 'notop');
-		showsubtitle(array('', 'styles_edit_variable', 'styles_edit_subst'));
-		echo $stylecustom;
-		showtablerow('', array('class="td25"', 'class="td24 bold"', 'class="td26"'), array(
-			cplang('add_new'),
-			'<input type="text" class="txt" name="newcvar">',
-			'<textarea name="newcsubst" class="tarea" style="height: 45px" cols="50" rows="2"></textarea>'
+		if(!$configflag) {
+			echo '<br /><iframe class="preview" frameborder="0" src="' . ADMINSCRIPT . '?action=styles&preview=yes&styleid=' . $id . '"></iframe>';
+			showtips('styles_tips');
 
-		));
+			showformheader("styles&operation=edit&id=$id");
+			showtableheader($lang['styles_edit'], 'nobottom');
+			showsetting('styles_edit_name', 'namenew', $style['name'], 'text');
+			showsetting('styles_edit_tpl', array('templateidnew', $tplselect), $style['templateid'], 'select');
+			showsetting('styles_edit_extstyle', array('extstylenew', $extstyle), $style['extstyle'], 'mcheckbox');
+			if($extstyle) {
+				showsetting('styles_edit_defaultextstyle', array('defaultextstylenew', $defaultextstyle), $style['defaultextstyle'], 'select');
+			}
+			showsetting('styles_edit_smileytype', array("stylevar[{$stylestuff['stypeid']['id']}]", $smileytypes), $stylestuff['stypeid']['subst'], 'select');
+			showsetting('styles_edit_imgdir', '', '', '<input type="text" class="txt" name="stylevar['.$stylestuff['imgdir']['id'].']" id="imgdir" value="'.$stylestuff['imgdir']['subst'].'" />');
+			showsetting('styles_edit_styleimgdir', '', '', '<input type="text" class="txt" name="stylevar['.$stylestuff['styleimgdir']['id'].']" id="styleimgdir" value="'.$stylestuff['styleimgdir']['subst'].'" />');
+			showsetting('styles_edit_logo', "stylevar[{$stylestuff['boardimg']['id']}]", $stylestuff['boardimg']['subst'], 'text');
+			showsetting('styles_edit_searchlogo', "stylevar[{$stylestuff['searchimg']['id']}]", $stylestuff['searchimg']['subst'], 'text');
 
-		showsubmit('editsubmit', 'submit', 'del');
-		showtablefooter();
-		showformfooter();
+			foreach($predefinedvars as $predefinedvar => $v) {
+				if($v !== array()) {
+					if(!empty($v[1])) {
+						showtitle($v[1]);
+					}
+					$type = $v[0] == 1 ? 'text' : 'color';
+					$extra = '';
+					$comment = ($type == 'text' ? $lang['styles_edit_'.$predefinedvar.'_comment'] : $lang['styles_edit_hexcolor']).$lang['styles_edit_'.$predefinedvar.'_comment'];
+					if(substr($predefinedvar, -7, 7) == 'bgcolor') {
+						$stylestuff[$predefinedvar]['subst'] = explode(' ', $stylestuff[$predefinedvar]['subst']);
+						$bgimg = $stylestuff[$predefinedvar]['subst'][1];
+						$bgextra = implode(' ', array_slice($stylestuff[$predefinedvar]['subst'], 2));
+						$stylestuff[$predefinedvar]['subst'] = $stylestuff[$predefinedvar]['subst'][0];
+						$bgimgpre = $bgimg ? (preg_match('/^(https?:)?\/\//i', $bgimg) ? $bgimg : ($stylestuff['styleimgdir']['subst'] ? $stylestuff['styleimgdir']['subst'] : ($stylestuff['imgdir']['subst'] ? $stylestuff['imgdir']['subst'] : (STATICURL.'image/common'))).'/'.$bgimg) : (STATICURL.'image/common/none.gif');
+						$comment .= '<div id="bgpre_'.$stylestuff[$predefinedvar]['id'].'" onclick="imgpre_switch('.$stylestuff[$predefinedvar]['id'].')" style="background-image:url('.$bgimgpre.');cursor:pointer;float:right;width:350px;height:40px;overflow:hidden;border: 1px solid #ccc"></div>'.$lang['styles_edit_'.$predefinedvar.'_comment'].$lang['styles_edit_bg'];
+						$extra = '<br /><input name="stylevarbgimg['.$stylestuff[$predefinedvar]['id'].']" value="'.$bgimg.'" onchange="imgpre_update('.$stylestuff[$predefinedvar]['id'].', this)" type="text" class="txt" style="margin:5px 0;" />'.
+							'<br /><input name="stylevarbgextra['.$stylestuff[$predefinedvar]['id'].']" value="'.$bgextra.'" type="text" class="txt" />';
+						$varcomment = ' {'.strtoupper($predefinedvar).'},{'.strtoupper(substr($predefinedvar, 0, -7)).'BGCODE}:';
+					} else {
+						$varcomment = ' {'.strtoupper($predefinedvar).'}:';
+					}
+					showsetting(cplang('styles_edit_'.$predefinedvar).$varcomment, 'stylevar['.$stylestuff[$predefinedvar]['id'].']', $stylestuff[$predefinedvar]['subst'], $type, '', 0, $comment, $extra);
+				}
+			}
+			showtablefooter();
 
-	} else {
+			showtableheader('styles_edit_customvariable', 'notop');
+			showsubtitle(array('', 'styles_edit_variable', 'styles_edit_subst'));
+			echo $stylecustom;
+			showtablerow('', array('class="td25"', 'class="td24 bold"', 'class="td26"'), array(
+				cplang('add_new'),
+				'<input type="text" class="txt" name="newcvar">',
+				'<textarea name="newcsubst" class="tarea" style="height: 45px" cols="50" rows="2"></textarea>'
 
-		$templateidnew = $_GET['templateidnew'];
-		$stylevar = $_GET['stylevar'];
-		$stylevarbgimg = $_GET['stylevarbgimg'];
-		$stylevarbgextra = $_GET['stylevarbgextra'];
-		if(!in_array($_GET['defaultextstylenew'], $_GET['extstylenew'])) {
-			$_GET['extstylenew'][] = $_GET['defaultextstylenew'];
+			));
+
+			showsubmit('editsubmit', 'submit', 'del');
+			showtablefooter();
+			showformfooter();
 		}
-		$extstylenew = implode("\t", $_GET['extstylenew']).'|'.$_GET['defaultextstylenew'];
+	} else {
+		$style = C::t('common_style')->fetch_by_styleid($id);
+		if(!$style) {
+			cpmsg('style_not_found', '', 'error');
+		}
+
+		//是否有自定义配置文件
+		$configflag = false;
+		if(preg_match('/^.?\/template\/([a-z]+[a-z0-9_]*)$/', $style['directory'], $a)) {
+			$configfile = DISCUZ_ROOT . './template/' . $a[1] . '/config.inc.php';
+			if(file_exists($configfile)) {
+				$configflag = true;
+				include $configfile;
+			}
+		}
 
 		if($_GET['newcvar'] && $_GET['newcsubst']) {
 			if(C::t('common_stylevar')->check_duplicate($id, $_GET['newcvar'])) {
@@ -597,17 +611,40 @@ function imgpre_switch(id) {
 			C::t('common_stylevar')->insert(array('styleid' => $id, 'variable' => $newcvar, 'substitute' => $_GET['newcsubst']));
 		}
 
-		C::t('common_style')->update($id, array('name' => $namenew, 'templateid' => $templateidnew, 'extstyle' => $extstylenew));
-		foreach($stylevar as $varid => $substitute) {
-			if(!empty($stylevarbgimg[$varid])) {
-				$substitute .= ' '.$stylevarbgimg[$varid];
-				if(!empty($stylevarbgextra[$varid])) {
-					$substitute .= ' '.$stylevarbgextra[$varid];
+		if(!$configflag) {
+
+			$data = array();
+			if(isset($_GET['namenew'])) {
+				$data['name'] = $_GET['namenew'];
+			}
+			if(isset($_GET['templateidnew'])) {
+				$data['templateid'] = $_GET['templateidnew'];
+			}
+			if(isset($_GET['defaultextstylenew']) && isset($_GET['extstylenew'])) {
+				if (!in_array($_GET['defaultextstylenew'], is_array($_GET['extstylenew']) ? $_GET['extstylenew'] : array())) {
+					$_GET['extstylenew'][] = $_GET['defaultextstylenew'];
+				}
+				$data['extstyle'] = implode("\t", $_GET['extstylenew']) . '|' . $_GET['defaultextstylenew'];
+			}
+			if(!empty($data)) {
+				C::t('common_style')->update($id, $data);
+			}
+			if(isset($_GET['stylevar'])) {
+				$stylevar = $_GET['stylevar'];
+				$stylevarbgimg = $_GET['stylevarbgimg'];
+				$stylevarbgextra = $_GET['stylevarbgextra'];
+				foreach($stylevar as $varid => $substitute) {
+					if(!empty($stylevarbgimg[$varid])) {
+						$substitute .= ' '.$stylevarbgimg[$varid];
+						if(!empty($stylevarbgextra[$varid])) {
+							$substitute .= ' '.$stylevarbgextra[$varid];
+						}
+					}
+					$substitute = @dhtmlspecialchars($substitute);
+					$stylevarids = array($varid);
+					C::t('common_stylevar')->update_substitute_by_styleid($substitute, $id, $stylevarids);
 				}
 			}
-			$substitute = @dhtmlspecialchars($substitute);
-			$stylevarids = array($varid);
-			C::t('common_stylevar')->update_substitute_by_styleid($substitute, $id, $stylevarids);
 		}
 
 		if($_GET['delete']) {
@@ -623,7 +660,7 @@ function imgpre_switch(id) {
 			}
 		}
 		$tpl->close();
-		cpmsg('styles_edit_succeed', 'action=styles'.($newcvar && $newcsubst ? '&operation=edit&id='.$id : ''), 'succeed');
+		cpmsg('styles_edit_succeed', 'action=styles&operation=edit&id=' . $id, 'succeed');
 
 	}
 
@@ -670,7 +707,7 @@ function imgpre_switch(id) {
 			array('styles_import', 'styles&operation=import', 0),
 			array('plugins_validator', 'styles&operation=upgradecheck', 1),
 			array('cloudaddons_style_link', 'cloudaddons&frame=no&operation=templates&from=more', 0, 1),
-		), '<a href="https://www.dismall.com/?from=templates_question" target="_blank" class="bold" style="float:right;padding-right:40px;">'.$lang['templates_question'].'</a>');
+		), '<a href="https://www.dismall.com/?from=templates_question" target="_blank" class="rlink">'.$lang['templates_question'].'</a>');
 		showtableheader();
 		if($newarray) {
 			showtitle('styles_validator_newversion');

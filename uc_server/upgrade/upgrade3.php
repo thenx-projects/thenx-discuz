@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS uc_pm_members;
 CREATE TABLE uc_pm_members (
   plid mediumint(8) unsigned NOT NULL default '0',
   uid mediumint(8) unsigned NOT NULL default '0',
-  isnew tinyint(1) unsigned NOT NULL default '0',
+  isnew tinyint(1) NOT NULL default '0',
   pmnum int(10) unsigned NOT NULL default '0',
   lastupdate int(10) unsigned NOT NULL default '0',
   lastdateline int(10) unsigned NOT NULL default '0',
@@ -40,13 +40,13 @@ CREATE TABLE uc_pm_members (
   KEY isnew (isnew),
   KEY lastdateline (uid,lastdateline),
   KEY lastupdate (uid,lastupdate)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_lists;
 CREATE TABLE uc_pm_lists (
   plid mediumint(8) unsigned NOT NULL auto_increment,
   authorid mediumint(8) unsigned NOT NULL default '0',
-  pmtype tinyint(1) unsigned NOT NULL default '0',
+  pmtype tinyint(3) unsigned NOT NULL default '0',
   subject varchar(80) NOT NULL,
   members smallint(5) unsigned NOT NULL default '0',
   min_max varchar(17) NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE uc_pm_lists (
   KEY pmtype (pmtype),
   KEY min_max (min_max),
   KEY authorid (authorid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_indexes;
 CREATE TABLE uc_pm_indexes (
@@ -64,7 +64,7 @@ CREATE TABLE uc_pm_indexes (
   plid mediumint(8) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_0;
 CREATE TABLE uc_pm_messages_0 (
@@ -72,12 +72,12 @@ CREATE TABLE uc_pm_messages_0 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_1;
 CREATE TABLE uc_pm_messages_1 (
@@ -85,12 +85,12 @@ CREATE TABLE uc_pm_messages_1 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_2;
 CREATE TABLE uc_pm_messages_2 (
@@ -98,12 +98,12 @@ CREATE TABLE uc_pm_messages_2 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_3;
 CREATE TABLE uc_pm_messages_3 (
@@ -111,12 +111,12 @@ CREATE TABLE uc_pm_messages_3 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_4;
 CREATE TABLE uc_pm_messages_4 (
@@ -124,12 +124,12 @@ CREATE TABLE uc_pm_messages_4 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_5;
 CREATE TABLE uc_pm_messages_5 (
@@ -137,12 +137,12 @@ CREATE TABLE uc_pm_messages_5 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_6;
 CREATE TABLE uc_pm_messages_6 (
@@ -150,12 +150,12 @@ CREATE TABLE uc_pm_messages_6 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_7;
 CREATE TABLE uc_pm_messages_7 (
@@ -163,12 +163,12 @@ CREATE TABLE uc_pm_messages_7 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_8;
 CREATE TABLE uc_pm_messages_8 (
@@ -176,12 +176,12 @@ CREATE TABLE uc_pm_messages_8 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 DROP TABLE IF EXISTS uc_pm_messages_9;
 CREATE TABLE uc_pm_messages_9 (
@@ -189,12 +189,12 @@ CREATE TABLE uc_pm_messages_9 (
   plid mediumint(8) unsigned NOT NULL default '0',
   authorid mediumint(8) unsigned NOT NULL default '0',
   message text NOT NULL,
-  delstatus tinyint(1) unsigned NOT NULL default '0',
+  delstatus tinyint(3) unsigned NOT NULL default '0',
   dateline int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (pmid),
   KEY plid (plid,delstatus,dateline),
   KEY dateline (plid,dateline)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 REPLACE INTO uc_settings (k, v) VALUES ('privatepmthreadlimit','25');
 REPLACE INTO uc_settings (k, v) VALUES ('chatpmthreadlimit','30');
@@ -484,7 +484,7 @@ function generate_key() {
 
 function createtable($sql, $dbcharset) {
 	$type = strtoupper(preg_replace("/^\s*CREATE TABLE\s+.+\s+\(.+?\).*(ENGINE|TYPE)\s*=\s*([a-z]+?).*$/isU", "\\2", $sql));
-	$type = in_array($type, array('MYISAM', 'HEAP')) ? $type : 'MYISAM';
+	$type = in_array($type, array('INNODB', 'MYISAM', 'HEAP')) ? $type : 'INNODB';
 	return preg_replace("/^\s*(CREATE TABLE\s+.+\s+\(.+?\)).*$/isU", "\\1", $sql).
 	(mysql_get_server_info() > '4.1' ? " ENGINE=$type default CHARSET=".UC_DBCHARSET : " TYPE=$type");
 }

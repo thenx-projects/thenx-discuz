@@ -11,7 +11,7 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
-$connect = C::t('common_setting')->fetch('connect', true);
+$connect = C::t('common_setting')->fetch_setting('connect', true);
 
 $sql = <<<EOF
 
@@ -20,17 +20,17 @@ CREATE TABLE IF NOT EXISTS pre_common_member_connect (
   `conuin` char(40) NOT NULL default '',
   `conuinsecret` char(16) NOT NULL default '',
   `conopenid` char(32) NOT NULL default '',
-  `conisfeed` tinyint(1) unsigned NOT NULL default '0',
-  `conispublishfeed` tinyint(1) unsigned NOT NULL default '0',
-  `conispublisht` tinyint(1) unsigned NOT NULL default '0',
-  `conisregister` tinyint(1) unsigned NOT NULL default '0',
-  `conisqzoneavatar` tinyint(1) unsigned NOT NULL default '0',
-  `conisqqshow` tinyint(1) unsigned NOT NULL default '0',
+  `conisfeed` tinyint(1) NOT NULL default '0',
+  `conispublishfeed` tinyint(1) NOT NULL default '0',
+  `conispublisht` tinyint(1) NOT NULL default '0',
+  `conisregister` tinyint(1) NOT NULL default '0',
+  `conisqzoneavatar` tinyint(1) NOT NULL default '0',
+  `conisqqshow` tinyint(1) NOT NULL default '0',
   `conuintoken` char(32) NOT NULL DEFAULT '',
   PRIMARY KEY  (`uid`),
   KEY `conuin` (`conuin`),
   KEY `conopenid` (`conopenid`)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_connect_feedlog (
   flid mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS pre_connect_feedlog (
   `status` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (flid),
   UNIQUE KEY tid (tid)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_connect_postfeedlog (
   flid mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS pre_connect_postfeedlog (
   `status` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (flid),
   UNIQUE KEY pid (pid)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_connect_memberbindlog (
   mblid mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS pre_connect_memberbindlog (
   KEY uid (uid),
   KEY uin (uin),
   KEY dateline (dateline)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_connect_tthreadlog (
   twid char(16) NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS pre_connect_tthreadlog (
   PRIMARY KEY (twid),
   KEY nexttime (tid,nexttime),
   KEY updatetime (tid,updatetime)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_common_uin_black (
   uin char(40) NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS pre_common_uin_black (
   dateline int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (uin),
   UNIQUE KEY uid (uid)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_common_connect_guest (
   `conopenid` char(32) NOT NULL default '',
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS pre_common_connect_guest (
   `conqqnick` char(100) NOT NULL default '',
   `conuintoken` char(32) NOT NULL DEFAULT '',
   PRIMARY KEY (conopenid)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS `pre_connect_disktask` (
   `taskid` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS `pre_connect_disktask` (
   PRIMARY KEY (`taskid`),
   KEY `openid` (`openid`),
   KEY `status` (`status`)
-) TYPE=MyISAM;
+) TYPE=INNODB;
 
 REPLACE INTO pre_common_setting VALUES ('regconnect', '1');
 
@@ -188,6 +188,6 @@ if ($needCreateGroup) {
 $https = json_decode(dfsockopen('https://graph.qq.com/user/get_user_info'));
 $connect['oauth2'] = $https->ret == -1 ? 1 : 0;
 
-C::t('common_setting')->update('connect', serialize($connect));
+C::t('common_setting')->update_setting('connect', serialize($connect));
 updatecache('setting');
 $finish = true;

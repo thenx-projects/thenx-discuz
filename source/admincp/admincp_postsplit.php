@@ -21,7 +21,7 @@ if(empty($operation)) {
 	$operation = 'manage';
 }
 
-$setting = C::t('common_setting')->fetch_all(array('posttable_info', 'posttableids', 'threadtableids'), true);
+$setting = C::t('common_setting')->fetch_all_setting(array('posttable_info', 'posttableids', 'threadtableids'), true);
 if($setting['posttable_info']) {
 	$posttable_info = $setting['posttable_info'];
 } else {
@@ -58,7 +58,7 @@ if($operation == 'manage') {
 		showtablerow('', array('', '', '', 'class="td25"'), array($tablename, $data_length, "<input type=\"text\" class=\"txt\" name=\"memo[0]\" value=\"{$posttable_info[0]['memo']}\" />", $opstr));
 
 		foreach(C::t('forum_post')->show_table() as $table) {
-			list($tempkey, $tablename) = each($table);
+			$tablename = current($table);
 			$tableid = gettableid($tablename);
 			if(!preg_match('/^\d+$/', $tableid)) {
 				continue;
@@ -78,7 +78,7 @@ if($operation == 'manage') {
 			$posttable_info[$key]['memo'] = dhtmlspecialchars($value);
 		}
 
-		C::t('common_setting')->update('posttable_info', $posttable_info);
+		C::t('common_setting')->update_setting('posttable_info', $posttable_info);
 		savecache('posttable_info', $posttable_info);
 		update_posttableids();
 		updatecache('setting');
@@ -146,7 +146,7 @@ if($operation == 'manage') {
 					DB::query($createsql);
 
 					$posttable_info[$targettable]['memo'] = $_GET['memo'];
-					C::t('common_setting')->update('posttable_info', $posttable_info);
+					C::t('common_setting')->update_setting('posttable_info', $posttable_info);
 					savecache('posttable_info', $posttable_info);
 					update_posttableids();
 					$createtable = true;
@@ -161,7 +161,7 @@ if($operation == 'manage') {
 				$movesize = intval($_GET['movesize']);
 				$movesize = $movesize >= 100 && $movesize <= 1024 ? $movesize : 100;
 				$targetstatus = helper_dbtool::gettablestatus(getposttable($targettable, true), false);
-				$hash = urlencode(authcode("$tableid\t$movesize\t$targettable\t$targetstatus[Data_length]", 'ENCODE'));
+				$hash = urlencode(authcode("$tableid\t$movesize\t$targettable\t{$targetstatus['Data_length']}", 'ENCODE'));
 				if($createtable) {
 					cpmsg('postsplit_table_create_succeed', 'action=postsplit&operation=movepost&fromtable='.$tableid.'&movesize='.$movesize.'&targettable='.$targettable.'&hash='.$hash, 'loadingform');
 				} else {
@@ -253,7 +253,7 @@ if($operation == 'manage') {
 			C::t('forum_post')->drop_table($fromtableid);
 
 			unset($posttable_info[$fromtableid]);
-			C::t('common_setting')->update('posttable_info', $posttable_info);
+			C::t('common_setting')->update_setting('posttable_info', $posttable_info);
 			savecache('posttable_info', $posttable_info);
 			update_posttableids();
 			$optimize = false;
@@ -296,7 +296,7 @@ function gettableid($tablename) {
 function getmaxposttableid() {
 	$maxtableid = 0;
 	foreach(C::t('forum_post')->show_table() as $table) {
-		list($tempkey, $tablename) = each($table);
+		$tablename = current($table);
 		$tableid = intval(gettableid($tablename));
 		if($tableid > $maxtableid) {
 			$maxtableid = $tableid;
@@ -307,14 +307,14 @@ function getmaxposttableid() {
 
 function update_posttableids() {
 	$tableids = get_posttableids();
-	C::t('common_setting')->update('posttableids', $tableids);
+	C::t('common_setting')->update_setting('posttableids', $tableids);
 	savecache('posttableids', $tableids);
 }
 
 function get_posttableids() {
 	$tableids = array(0);
 	foreach(C::t('forum_post')->show_table() as $table) {
-		list($tempkey, $tablename) = each($table);
+		$tablename = current($table);
 		$tableid = gettableid($tablename);
 		if(!preg_match('/^\d+$/', $tableid)) {
 			continue;

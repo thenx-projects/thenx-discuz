@@ -11,6 +11,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if(!$_G['setting']['groupstatus']) {
+	showmessage('group_module_status_off');
+}
+
 require_once libfile('function/group');
 $_G['action']['action'] = 3;
 $_G['action']['fid'] = $_G['fid'];
@@ -78,9 +82,9 @@ if(in_array($action, array('out', 'viewmember', 'manage', 'index', 'memberlist')
 	}
 	if($action != 'index') {
 		if($status == 2) {
-			showmessage('forum_group_noallowed', "forum.php?mod=group&fid=$_G[fid]");
+			showmessage('forum_group_noallowed', "forum.php?mod=group&fid={$_G['fid']}");
 		} elseif($status == 3) {
-			showmessage('forum_group_moderated', "forum.php?mod=group&fid=$_G[fid]");
+			showmessage('forum_group_moderated', "forum.php?mod=group&fid={$_G['fid']}");
 		}
 	}
 }
@@ -140,7 +144,7 @@ if($action == 'index') {
 		}
 		$newthreadlist = getgroupcache($_G['fid'], array('dateline'), 0, 10, 0, 1);
 		foreach($newthreadlist['dateline']['data'] as $key => $thread) {
-			if(!empty($stickythread) && $stickythread[$thread[tid]]) {
+			if(!empty($stickythread) && $stickythread[$thread['tid']]) {
 				unset($newthreadlist['dateline']['data'][$key]);
 				continue;
 			}
@@ -172,7 +176,7 @@ if($action == 'index') {
 
 		if($_G['forum']['livetid']) {
 			include_once libfile('function/post');
-			$livethread = C::t('forum_thread')->fetch($_G['forum']['livetid']);
+			$livethread = C::t('forum_thread')->fetch_thread($_G['forum']['livetid']);
 			$livepost = C::t('forum_post')->fetch_threadpost_by_tid_invisible($_G['forum']['livetid']);
 			$livemessage = messagecutstr($livepost['message'], 200);
 			$liveallowpostreply = $groupuser['uid'] && $groupuser['level'] ? true : false;
@@ -227,7 +231,7 @@ if($action == 'index') {
 		}
 	}
 	if($groupuser['uid']) {
-		showmessage('group_has_joined', "forum.php?mod=group&fid=$_G[fid]");
+		showmessage('group_has_joined', "forum.php?mod=group&fid={$_G['fid']}");
 	} else {
 		$modmember = 4;
 		$showmessage = 'group_join_succeed';
@@ -262,7 +266,7 @@ if($action == 'index') {
 		include_once libfile('function/stat');
 		updatestat('groupjoin');
 		delgroupcache($_G['fid'], array('activityuser', 'newuserlist'));
-		showmessage($showmessage, "forum.php?mod=group&fid=$_G[fid]");
+		showmessage($showmessage, "forum.php?mod=group&fid={$_G['fid']}");
 	}
 
 } elseif($action == 'out') {
@@ -275,7 +279,7 @@ if($action == 'index') {
 		C::t('forum_forumfield')->update_membernum($_G['fid'], -1);
 	update_groupmoderators($_G['fid']);
 	delgroupcache($_G['fid'], array('activityuser', 'newuserlist'));
-	showmessage($showmessage, "forum.php?mod=forumdisplay&fid=$_G[fid]");
+	showmessage($showmessage, "forum.php?mod=forumdisplay&fid={$_G['fid']}");
 
 } elseif($action == 'create') {
 
@@ -371,7 +375,7 @@ if($action == 'index') {
 
 	$oparray = array('group', 'checkuser', 'manageuser', 'threadtype', 'demise');
 	$_GET['op'] = getgpc('op') && in_array($_GET['op'], $oparray) ?  $_GET['op'] : 'group';
-	if(empty($groupmanagers[$_G[uid]]) && !in_array($_GET['op'], array('group', 'threadtype', 'demise')) && $_G['adminid'] != 1) {
+	if(empty($groupmanagers[$_G['uid']]) && !in_array($_GET['op'], array('group', 'threadtype', 'demise')) && $_G['adminid'] != 1) {
 		showmessage('group_admin_noallowed');
 	}
 	$page = intval(getgpc('page')) ? intval($_GET['page']) : 1;
@@ -454,7 +458,7 @@ if($action == 'index') {
 				$group_recommend = dunserialize($_G['setting']['group_recommend']);
 				if($group_recommend[$_G['fid']]) {
 					$group_recommend[$_G['fid']]['icon'] = get_groupimg($iconnew);
-					C::t('common_setting')->update('group_recommend', $group_recommend);
+					C::t('common_setting')->update_setting('group_recommend', $group_recommend);
 					include libfile('function/cache');
 					updatecache('setting');
 				}
@@ -553,7 +557,7 @@ if($action == 'index') {
 			} else {
 				$start = 0;
 			}
-			$userlist = C::t('forum_groupuser')->groupuserlist($_G['fid'], '', $perpage, $start, $_GET['srchuser'] ? "AND username like '".addslashes($_GET[srchuser])."%'" : "AND level='4'");
+			$userlist = C::t('forum_groupuser')->groupuserlist($_G['fid'], '', $perpage, $start, $_GET['srchuser'] ? "AND username like '".addslashes($_GET['srchuser'])."%'" : "AND level='4'");
 		} else {
 			$muser = getgpc('muid');
 			$targetlevel = $_GET['targetlevel'];

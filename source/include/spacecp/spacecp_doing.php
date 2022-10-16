@@ -11,6 +11,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['doingstatus']) {
+	showmessage('doing_status_off');
+}
+
 $doid = empty($_GET['doid'])?0:intval($_GET['doid']);
 $id = empty($_GET['id'])?0:intval($_GET['id']);
 if(helper_access::check_module('doing')) {
@@ -76,7 +80,6 @@ if(helper_access::check_module('doing')) {
 
 		if(helper_access::check_module('feed') && ckprivacy('doing', 'feed') && $doing_status == '0') {
 			$feedarr = array(
-				'appid' => '',
 				'icon' => 'doing',
 				'uid' => $_G['uid'],
 				'username' => $_G['username'],
@@ -150,6 +153,7 @@ if(helper_access::check_module('doing')) {
 			'dateline' => $_G['timestamp'],
 			'message' => $message,
 			'ip' => $_G['clientip'],
+			'port' => $_G['remoteport'],
 			'grade' => $updo['grade']+1
 		);
 
@@ -163,7 +167,7 @@ if(helper_access::check_module('doing')) {
 
 		if($updo['uid'] != $_G['uid']) {
 			notification_add($updo['uid'], 'comment', 'doing_reply', array(
-				'url'=>"home.php?mod=space&uid=$updo[uid]&do=doing&view=me&doid=$updo[doid]&highlight=$newid",
+				'url'=>"home.php?mod=space&uid={$updo['uid']}&do=doing&view=me&doid={$updo['doid']}&highlight=$newid",
 				'from_id'=>$updo['doid'],
 				'from_idtype'=>'doid'));
 			updatecreditbyaction('comment', 0, array(), 'doing'.$updo['doid']);
@@ -211,6 +215,9 @@ if($_GET['op'] == 'delete') {
 
 	if(empty($_GET['close'])) {
 		foreach(C::t('home_docomment')->fetch_all_by_doid($doid) as $value) {
+			if(!empty($value['ip'])) {
+				$value['ip'] = ip::to_display($value['ip']);
+			}
 			$tree->setNode($value['id'], $value['upid'], $value);
 			$count++;
 			if($value['uid'] == $space['uid']) $highlight = $value['id'];

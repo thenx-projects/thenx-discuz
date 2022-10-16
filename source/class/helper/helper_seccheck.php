@@ -13,7 +13,7 @@ if(!defined('IN_DISCUZ')) {
 
 class helper_seccheck {
 
-	private function _check($type) {
+	private static function _check($type) {
 		global $_G;
 		$secappend = '';
 		if(!defined('IN_MOBILE')) {
@@ -47,7 +47,7 @@ class helper_seccheck {
 		return $seccheck;
 	}
 
-	function _create($type, $code = '') {
+	private static function _create($type, $code = '') {
 		global $_G;
 		$secappend = '';
 		if(!defined('IN_MOBILE')) {
@@ -138,7 +138,7 @@ class helper_seccheck {
 		return $_G['cache']['secqaa'][$secqaakey]['question'];
 	}
 
-	public static function check_seccode($value, $idhash, $fromjs = 0, $modid = '') {
+	public static function check_seccode($value, $idhash, $fromjs = 0, $modid = '', $verifyonly = false) {
 		global $_G;
 		if(!$_G['setting']['seccodestatus']) {
 			return true;
@@ -169,7 +169,7 @@ class helper_seccheck {
 				if(class_exists($class)) {
 					$code = new $class();
 					if(method_exists($code, 'check')) {
-						$return = $code->check($value, $idhash, $seccheck, $fromjs, $modid);
+						$return = $code->check($value, $idhash, $seccheck, $fromjs, $modid, $verifyonly);
 					}
 				}
 			} else {
@@ -183,10 +183,13 @@ class helper_seccheck {
 		} else {
 			C::t('common_seccheck')->update_verified($ssid);
 		}
+		if(!$verifyonly) {
+			C::t('common_seccheck')->delete($ssid);
+		}
 		return $return;
 	}
 
-	public static function check_secqaa($value, $idhash) {
+	public static function check_secqaa($value, $idhash, $verifyonly = false) {
 		global $_G;
 		if(!$_G['setting']['secqaa']) {
 			return true;
@@ -201,6 +204,9 @@ class helper_seccheck {
 			C::t('common_seccheck')->update_succeed($ssid);
 		} else {
 			C::t('common_seccheck')->update_verified($ssid);
+		}
+		if(!$verifyonly) {
+			C::t('common_seccheck')->delete($ssid);
 		}
 		return $return;
 	}
@@ -243,7 +249,7 @@ class helper_seccheck {
 		} else {
 			$seccode = false;
 		}
-		return array($seccode);
+		return array($seccode, $_G['setting']['secqaa']['status'] & 8);
 	}
 
 	public static function rule_post($action) {
@@ -325,7 +331,7 @@ class helper_seccheck {
 	public static function rule_card() {
 		global $_G;
 		$seccheckrule = & $_G['setting']['seccodedata']['rule']['card'];
-		return array($seccheckrule['allow']);
+		return array($seccheckrule['allow'], $_G['setting']['secqaa']['status'] & 16);
 	}
 
 	public static function seccheck($rule, $param = array()) {

@@ -24,7 +24,7 @@ $lockfile = ROOT_PATH.'./data/install.lock';
 @include ROOT_PATH.CONFIG;
 
 define('CHARSET', 'utf-8');
-define('DBCHARSET', 'utf8');
+define('DBCHARSET', 'utf8mb4');
 
 define('ORIG_TABLEPRE', 'pre_');
 
@@ -63,14 +63,14 @@ define('UNDEFINE_FUNC', 32);
 define('MISSING_PARAMETER', 33);
 define('LOCK_FILE_NOT_TOUCH', 34);
 
-$func_items = array(function_exists('mysql_connect') ? 'mysql_connect' : 'mysqli_connect', 'gethostbyname', 'file_get_contents', 'xml_parser_create');
+$func_items = array('mysqli_connect', 'xml_parser_create', 'json_encode');
 
 $filesock_items = array('fsockopen', 'pfsockopen', 'stream_socket_client', 'curl_init');
 
 $env_items = array
 (
 	'os' => array('c' => 'PHP_OS', 'r' => 'notset', 'b' => 'unix'),
-	'php' => array('c' => 'PHP_VERSION', 'r' => '5.3', 'b' => '7.1'),
+	'php' => array('c' => 'PHP_VERSION', 'r' => '5.6', 'b' => '7.3'),
 	'attachmentupload' => array('r' => 'notset', 'b' => '2M'),
 	'gdversion' => array('r' => '1.0', 'b' => '2.0'),
 	'curl' => array('r' => 'notset', 'b' => 'enable'),
@@ -266,7 +266,6 @@ $serialize_sql_setting = array (
     'forum' => '论坛',
     'group' => '群组',
     'home' => '家园',
-    'userapp' => '应用',
   ),
   'activityfield' =>
   array (
@@ -318,14 +317,6 @@ $serialize_sql_setting = array (
     ),
     5 =>
     array (
-      'icon' => '',
-    ),
-    7 =>
-    array (
-      'title' => '视频认证',
-      'available' => '0',
-      'showicon' => '0',
-      'viewvideophoto' => '0',
       'icon' => '',
     ),
   ),

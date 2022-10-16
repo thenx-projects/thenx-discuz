@@ -132,8 +132,20 @@ function followcode($message, $tid = 0, $pid = 0, $length = 0, $allowimg = true)
 	}
 
 	if(strpos($msglower, '[/img]') !== FALSE) {
-		$message = preg_replace_callback("/\[img\]\s*([^\[\<\r\n]+?)\s*\[\/img\]/is", create_function('$matches', 'return '.intval($allowimg).' ? fparseimg($matches[1], \''.addslashes($extra).'\') : \'\';'), $message);
-		$message = preg_replace_callback("/\[img=(\d{1,4})[x|\,](\d{1,4})\]\s*([^\[\<\r\n]+?)\s*\[\/img\]/is", create_function('$matches', 'return '.intval($allowimg).' ? fparseimg($matches[3], \''.addslashes($extra).'\') : \'\';'), $message);
+		$message = preg_replace_callback(
+			"/\[img\]\s*([^\[\<\r\n]+?)\s*\[\/img\]/is",
+			function ($matches) use ($allowimg, $extra) {
+				return intval($allowimg) ? fparseimg($matches[1], ''.addslashes($extra).'') : '';
+			},
+			$message
+		);
+		$message = preg_replace_callback(
+			"/\[img=(\d{1,4})[x|\,](\d{1,4})\]\s*([^\[\<\r\n]+?)\s*\[\/img\]/is",
+			function ($matches) use($allowimg, $extra) {
+				return intval($allowimg) ? fparseimg($matches[3], ''.addslashes($extra).'') : '';
+			},
+			$message
+		);
 	}
 
 	if($tid && $pid) {
@@ -142,8 +154,8 @@ function followcode($message, $tid = 0, $pid = 0, $length = 0, $allowimg = true)
 			if(!empty($_G['delattach']) && in_array($aid, $_G['delattach'])) {
 				continue;
 			}
-			$message .= "[attach]$attach[aid][/attach]";
-			$message = preg_replace("/\[attach\]$attach[aid]\[\/attach\]/i", fparseattach($attach['aid'], $length, $extra), $message, 1);
+			$message .= "[attach]{$attach['aid']}[/attach]";
+			$message = preg_replace("/\[attach\]{$attach['aid']}\[\/attach\]/i", fparseattach($attach['aid'], $length, $extra), $message, 1);
 		}
 	}
 
@@ -360,7 +372,6 @@ function fparseflash($url) {
 		$html = bbcodeurl($url, '<img src="'.IMGDIR.'/flash.gif" alt="'.lang('space', 'follow_click_play').'" onclick="javascript:showFlash(\'flash\', \''.$url.'\', this, \''.$rimg_id.'\');" class="tn" style="cursor: pointer;" />');
 		return fcodedisp($html, 'media');
 	} else {
-		$url = STATICURL.'image/common/flvplayer.swf?&autostart=true&file='.urlencode($matches[0]);
 		return fmakeflv($url);
 	}
 }
@@ -480,7 +491,6 @@ function fparsemedia($params, $url) {
 				return fparseaudio($url);
 				break;
 			case 'flv':
-				$url = STATICURL.'image/common/flvplayer.swf?&autostart=true&file='.urlencode($url);
 				return fmakeflv($url);
 				break;
 			case 'swf':

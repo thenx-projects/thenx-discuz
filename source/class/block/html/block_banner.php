@@ -15,7 +15,7 @@ require_once libfile('commonblock_html', 'class/block/html');
 
 class block_banner extends commonblock_html {
 
-	function block_banner() {}
+	function __construct() {}
 
 	function name() {
 		return lang('blockclass', 'blockclass_html_script_banner');
@@ -72,8 +72,8 @@ class block_banner extends commonblock_html {
 			.($parameter['text'] ? ' alt="'.$parameter['text'].'" title="'.$parameter['text'].'"' : '')
 			.' />';
 		if($parameter['url']) {
-			$target = $parameter['atarget']  ? " target=\"$parameter[atarget]\"" : '';
-			$return = "<a href=\"$parameter[url]\"$target>$return</a>";
+			$target = $parameter['atarget']  ? " target=\"{$parameter['atarget']}\"" : '';
+			$return = "<a href=\"{$parameter['url']}\"$target>$return</a>";
 		}
 		return array('html' => $return, 'data' => null);
 	}

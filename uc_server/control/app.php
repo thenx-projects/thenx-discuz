@@ -51,7 +51,7 @@ class appcontrol extends base {
 			exit('-1');
 		}
 
-		if(md5(md5($ucfounderpw).UC_FOUNDERSALT) == UC_FOUNDERPW || (strlen($ucfounderpw) == 32 && $ucfounderpw == md5(UC_FOUNDERPW))) {
+		if($_ENV['user']->verify_password($ucfounderpw, UC_FOUNDERPW, UC_FOUNDERSALT) || (strlen($ucfounderpw) == 32 && hash_equals($ucfounderpw, md5(UC_FOUNDERPW)))) {
 			@ob_start();
 			$return  = '';
 
@@ -93,8 +93,8 @@ class appcontrol extends base {
 				$_ENV['note']->add('updateapps', '', $this->serialize($notedata, 1));
 				$_ENV['note']->send();
 			} else {
-				$this->_writelog('app_queryinfo', "appid=$app[appid]; by=url_add");
-				$return = "$app[authkey]|$app[appid]|".UC_DBHOST.'|'.UC_DBNAME.'|'.UC_DBUSER.'|'.UC_DBPW.'|'.UC_DBCHARSET.'|'.UC_DBTABLEPRE.'|'.UC_CHARSET;
+				$this->_writelog('app_queryinfo', "appid={$app['appid']}; by=url_add");
+				$return = "{$app['authkey']}|{$app['appid']}|".UC_DBHOST.'|'.UC_DBNAME.'|'.UC_DBUSER.'|'.UC_DBPW.'|'.UC_DBCHARSET.'|'.UC_DBTABLEPRE.'|'.UC_CHARSET;
 			}
 			@ob_end_clean();
 			exit($return);
@@ -138,11 +138,7 @@ class appcontrol extends base {
 			}
 			@rename($logfile, UC_ROOT.'./data/logs/'.gmdate('Ym', $this->time).'_'.$hash.'.php');
 		}
-		if($fp = @fopen($logfile, 'a')) {
-			@flock($fp, 2);
-			@fwrite($fp, "<?PHP exit;?>\t".str_replace(array('<?', '?>', '<?php'), '', $log)."\n");
-			@fclose($fp);
-		}
+		file_put_contents($logfile, "<?PHP exit;?>\t".str_replace(array('<?', '?>', '<?php'), '', $log)."\n", FILE_APPEND);
 	}
 
 }

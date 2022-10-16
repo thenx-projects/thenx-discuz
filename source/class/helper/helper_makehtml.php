@@ -86,7 +86,7 @@ class helper_makehtml {
 				$article['htmlname'] = $article['htmlname'].$page;
 			}
 			if($article['contents'] > $page) {
-				self::$returndata['nexturl'] = "portal.php?mod=view&aid={$article[aid]}&page=".(++$page);//'url'
+				self::$returndata['nexturl'] = "portal.php?mod=view&aid={$article['aid']}&page=".(++$page);//'url'
 				self::$returndata['current'] = $page;//'cur'
 				self::$returndata['count'] = $article['contents'];//'count'
 			}
@@ -98,7 +98,7 @@ class helper_makehtml {
 
 			self::$htmlfilename = $htmldir.$article['htmlname'];
 			if(self::$callbackdata['data']) {
-				self::$callback = array(self, 'portal_article_success');
+				self::$callback = array(get_class(), 'portal_article_success');
 				self::$callbackdata['id'] = $article['aid'];
 			}
 			if($article['allowcomment']) {
@@ -141,7 +141,7 @@ class helper_makehtml {
 			}
 			self::$htmlfilename = $_G['setting']['makehtml']['topichtmldir'].'/'.$topic['name'];
 			if(self::$callbackdata['data']) {
-				self::$callback = array(self, 'portal_topic_success');
+				self::$callback = array(get_class(), 'portal_topic_success');
 				self::$callbackdata['id'] = $topic['topicid'];
 			}
 			if($topic['allowcomment']) {

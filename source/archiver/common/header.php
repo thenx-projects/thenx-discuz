@@ -6,9 +6,12 @@ if(!defined('IN_DISCUZ')) {
 ob_start();
 
 ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
+<meta charset="<?php echo $_G['config']['output']['charset']; ?>" />
+<meta name="renderer" content="webkit" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <base href="<?php echo $_G['siteurl']; ?>archiver/" />
 <title><?php if(!empty($navtitle)): echo $navtitle.' - '; endif; if(empty($nobbname)): echo $_G['setting']['bbname'].' - '; endif;?> Powered by Discuz! Archiver</title>
 <?php echo $_G['setting']['seohead']; ?>
@@ -17,7 +20,7 @@ ob_start();
 <meta name="description" content="<?php if(!empty($metadescription)): echo dhtmlspecialchars($metadescription).' ';endif; echo ','.$_G['setting']['bbname'];?>" />
 <meta name="generator" content="Discuz! <?php echo $_G['setting']['version']; ?>" />
 <meta name="author" content="Discuz! Team and Comsenz UI Team" />
-<meta name="copyright" content="2001-2021, Tencent Cloud." />
+<meta name="copyright" content="<?php echo lang('template', 'copyright_s'); ?>" />
 <style type="text/css">
 	body {font-family: Verdana;FONT-SIZE: 12px;MARGIN: 0;color: #000000;background: #ffffff;}
 	img {border:0;}

@@ -21,11 +21,11 @@ $mod = '';
 $discuz->cachelist = $cachelist;
 $discuz->init();
 
-if(in_array($discuz->var['mod'], $modarray) || !empty($_G['setting']['search'][$discuz->var['mod']]['status'])) {
+if(in_array($discuz->var['mod'], $modarray) || (!empty($_G['setting']['search'][$discuz->var['mod']]['status']) && $_G['setting'][($discuz->var['mod'] == 'curforum' ? 'forum' : ($discuz->var['mod'] == 'user' ? 'friend' : $discuz->var['mod'])).'status'])) {
 	$mod = $discuz->var['mod'];
 } else {
 	foreach($_G['setting']['search'] as $mod => $value) {
-		if(!empty($value['status'])) {
+		if(!empty($value['status']) && $_G['setting'][($mod == 'curforum' ? 'forum' : ($mod == 'user' ? 'friend' : $mod)).'status']) {
 			break;
 		}
 	}
@@ -37,6 +37,10 @@ define('CURMODULE', $mod);
 
 
 runhooks();
+
+if (!$_G['setting'][($mod == 'curforum' ? 'forum' : ($mod == 'user' ? 'friend' : $mod)).'status']) {
+	showmessage(($mod == 'curforum' ? 'forum' : ($mod == 'user' ? 'friend' : ($mod == 'group' ? 'group_module' : $mod))).'_status_off');
+}
 
 require_once libfile('function/search');
 

@@ -29,7 +29,8 @@ if($operation == 'list') {
 		));
 
 		showformheader("credits&operation=list");
-		showtableheader('setting_credits_policy', 'nobottom', 'id="policytable"'.($anchor != 'policytable' ? ' style="display: none"' : ''));
+		showboxheader('setting_credits_policy', 'nobottom', 'id="policytable"'.($anchor != 'policytable' ? ' style="display: none"' : ''));
+		showtableheader();
 		echo '<tr class="header"><th class="td28 nowrap">'.$lang['setting_credits_policy_name'].'</th><th class="td28 nowrap">'.$lang['setting_credits_policy_cycletype'].'</th><th class="td28 nowrap">'.$lang['setting_credits_policy_rewardnum'].'</th>';
 		for($i = 1; $i <= 8; $i++) {
 			if($_G['setting']['extcredits'][$i]) {
@@ -51,6 +52,7 @@ if($operation == 'list') {
 		}
 		showtablerow('', 'class="lineheight" colspan="9"', $lang['setting_credits_policy_comment']);
 		showtablefooter();
+		showboxfooter();
 		showtableheader('', 'nobottom', '');
 		showsetting('setting_credits_policy_mobile', 'settingnew[creditspolicymobile]', $_G['setting']['creditspolicymobile'], 'text');
 		showsubmit('rulesubmit');
@@ -94,7 +96,7 @@ if($operation == 'list') {
 		}
 		if(!$fid) {
 			shownav('global', 'credits_edit');
-			showsubmenu("$lang[credits_edit] - $ruleinfo[rulename]");
+			showsubmenu("{$lang['credits_edit']} - {$ruleinfo['rulename']}");
 		} else {
 			if(!in_array($fid, explode(',', $globalrule['fids']))) {
 				for($i = 1; $i <= 8; $i++) {
@@ -102,7 +104,7 @@ if($operation == 'list') {
 				}
 			}
 			shownav('forum', 'forums_edit');
-			showsubmenu("$forumname - $lang[credits_edit] - $ruleinfo[rulename]");
+			showsubmenu("$forumname - {$lang['credits_edit']} - {$ruleinfo['rulename']}");
 			showtips('forums_edit_tips');
 		}
 		showformheader("credits&operation=edit&rid=$rid&".($fid ? "fid=$fid" : ''));
@@ -115,8 +117,8 @@ if($operation == 'list') {
 			showtableheader('', 'nobottom');
 				$str = <<<EOF
 	<ul onmouseover="altStyle(this);">
-		<li$actives[1]><input type="radio" onclick="$('edit').style.display = '';" $checkarr[1] value="1" name="rule[usecustom]" class="radio">&nbsp;$lang[yes]</li>
-		<li$actives[0]><input type="radio" onclick="$('edit').style.display = 'none';" $checkarr[0] value="0" name="rule[usecustom]" class="radio">&nbsp;$lang[no]</li>
+		<li$actives[1]><input type="radio" onclick="$('edit').style.display = '';" $checkarr[1] value="1" name="rule[usecustom]" class="radio">&nbsp;{$lang['yes']}</li>
+		<li$actives[0]><input type="radio" onclick="$('edit').style.display = 'none';" $checkarr[0] value="0" name="rule[usecustom]" class="radio">&nbsp;{$lang['no']}</li>
 	</ul>
 EOF;
 			showsetting('setting_credits_use_custom_credit', 'usecustom', $usecustom, $str);
@@ -207,7 +209,7 @@ EOF;
 					$lowerlimit['creditspolicy']['lowerlimit'][$i] = (float)$rule['extcredits'.$i];
 				}
 			}
-			C::t('common_setting')->update('creditspolicy', $lowerlimit['creditspolicy']);
+			C::t('common_setting')->update_setting('creditspolicy', $lowerlimit['creditspolicy']);
 			updatecache(array('setting', 'creditrule'));
 		}
 		cpmsg('credits_update_succeed', 'action=credits&operation=list&anchor=policytable', 'succeed');

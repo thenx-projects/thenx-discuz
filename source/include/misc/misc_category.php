@@ -11,6 +11,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if(!$_G['setting']['forumstatus']) {
+	showmessage('forum_status_off');
+}
+
 $gquery = C::t('forum_forum')->fetch_all_info_by_fids($gid);
 $query = C::t('forum_forum')->fetch_all_info_by_fids(0, 1, 0, $gid, 1, 0, 0, 'forum');
 if(!empty($_G['member']['accessmasks'])) {
@@ -35,7 +39,8 @@ foreach($query as $forum) {
 		$posts += $forum['posts'];
 		$todayposts += $forum['todayposts'];
 		if(forum($forum)) {
-			$forum['orderid'] = $catlist[$forum['fup']]['forumscount'] ++;
+			$forum['orderid'] = isset($catlist[$forum['fup']]['forumscount']) ? $catlist[$forum['fup']]['forumscount'] : 0;
+			$catlist[$forum['fup']]['forumscount'] = $forum['orderid'] + 1;
 			$forum['subforums'] = '';
 			$forumlist[$forum['fid']] = $forum;
 			$catlist[$forum['fup']]['forums'][] = $forum['fid'];
@@ -43,6 +48,7 @@ foreach($query as $forum) {
 		}
 	} else {
 		$forum['collapseimg'] = 'collapsed_no.gif';
+		$forum['collapseicon'] = '_no';
 		$collapse['category_'.$forum['fid']] = '';
 
 		if($forum['moderators']) {

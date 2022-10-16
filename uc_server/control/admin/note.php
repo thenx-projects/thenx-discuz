@@ -61,7 +61,7 @@ class control extends adminbase {
 		}
 		$num = $_ENV['note']->get_total_num(1);
 		$notelist = $_ENV['note']->get_list($page, UC_PPP, $num, 1);
-		$multipage = $this->page($num, UC_PPP, $page, 'admin.php?m=note&a=ls');
+		$multipage = $this->page($num, UC_PPP, $page, UC_ADMINSCRIPT.'?m=note&a=ls');
 
 		$this->view->assign('status', $status);
 		$this->view->assign('applist', $this->apps);
@@ -90,10 +90,10 @@ class control extends adminbase {
 		if($status > 0) {
 			return '<font color="green">'.$this->lang['note_succeed'].'</font>';
 		} elseif($status == 0) {
-			$url = 'admin.php?m=note&a=send&appid='.$appid.'&noteid='.$noteid;
+			$url = UC_ADMINSCRIPT.'?m=note&a=send&appid='.$appid.'&noteid='.$noteid;
 			return '<a href="'.$url.'" class="red">'.$this->lang['note_na'].'</a>';
 		} elseif($status < 0) {
-			$url = 'admin.php?m=note&a=send&appid='.$appid.'&noteid='.$noteid;
+			$url = UC_ADMINSCRIPT.'?m=note&a=send&appid='.$appid.'&noteid='.$noteid;
 			return '<a href="'.$url.'"><font color="red">'.$this->lang['note_false'].(-$status).$this->lang['note_times'].'</font></a>';
 		}
 	}
@@ -103,7 +103,7 @@ class control extends adminbase {
 			foreach($notelist AS $key => $note) {
 				$notelist[$key]['operation'] = $this->lang['note_'.$note['operation']];//$this->operations[$note['operation']][0];
 				foreach($this->apps AS $appid => $app) {
-					$notelist[$key]['status'][$appid] = $this->_note_status($note['app'.$appid], $appid, $note['noteid'], $note['args'], $note['operation']);
+					$notelist[$key]['status'][$appid] = $this->_note_status($note['app'.$appid], $appid, $note['noteid'], '', $note['operation']);
 				}
 			}
 		}

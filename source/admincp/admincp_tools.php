@@ -28,7 +28,7 @@ if($operation == 'updatecache') {
 	/*search*/
 
 	if($step == 1) {
-		cpmsg("<input type=\"checkbox\" name=\"type[]\" value=\"data\" id=\"datacache\" class=\"checkbox\" checked /><label for=\"datacache\">".$lang['tools_updatecache_data']."</label><input type=\"checkbox\" name=\"type[]\" value=\"tpl\" id=\"tplcache\" class=\"checkbox\" checked /><label for=\"tplcache\">".$lang['tools_updatecache_tpl']."</label><input type=\"checkbox\" name=\"type[]\" value=\"blockclass\" id=\"blockclasscache\" class=\"checkbox\" /><label for=\"blockclasscache\">".$lang['tools_updatecache_blockclass'].'</label><input type="checkbox" name="type[]" value="csscache" id="csscache" class="checkbox" /><label for="csscache">'.$lang['styles_csscache_update'].'</label>', 'action=tools&operation=updatecache&step=2', 'form', '', FALSE);
+		cpmsg("<input type=\"checkbox\" name=\"type[]\" value=\"data\" id=\"datacache\" class=\"checkbox\" checked /><label for=\"datacache\">".$lang['tools_updatecache_data']."</label><input type=\"checkbox\" name=\"type[]\" value=\"tpl\" id=\"tplcache\" class=\"checkbox\" checked /><label for=\"tplcache\">".$lang['tools_updatecache_tpl']."</label><input type=\"checkbox\" name=\"type[]\" value=\"blockclass\" id=\"blockclasscache\" class=\"checkbox\" /><label for=\"blockclasscache\">".$lang['tools_updatecache_blockclass']."</label><input type=\"checkbox\" name=\"type[]\" value=\"csscache\" id=\"csscache\" class=\"checkbox\" /><label for=\"csscache\">".$lang['styles_csscache_update']."</label><input type=\"checkbox\" name=\"type[]\" value=\"searchindex\" id=\"searchindex\" class=\"checkbox\" /><label for=\"searchindex\">".$lang['tools_updatecache_searchindex'].'</label>', 'action=tools&operation=updatecache&step=2', 'form', '', FALSE);
 	} elseif($step == 2) {
 		$type = implode('_', (array)$_GET['type']);
 		cpmsg(cplang('tools_updatecache_waiting'), "action=tools&operation=updatecache&step=3&type=$type", 'loading', '', FALSE);
@@ -37,6 +37,7 @@ if($operation == 'updatecache') {
 		if(in_array('data', $type)) {
 			updatecache();
 			require_once libfile('function/group');
+			$groupindex = array();
 			$groupindex['randgroupdata'] = $randgroupdata = grouplist('lastupdate', array('ff.membernum', 'ff.icon'), 80);
 			$groupindex['topgrouplist'] = $topgrouplist = grouplist('activity', array('f.commoncredits', 'ff.membernum', 'ff.icon'), 10);
 			$groupindex['updateline'] = TIMESTAMP;
@@ -45,7 +46,7 @@ if($operation == 'updatecache') {
 			$groupindex['groupnum'] = $groupdata['groupnum'];
 			savecache('groupindex', $groupindex);
 			C::t('forum_groupfield')->truncate();
-			savecache('forum_guide', '');
+			savecache('forum_guide', array());
 			if($_G['setting']['grid']['showgrid']) {
 				savecache('grids', array());
 			}
@@ -61,6 +62,10 @@ if($operation == 'updatecache') {
 			updatecache(array('setting', 'styles'));
 			loadcache('style_default', true);
 			updatecache('updatediytemplate');
+		}
+		if(in_array('searchindex', $type)) {
+			require_once libfile('function/searchindex');
+			searchindex_cache();
 		}
 		cpmsg('update_cache_succeed', '', 'succeed', '', FALSE);
 	}
@@ -110,7 +115,7 @@ if($operation == 'updatecache') {
 				continue;
 			} else {
 				if(!dir_writeable($fullentry)) {
-					$result .= '<li class="error">'.(is_dir($fullentry) ? $lang['dir'] : $lang['file'])." ./$entry $lang[fileperms_unwritable]</li>";
+					$result .= '<li class="error">'.(is_dir($fullentry) ? $lang['dir'] : $lang['file'])." ./$entry {$lang['fileperms_unwritable']}</li>";
 				}
 			}
 		}

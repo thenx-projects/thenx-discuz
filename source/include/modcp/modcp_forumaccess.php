@@ -116,7 +116,7 @@ if($num = C::t('forum_access')->fetch_all_by_fid_uid($_G['fid'], $suid, 1)) {
 
 	$page = $page > ceil($num / $ppp) ? ceil($num / $ppp) : $page;
 	$start_limit = ($page - 1) * $ppp;
-	$list['pagelink'] = multi($num, $ppp, $page, "forum.php?mod=modcp&fid=$_G[fid]&action=$_GET[action]");
+	$list['pagelink'] = multi($num, $ppp, $page, "forum.php?mod=modcp&fid={$_G['fid']}&action={$_GET['action']}");
 
 	$query = C::t('forum_access')->fetch_all_by_fid_uid($_G['fid'], $suid, 0, $start_limit, $ppp);
 	$uidarray = array();
@@ -150,8 +150,8 @@ function delete_access($uid, $fid) {
 }
 
 function accessimg($access) {
-	return $access == -1 ? '<img src="'.STATICURL.'image/common/access_disallow.gif" />' :
-		($access == 1 ? '<img src="'.STATICURL.'image/common/access_allow.gif" />' : '<img src="'.STATICURL.'image/common/access_normal.gif" />');
+	return $access == -1 ? '<i class="fico-remove_circle fc-i"></i>' :
+		($access == 1 ? '<i class="fico-check_right fc-v"></i>' : '<i class="fico-stars fc-p"></i>');
 }
 
 function inwhitelist($access) {

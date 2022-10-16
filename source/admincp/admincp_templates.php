@@ -29,13 +29,13 @@ if($operation == 'admin') {
 		foreach(C::t('common_template')->fetch_all_data() as $tpl) {
 			$basedir = basename($tpl['directory']);
 			$templates .= showtablerow('', array('class="td25"', '', 'class="td29"'), array(
-				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" ".($tpl['templateid'] == 1 ? 'disabled ' : '')."value=\"$tpl[templateid]\">",
-				"<input type=\"text\" class=\"txt\" size=\"8\" name=\"namenew[$tpl[templateid]]\" value=\"$tpl[name]\">".
+				"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" ".($tpl['templateid'] == 1 ? 'disabled ' : '')."value=\"{$tpl['templateid']}\">",
+				"<input type=\"text\" class=\"txt\" size=\"8\" name=\"namenew[{$tpl['templateid']}]\" value=\"{$tpl['name']}\">".
 				($basedir != 'default' ? '<a href="'.ADMINSCRIPT.'?action=cloudaddons&frame=no&id='.urlencode($basedir).'.template" target="_blank" title="'.$lang['cloudaddons_linkto'].'">'.$lang['view'].'</a>' : ''),
-				"<input type=\"text\" class=\"txt\" size=\"20\" name=\"directorynew[$tpl[templateid]]\" value=\"$tpl[directory]\">",
+				"<input type=\"text\" class=\"txt\" size=\"20\" name=\"directorynew[{$tpl['templateid']}]\" value=\"{$tpl['directory']}\">",
 				!empty($tpl['copyright']) ?
 					$tpl['copyright'] :
-					"<input type=\"text\" class=\"txt\" size=\"8\" name=\"copyrightnew[$tpl[templateid]]\" value=>"
+					"<input type=\"text\" class=\"txt\" size=\"8\" name=\"copyrightnew[{$tpl['templateid']}]\" value=>"
 			), TRUE);
 		}
 
@@ -88,7 +88,7 @@ if($operation == 'admin') {
 				cpmsg('tpl_delete_invalid', '', 'error');
 			}
 			if($_GET['delete']) {
-				C::t('common_template')->delete($_GET['delete']);
+				C::t('common_template')->delete_tpl($_GET['delete']);
 				C::t('common_style')->update($_GET['delete'], array('templateid' => 1));
 			}
 		}
@@ -99,7 +99,7 @@ if($operation == 'admin') {
 	}
 
 } elseif($operation == 'add') {
-	$predefinedvars = array('available' => array(), 'boardimg' => array(), 'imgdir' => array(), 'styleimgdir' => array(), 'stypeid' => array(),
+	$predefinedvars = array('available' => array(), 'boardimg' => array(), 'searchimg' => array(), 'imgdir' => array(), 'styleimgdir' => array(), 'stypeid' => array(),
 		'headerbgcolor' => array(0, $lang['styles_edit_type_bg']),
 		'bgcolor' => array(0),
 		'sidebgcolor' => array(0, '', '#FFF sidebg.gif repeat-y 100% 0'),

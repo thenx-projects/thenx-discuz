@@ -19,14 +19,15 @@ class helper_mobile {
 		if(!defined('TPL_DEFAULT')) {
 			$content = ob_get_contents();
 			ob_end_clean();
+			$content = self::mobilereplace_rewrite($content);
 			$content = preg_replace_callback("/href=\"(\w+\.php)(.*?)\"/", array(__CLASS__, 'mobileoutput_callback_mobilereplace_12'), $content);
 
 			ob_start();
-			$content = '<?xml version="1.0" encoding="utf-8"?>'.$content;
 			if('utf-8' != CHARSET) {
 				$content = diconv($content, CHARSET, 'utf-8');
 			}
-			if(IN_MOBILE === '3') {
+			if(defined('IN_MOBILE') && constant('IN_MOBILE') === '3') {
+				$content = '<?xml version="1.0" encoding="utf-8"?>'.$content;
 				header("Content-type: text/vnd.wap.wml; charset=utf-8");
 			} else {
 				@header('Content-Type: text/html; charset=utf-8');
@@ -43,7 +44,11 @@ class helper_mobile {
 			$query_sting_tmp = http_build_query($query);
 			$_G['setting']['mobile']['pageurl'] = $_G['siteurl'].basename($_G['PHP_SELF']).'?'.$query_sting_tmp;
 			unset($query_sting_tmp);
-			showmessage('not_in_mobile');
+			if(isset($_G['config']['templatedeveloper']) && $_G['config']['templatedeveloper']) {
+				showmessage('template_developer_not_in_mobile', '', array('file' => constant('TPL_DEFAULT_FILE')));
+			} else {
+				showmessage('not_in_mobile');
+			}
 			exit;
 		}
 	}
@@ -64,6 +69,29 @@ class helper_mobile {
 			return 'href="'.$file.$replace.'"';
 		}
 	}
+
+	private static function mobilereplace_rewrite($content) {
+		global $_G;
+
+		if(defined('IN_MODCP') || defined('IN_ADMINCP') || !defined('IN_MOBILE') || constant('IN_MOBILE') !== '2') {
+			return $content;
+		}
+
+		if(!empty($_G['setting']['output']['preg']['search']) && (empty($_G['setting']['rewriteguest']) || empty($_G['uid'])) && !empty($_G['setting']['rewritemobile'])) {
+			foreach($_G['setting']['output']['preg']['search'] as $key => $value) {
+				$content = preg_replace_callback(
+					$value,
+					function ($matches) use ($_G, $key) {
+						return eval('return ' . $_G['setting']['output']['preg']['replace'][$key] . ';');
+					},
+					$content
+				);
+			}
+		}
+
+		return $content;
+	}
+
 }
 
 ?>

@@ -41,6 +41,10 @@ class model_forum_thread extends discuz_model
 		$this->tid = $this->pid = 0;
 		$this->_init_parameters($parameters);
 
+		if(!empty($this->param['save']) && !$this->group['allowsave']) {
+			return $this->showmessage('post_not_allow_save');
+		}
+
 		if(trim($this->param['subject']) == '') {
 			return $this->showmessage('post_sm_isnull');
 		}
@@ -66,6 +70,8 @@ class model_forum_thread extends discuz_model
 		$this->param['displayorder'] = $this->param['modnewthreads'] ? -2 : (($this->forum['ismoderator'] && $this->group['allowstickthread'] && !empty($this->param['sticktopic'])) ? 1 : (empty($this->param['save']) ? 0 : -4));
 		if($this->param['displayorder'] == -2) {
 			C::t('forum_forum')->update($this->forum['fid'], array('modworks' => '1'));
+		} elseif($this->param['displayorder'] == -4 && !empty($this->group['allowsavenum']) && C::t('forum_thread')->count_by_authorid_displayorder($this->member['uid'], -4) >= intval($this->group['allowsavenum'])) {
+			return $this->showmessage('post_max_save');
 		}
 
 		$this->param['digest'] = $this->forum['ismoderator'] && $this->group['allowdigestthread'] && !empty($this->param['digest']) ? 1 : 0;
@@ -76,11 +82,11 @@ class model_forum_thread extends discuz_model
 			$this->param['price'] = $this->group['maxprice'] ? ($this->param['price'] <= $this->group['maxprice'] ? $this->param['price'] : $this->group['maxprice']) : 0;
 		}
 
-		if(!$this->param['typeid'] && $this->forum['threadtypes']['required'] && !$this->param['special']) {
+		if(!$this->param['typeid'] && !empty($this->forum['threadtypes']['required']) && !$this->param['special']) {
 			return $this->showmessage('post_type_isnull');
 		}
 
-		if(!$this->param['sortid'] && $this->forum['threadsorts']['required'] && !$this->param['special']) {
+		if(!$this->param['sortid'] && !empty($this->forum['threadsorts']['required']) && !$this->param['special']) {
 			return $this->showmessage('post_sort_isnull');
 		}
 
@@ -92,7 +98,7 @@ class model_forum_thread extends discuz_model
 		$this->param['sortid'] = $this->param['special'] || !$this->forum['threadsorts']['types'][$this->param['sortid']] ? 0 : $this->param['sortid'];
 		$this->param['typeexpiration'] = intval($this->param['typeexpiration']);
 
-		if($this->forum['threadsorts']['expiration'][$this->param['typeid']] && !$this->param['typeexpiration']) {
+		if(!empty($this->forum['threadsorts']['expiration'][$this->param['typeid']]) && !$this->param['typeexpiration']) {
 			return $this->showmessage('threadtype_expiration_invalid');
 		}
 
@@ -149,9 +155,8 @@ class model_forum_thread extends discuz_model
 			C::t('forum_thread')->update($this->tid, array('icon' => $this->setting['newbie']));
 		}
 		if ($this->param['publishdate'] != TIMESTAMP) {
-			$cron_publish_ids = dunserialize($this->cache('cronpublish'));
+			$cron_publish_ids = $this->cache('cronpublish');
 			$cron_publish_ids[$this->tid] = $this->tid;
-			$cron_publish_ids = serialize($cron_publish_ids);
 			savecache('cronpublish', $cron_publish_ids);
 		}
 
@@ -217,7 +222,7 @@ class model_forum_thread extends discuz_model
 		updatestat($this->param['isgroup'] ? 'groupthread' : $statarr[$this->param['special']]);
 
 
-		if($this->param['geoloc'] && IN_MOBILE == 2) {
+		if($this->param['geoloc'] && defined('IN_MOBILE') && constant('IN_MOBILE') == 2) {
 			list($mapx, $mapy, $location) = explode('|', $this->param['geoloc']);
 			if($mapx && $mapy && $location) {
 				C::t('forum_post_location')->insert(array(
@@ -323,8 +328,8 @@ class model_forum_thread extends discuz_model
 			'htmlon', 'bbcodeoff', 'smileyoff', 'parseurloff', 'pstatus', 'geoloc',
 		);
 		foreach($varname as $name) {
-			if(!isset($this->param[$name]) && isset($parameters[$name])) {
-				$this->param[$name] = $parameters[$name];
+			if(!isset($this->param[$name])) {
+				$this->param[$name] = isset($parameters[$name]) ? $parameters[$name] : NULL;
 			}
 		}
 

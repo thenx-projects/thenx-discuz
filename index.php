@@ -7,8 +7,8 @@
  *      $Id: index.php 34524 2014-05-15 04:42:23Z nemohou $
  */
 
-if(version_compare(PHP_VERSION, '8.0.0', '>=')) {
-	exit('This version of Discuz! is not compatible with >= PHP 8.0, Please install or update to higher version.');
+if(version_compare(PHP_VERSION, '9.0.0', '>=')) {
+	exit('This version of Discuz! is not compatible with >= PHP 9.0, Please install or update to higher version.');
 }
 
 if(!empty($_SERVER['QUERY_STRING']) && is_numeric($_SERVER['QUERY_STRING'])) {
@@ -86,14 +86,14 @@ if(!empty($_SERVER['QUERY_STRING']) && is_numeric($_SERVER['QUERY_STRING'])) {
 				$apphost = $apphost ? $_G['scheme'].'://'.$apphost.'/' : '';
 				switch($domain['idtype']) {
 					case 'home':
-						if($_G['setting']['rewritestatus'] && in_array('home_space', $_G['setting']['rewritestatus'])) {
+						if($_G['setting']['rewritestatus'] && is_array($_G['setting']['rewritestatus']) && in_array('home_space', $_G['setting']['rewritestatus'])) {
 							$url = rewriteoutput('home_space', 1, $apphost, $domain['id']);
 						} else {
 							$url = $apphost.'home.php?mod=space&uid='.$domain['id'];
 						}
 						break;
 					case 'group':
-						if($_G['setting']['rewritestatus'] && in_array('group_group', $_G['setting']['rewritestatus'])) {
+						if($_G['setting']['rewritestatus'] && is_array($_G['setting']['rewritestatus']) && in_array('group_group', $_G['setting']['rewritestatus'])) {
 							$url = rewriteoutput('group_group', 1, $apphost, $domain['id']);
 						} else {
 							$url = $apphost.'forum.php?mod=group&fid='.$domain['id'].'&page=1';

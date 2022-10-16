@@ -269,7 +269,20 @@ class table_common_member extends discuz_table_archive
 		return false;
 	}
 
-	public function insert($uid, $username, $password, $email, $ip, $groupid, $extdata, $adminid = 0) {
+	public function insert($data, $return_insert_id = false, $replace = false, $silent = false, $null1 = null, $null2 = null, $null3 = null, $null4 = 0, $null5 = 0) {
+		// $null 1~n 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception('NotImplementedException');
+			return parent::insert($data, $return_insert_id, $replace, $silent);
+		} else {
+			if ($return_insert_id === false || $replace === false || $silent === false || $null1 === null || $null2 === null || $null3 === null) {
+				throw new Exception("Invalid Use C:t('common_member')->insert Function.");
+			}
+			return $this->insert_user($data, $return_insert_id, $replace, $silent, $null1, $null2, $null3, $null4, $null5);
+		}
+	}
+
+	public function insert_user($uid, $username, $password, $email, $ip, $groupid, $extdata, $adminid = 0, $port = 0) {
 		if(($uid = dintval($uid))) {
 			$credits = isset($extdata['credits']) ? $extdata['credits'] : array();
 			$profile = isset($extdata['profile']) ? $extdata['profile'] : array();
@@ -290,6 +303,8 @@ class table_common_member extends discuz_table_archive
 				'uid' => $uid,
 				'regip' => (string)$ip,
 				'lastip' => (string)$ip,
+				'port' => (string)$port,
+				'regport' => (string)$port,
 				'lastvisit' => TIMESTAMP,
 				'lastactivity' => TIMESTAMP,
 				'lastpost' => 0,
@@ -313,7 +328,6 @@ class table_common_member extends discuz_table_archive
 			C::t('common_member_profile')->insert($profile, false, true);
 			C::t('common_member_field_forum')->insert($ext, false, true);
 			C::t('common_member_field_home')->insert($ext, false, true);
-			manyoulog('user', $uid, 'add');
 		}
 	}
 
@@ -333,7 +347,7 @@ class table_common_member extends discuz_table_archive
 	}
 
 	public function count_zombie() {
-		$dateline = TIMESTAMP - 7776000;//60*60*24*90
+		$dateline = TIMESTAMP - 31536000;//60*60*24*365
 		return DB::result_first('SELECT count(*) FROM %t mc, %t ms WHERE mc.posts<5 AND ms.lastvisit<%d AND ms.uid=mc.uid', array('common_member_count', 'common_member_status', $dateline));
 	}
 
@@ -341,23 +355,25 @@ class table_common_member extends discuz_table_archive
 		loadcache('membersplitdata');
 		@set_time_limit(0);
 		discuz_database_safecheck::setconfigstatus(0);
-		$dateline = TIMESTAMP - 7776000;//60*60*24*90
+		$dateline = TIMESTAMP - 31536000;//60*60*24*365
 		$temptablename = DB::table('common_member_temp___');
 		if(!DB::fetch_first("SHOW TABLES LIKE '$temptablename'")) {
-			DB::query("CREATE TABLE $temptablename (`uid` int(10) NOT NULL DEFAULT 0,PRIMARY KEY (`uid`)) ENGINE=MYISAM;");
+			$engine = strtolower(getglobal("config/db/common/engine")) !== 'innodb' ? 'MyISAM' : 'InnoDB';
+			DB::query("CREATE TABLE $temptablename (`uid` int(10) NOT NULL DEFAULT 0,PRIMARY KEY (`uid`)) ENGINE=" . $engine . ";");
 		}
-		$splitnum = max(1, intval($splitnum));
+		$splitnum = max(0, intval($splitnum));
 		if(!DB::result_first('SELECT COUNT(*) FROM '.$temptablename)) {
-			DB::query('INSERT INTO '.$temptablename.' (`uid`) SELECT ms.uid AS uid FROM %t mc, %t ms WHERE mc.posts<5 AND ms.lastvisit<%d AND mc.uid=ms.uid ORDER BY ms.lastvisit LIMIT %d', array('common_member_count', 'common_member_status', $dateline, $splitnum));
+			DB::query('INSERT INTO '.$temptablename.' (`uid`) SELECT ms.uid AS uid FROM %t mc, %t ms WHERE mc.posts<5 AND ms.lastvisit<%d AND mc.uid=ms.uid ORDER BY ms.uid DESC LIMIT %d', array('common_member_count', 'common_member_status', $dateline, $splitnum));
 		}
 
-		if(DB::result_first('SELECT COUNT(*) FROM '.$temptablename)) {
+		if(DB::result_first('SELECT COUNT(*) FROM '.$temptablename) > 1) {
 
 
 			if(!$iscron && getglobal('setting/memberspliting') === null) {
 				$this->switch_keys('disable');
 			}
-			$uidlist = DB::fetch_all('SELECT uid FROM '.$temptablename, null, 'uid');
+			$uidlist = DB::fetch_all('SELECT uid FROM '.$temptablename.' ORDER BY uid DESC', null, 'uid');
+			unset($uidlist[key($uidlist)]);// 考虑到用户分表操作的最后一个用户可能也是数据库中最后一个用户，因此在此固定扣除一个用户，保证最后一个用户不会被移动到归档表，从而避免最后一个用户被移动到归档表导致用户主表自增值异常的问题
 			$uids = dimplode(array_keys($uidlist));
 			$movesql = 'REPLACE INTO %t SELECT * FROM %t WHERE uid IN ('.$uids.')';
 			$deletesql = 'DELETE FROM %t WHERE uid IN ('.$uids.')';
@@ -455,13 +471,13 @@ class table_common_member extends discuz_table_archive
 			return $data;
 		}
 		if($orderby === 'all') {
-			$sql = "SELECT m.uid,m.username,m.videophotostatus,m.groupid,m.credits,field.spacenote FROM ".DB::table('common_member')." m
+			$sql = "SELECT m.uid,m.username,m.groupid,m.credits,field.spacenote FROM ".DB::table('common_member')." m
 				LEFT JOIN ".DB::table('common_member_field_home')." field ON field.uid=m.uid
 				ORDER BY m.credits DESC LIMIT 0, $num";
 		} else {
 			$orderby = intval($orderby);
 			$orderby = in_array($orderby, array(1, 2, 3, 4, 5, 6, 7, 8)) ? $orderby : 1;
-			$sql = "SELECT m.uid,m.username,m.videophotostatus,m.groupid, mc.extcredits$orderby AS extcredits
+			$sql = "SELECT m.uid,m.username,m.groupid, mc.extcredits$orderby AS extcredits
 				FROM ".DB::table('common_member')." m
 				LEFT JOIN ".DB::table('common_member_count')." mc ON mc.uid=m.uid WHERE mc.extcredits$orderby>0
 				ORDER BY extcredits$orderby DESC LIMIT 0, $num";
@@ -488,7 +504,7 @@ class table_common_member extends discuz_table_archive
 		}
 		$uids = array_keys($users);
 		if($uids) {
-			$query = DB::query('SELECT m.uid, m.username, m.videophotostatus, m.groupid, field.spacenote
+			$query = DB::query('SELECT m.uid, m.username, m.groupid, field.spacenote
 				FROM '.DB::table('common_member')." m
 				LEFT JOIN ".DB::table('common_member_field_home')." field ON m.uid=field.uid
 				WHERE m.uid IN (".dimplode($uids).")");

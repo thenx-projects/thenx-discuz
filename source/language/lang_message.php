@@ -18,6 +18,20 @@ $lang = array (
   'quickclear_noperm' => '您没有权限进行此操作',
   'attachment_nonexistence' => '抱歉，该附件无法读取',
   'attachment_forum_nopermission' => '抱歉，只有特定用户可以下载本站附件',
+  'album_status_off'  => '抱歉，相册功能尚未开启',
+  'blog_status_off'  => '抱歉，日志功能尚未开启',
+  'collection_status_off'  => '抱歉，淘帖功能尚未开启',
+  'doing_status_off'  => '抱歉，记录功能尚未开启',
+  'feed_status_off'  => '抱歉，动态功能尚未开启',
+  'friend_status_off'  => '抱歉，好友功能尚未开启',
+  'forum_status_off'  => '抱歉，论坛功能尚未开启',
+  'follow_status_off'  => '抱歉，广播功能尚未开启',
+  'group_module_status_off'  => '抱歉，群组功能尚未开启',
+  'guide_status_off'  => '抱歉，导读功能尚未开启',
+  'medal_status_off'  => '抱歉，勋章功能尚未开启',
+  'share_status_off'  => '抱歉，分享功能尚未开启',
+  'wall_status_off'  => '抱歉，留言板功能尚未开启',
+  'favorite_status_off'  => '抱歉，收藏功能尚未开启',
   'forum_not_group' => '该版块不是{_G/setting/navs/3/navname}',
   'forum_group_status_off' => '该{_G/setting/navs/3/navname}已关闭',
   'forum_group_noallowed' => '抱歉，您没有权限访问该{_G/setting/navs/3/navname}',
@@ -32,6 +46,8 @@ $lang = array (
   'to_login' => '您需要先登录才能继续本操作',
   'postcomment_closed' => '点评功能已关闭',
   'group_nopermission' => '抱歉，您所在的用户组({grouptitle})无法进行此操作',
+  'nopermission_email' => '<p>您需要验证激活自己的邮箱后再次尝试进行本操作，<a href="home.php?mod=spacecp&ac=profile&op=password">点击这里激活邮箱</a></p>',
+  'nopermission_verify' => '<p>您需要等待注册申请审核通过后再次尝试进行本操作，请您耐心等待管理团队审核</p>',
   'thread_nonexistence' => '抱歉，指定的主题不存在或已被删除或正在被审核',
   'parameters_error' => '参数错误',
   'thread_poll_succeed' => '投票成功 ',
@@ -91,7 +107,6 @@ $lang = array (
   'search_ctrl' => '抱歉，您在 {searchctrl} 秒内只能进行一次搜索',
   'search_toomany' => '抱歉，站点设置每分钟系统最多响应搜索请求 {maxspm} 次，请稍候再试',
   'search_closed' => '搜索功能已关闭',
-  'no_privilege_myop' => '抱歉，您目前没有权限使用此应用，<a href="home.php?mod=spacecp&ac=usergroup" target="_blank">点击这里查看权限</a>',
   'collection_permission_deny' => '抱歉，该淘专辑不存在或没有相应的权限',
   'collection_edit_checkentire' => '请将内容填写完整',
   'collection_teamworkers_exceed' => '共同维护人数已达上限，不能再邀请或接受其他人参与维护',
@@ -108,6 +123,9 @@ $lang = array (
   'operating_too_fast' => '抱歉，两次发布操作太快，请等待 {waittime} 秒再试',
   'topic_not_exist' => '抱歉，指定的专题不存在',
   'post_sm_isnull' => '抱歉，您尚未输入标题或内容',
+  'post_not_allow_save' => '抱歉，您无权保存草稿贴',
+  'post_max_save' => '抱歉，您保存草稿贴的数量超限',
+  'post_not_allow_reply_save' => '抱歉，您无权回复草稿贴',
   'activity_fromtime_error' => '抱歉，活动开始时间格式不正确',
   'post_edit_delete_succeed' => '主题删除成功 ',
   'debate_end' => '抱歉，辩论已结束',
@@ -192,7 +210,6 @@ $lang = array (
   'image_does_not_exist' => '抱歉，指定的图片不存在',
   'showcredit_error' => '抱歉，填写的数字需要大于0，并且小于您的积分数，请确认',
   'usergroup_not_found' => '用户组未找到',
-  'no_open_videophoto' => '站点已关闭视频认证功能',
   'admin_nopermission' => '抱歉，您没有权限使用管理功能',
   'postcomment_not_found' => '帖子点评未找到',
   'special_noaction' => '无法操作特殊主题',
@@ -213,11 +230,13 @@ $lang = array (
   'profile_email_illegal' => 'Email 地址无效',
   'profile_email_domain_illegal' => '抱歉，Email 包含不可使用的邮箱域名',
   'profile_email_duplicate' => '该 Email 地址已被注册',
+  'profile_secmobile_duplicate' => '该安全手机已被注册',
   'article_category_empty' => '抱歉，栏目不能为空',
   'article_edit_nopermission' => '抱歉，您没有权限进行当前文章操作',
   'post_message_toolong' => '抱歉，您的帖子超过 {maxpostsize} 个字符的限制',
   'no_privilege_newbiespan' => '抱歉，您目前处于见习期间，需要等待 {newbiespan} 分钟后才能进行本操作',
   'no_privilege_avatar' => '抱歉，您需要设置自己的头像后才能进行本操作，<a href="home.php?mod=spacecp&ac=avatar">点击这里设置</a>',
+  'no_privilege_secmobile' => '抱歉，您需要验证激活自己的安全手机后才能进行本操作，<a href="home.php?mod=spacecp&ac=profile&op=password">点击这里验证安全手机</a>',
   'no_privilege_email' => '抱歉，您需要验证激活自己的邮箱后才能进行本操作，<a href="home.php?mod=spacecp&ac=profile&op=password">点击这里激活邮箱</a>',
   'no_privilege_friendnum' => '抱歉，您需要添加 {friendnum} 个好友之后才能进行本操作，<a href="home.php?mod=spacecp&ac=friend&op=find">点击这里添加好友</a>',
   'login_seccheck2' => '请输入验证码后继续登录',
@@ -229,6 +248,8 @@ $lang = array (
   'profile_username_tooshort' => '抱歉，您输入的用户名小于 3 个字符，请输入一个较长的用户名',
   'profile_username_toolong' => '抱歉，您的用户名超过 15 个字符，请输入一个较短的用户名',
   'profile_passwd_notmatch' => '抱歉，两次输入的密码不一致',
+  'profile_email_not_change' => '抱歉，本站不允许通过前台自行修改账号绑定的邮箱',
+  'profile_secmobile_not_change' => '抱歉，本站不允许通过前台自行修改账号绑定的安全手机',
   'profile_username_illegal' => '用户名包含敏感字符',
   'profile_username_duplicate' => '该用户名已被注册',
   'profile_illegal' => '格式不正确或为空',
@@ -246,10 +267,10 @@ $lang = array (
   'magicuse_bad_object' => '尚未正确选择道具要作用的对象',
   'magicuse_has_no_valid_friend' => '抱歉，此道具仅对您的好友有效',
   'mobile_template_no_found' => '您访问的页面无手机页面，是否进一步访问电脑版？<br /><br /><a href="{url}">继续访问</a><br /><br />',
-
+  'medals_existence' => '目前系统内有可用的勋章，请到“勋章中心”取消所有可用勋章后再进行此操作',
+  'close_ggcf_before_close_forum' => '请先关闭群组、导读、淘帖、广播功能后再关闭论坛功能',
+  'open_forum_before_open_ggcf' => '请先开启论坛功能后再开启群组、导读、淘帖、广播功能',
   'portal_status_off' => '抱歉，门户功能尚未开启',
-
-  'no_privilege_my_app_status' => '对不起，当前站点已经关闭了用户多应用服务。',
 
   'register_check_found' => '该用户名已注册，请更换用户名或<a href="member.php?mod=logging&action=login" onclick="showWindow(\'login\', this.href);return false;" class="xi2">登录</a>',
   'register_activation' => '用户名已存在',
@@ -445,6 +466,7 @@ $lang = array (
 
   'task_close' => '抱歉，站点任务关闭',
   'task_relatedtask' => '申请此任务需要先完成另一个任务，任务页面跳转中请稍候……',
+  'task_exclusivetask' => '抱歉，您已领取且未放弃另一个任务，不能再申请或完成此任务',
   'task_grouplimit' => '抱歉，您所在的用户组不允许申请此任务',
   'task_duplicate' => '抱歉，您已申请过此任务，请不要重复申请',
   'task_nextperiod' => '抱歉，本期您已申请过此任务，请下期再来',
@@ -533,8 +555,6 @@ $lang = array (
 
   'search_portal_closed' => '抱歉，文章搜索已关闭',
 
-  'no_privilege_myapp' => '抱歉，该应用不存在或已关闭，您可以<a href="userapp.php?mod=manage&my_suffix=%2Fapp%2Flist">选择其他应用</a>',
-
   'collection_comment_closed' => '抱歉，管理员没有开放淘专辑的评论功能',
   'collection_comment_succ' => '发表评论成功',
   'collection_comment_remove_succ' => '评论成功删除',
@@ -568,8 +588,6 @@ $lang = array (
   'collection_follow_succ' => '成功订阅淘专辑',
   'collection_unfollow_succ' => '成功取消订阅淘专辑',
 
-  'no_privilege_deluserapp' => '抱歉，您没有权限操作此应用',
-
   'email_check_sucess' => '您的邮箱({email})验证激活成功 ',
   'email_check_account_invalid' => '抱歉，受保护用户或创始人不能使用邮箱验证，直接修改用户信息。',
   'email_check_error' => '抱歉，您输入的邮箱验证链接不正确。您可以在个人资料页面，重新接收新的邮箱验证链接',
@@ -599,7 +617,7 @@ $lang = array (
 
   'portal_category_not_find' => '抱歉，您指定的分类尚未找到',
   'portal_category_disallowpublish' => '抱歉，此分类不允许发布文章',
-  'title_not_too_little' => '标题不能少于 2 个字符',
+  'title_not_too_little' => '标题不能少于最少字符限制',
   'article_choose_system_category' => '请选择一个合适的系统分类',
   'no_posts_for_pushplus' => '抱歉，您尚未指定要添加的帖子',
   'pushplus_do_success' => '已成功添加指定帖子到文章',
@@ -682,6 +700,7 @@ $lang = array (
   'search_threadtype_invalid' => '抱歉，您尚未输入要搜索的分类信息项目',
 
   'home_no_privilege' => '抱歉，您需要登录后才能查看',
+  'no_privilege_profile' => '抱歉，您没有权限查看个人资料',
 
   'member_nonexistence' => '抱歉，指定的用户不存在或被冻结',
 
@@ -689,6 +708,7 @@ $lang = array (
   'no_privilege_album_edit' => '抱歉，您没有权限编辑此相册',
   'album_name_errors' => '抱歉，您尚未正确设置相册名',
   'spacecp_edit_ok' => '设置保存成功 ',
+  'no_privilege_upload_avatar' => '抱歉，您目前没有权限上传头像',
   'no_privilege_album_del' => '抱歉，您没有权限删除此相册',
   'no_privilege_album_delother' => '抱歉，您没有权限删除其他人的相册',
   'no_privilege_pic_edit' => '抱歉，您没有权限编辑此相册中的图片',
@@ -762,6 +782,7 @@ $lang = array (
   'no_privilege_feed_del' => '抱歉，您没有权限删除此动态',
 
   'follow_not_follow_self' => '不能关注自己',
+  'follow_not_follow_others' => '您当前用户组不允许收听他人',
   'follow_other_unfollow' => '对方不允许您关注TA',
   'follow_followed_ta' => '您已经收听了TA',
   'follow_add_succeed' => '成功收听',
@@ -1004,11 +1025,11 @@ $lang = array (
   'comment_comment_noexist' => '抱歉，要评论的文章不存在',
   'comment_comment_notallowed' => '该文章不允许评论',
 
-  'post_subject_toolong' => '抱歉，您的标题超过 80 个字符修改标题长度',
+  'post_subject_toolong' => '抱歉，您的标题超过最大字符限制，请缩短标题后再试',
+  'post_subject_tooshort' => '抱歉，您的标题小于最小字符限制，请加长标题后再试',
   'post_message_tooshort' => '抱歉，您的帖子小于 {minpostsize} 个字符的限制',
 
   'no_privilege_realname' => '抱歉，您需要填写真实姓名后才能进行当前操作，<a href="home.php?mod=spacecp&ac=profile">点击这里设置真实姓名</a>',
-  'no_privilege_videophoto' => '抱歉，您需要视频认证通过后才能进行当前操作，<a href="home.php?mod=spacecp&ac=videophoto">点击这里进行视频认证</a>',
 
   'threadtype_required_invalid' => '抱歉，资料填写不全，请检查 {typetitle} 选项',
   'threadtype_format_invalid' => '抱歉，资料格式不正确，请检查 {typetitle} 选项',
@@ -1063,6 +1084,7 @@ $lang = array (
   'post_url_nopermission' => '抱歉，您没有权限发表 URL 连接',
 
   'not_in_mobile' => '您访问的页面无手机页面，是否进一步访问电脑版？',
+  'template_developer_not_in_mobile' => '您访问的页面 {file} 无手机模板，是否进一步访问电脑版？',
 
   'magics_operation_nopermission' => '抱歉，此道具只能操作自己发帖子或评论',
 
@@ -1083,6 +1105,31 @@ $lang = array (
   'author_not_uploadpic' => '楼主暂时没有上传图片',
   'noreply_yourself_error' => '您不能对自己的回帖进行投票',
   'noreply_voted_error' => '您已经对此回帖投过票了',
+
+  'payment_order_no_exist' => '订单不存在或已过期',
+  'payment_type_no_exist' => '请选择支付渠道',
+  'payment_succeed' => '支付成功',
+  'payment_transfer_succeed' => '转账成功',
+  'payment_refund_id_exist' => '退款订单号已存在，必须保证全局唯一',
+  'payment_refund_exist' => '当前退款订单正在退款中，请通过状态接口查询退款状态',
+  'payment_transfer_id_exist' => '转账订单号已存在，必须保证全局唯一',
+  'payment_transfer_exist' => '当前转账订单正在处理中，请通过状态接口查询状态',
+  'payment_transfer_id_no_exist' => '转账订单号不存在',
+  'payment_retry_callback_no_exist' => '订单号不存在',
+  'payment_retry_callback_no_pay' => '订单未支付',
+
+  'secmobseccode_send_success' => '短信发送成功，请在页面上输入短信验证码。',
+  'secmobseccode_send_failure' => '未知异常，请稍候再试。',
+  'secmobseccode_send_err_1' => '发送短信间隔过短，请稍候再试。',
+  'secmobseccode_send_err_2' => '您一段时间内发送的短信过多，请稍候再试。',
+  'secmobseccode_send_err_3' => '号码组一段时间内发送的短信过多，请稍候再试。',
+  'secmobseccode_send_err_4' => '本站点一段时间内发送的短信过多，请稍候再试。',
+  'secmobseccode_send_err_5' => '当前没有可用的短信网关接口，请稍候再试。',
+  'secmobseccode_send_err_6' => '网关接口文件不存在，请稍候再试。',
+  'secmobseccode_send_err_7' => '网关接口类不存在，请稍候再试。',
+  'secmobseccode_send_err_8' => '短信功能已被关闭，请稍候再试。',
+  'secmobseccode_send_err_9' => '短信网关异常，请稍候再试。',
+
 );
 
 ?>

@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS pre_connect_postfeedlog (
   `status` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (flid),
   UNIQUE KEY pid (pid)
-) ENGINE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_connect_tthreadlog (
   twid char(16) NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS pre_connect_tthreadlog (
   PRIMARY KEY (twid),
   KEY nexttime (tid,nexttime),
   KEY updatetime (tid,updatetime)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS pre_common_connect_guest (
   `conopenid` char(32) NOT NULL default '',
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS pre_common_connect_guest (
   `conqqnick` char(100) NOT NULL default '',
   `conuintoken` char(32) NOT NULL DEFAULT '',
   PRIMARY KEY (conopenid)
-) TYPE=MyISAM;
+) ENGINE=INNODB;
 
 CREATE TABLE IF NOT EXISTS `pre_connect_disktask` (
  `taskid` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS `pre_connect_disktask` (
  PRIMARY KEY (`taskid`),
  KEY `openid` (`openid`),
  KEY `status` (`status`)
-) TYPE=MyISAM;
+) TYPE=INNODB;
 
 EOF;
 
@@ -85,7 +85,7 @@ while($temp = DB::fetch($query)) {
 		continue;
 	}
 }
-$sql .= !$columnexisted ? "ALTER TABLE ".DB::table('common_member_connect')." ADD COLUMN conisqqshow tinyint(1) unsigned NOT NULL default '0';\n" : '';
+$sql .= !$columnexisted ? "ALTER TABLE ".DB::table('common_member_connect')." ADD COLUMN conisqqshow tinyint(1) NOT NULL default '0';\n" : '';
 $sql .= !$uintokenexisted ? "ALTER TABLE ".DB::table('common_member_connect')." ADD COLUMN conuintoken char(32) NOT NULL DEFAULT '';\n" : '';
 
 $query = DB::query("SHOW COLUMNS FROM ".DB::table('common_connect_guest'));
@@ -106,7 +106,7 @@ if($sql) {
 	runquery($sql);
 }
 
-$connect = C::t('common_setting')->fetch('connect', true);
+$connect = C::t('common_setting')->fetch_setting('connect', true);
 
 if (!array_key_exists('reply', $connect['t'])) {
 	$connect['t']['reply'] = 1;
@@ -126,7 +126,7 @@ if ($connect['guest_groupid']) {
 }
 
 $newConnect = array();
-$name = $installlang['connect_guest_group_name'];
+$name = $extend_lang['connect_guest_group_name'];
 if ($needCreateGroup) {
 	$userGroupData = array(
 		'type' => 'special',
@@ -153,6 +153,6 @@ $https = json_decode(dfsockopen('https://graph.qq.com/user/get_user_info'));
 $newConnect['oauth2'] = $https->ret == -1 ? 1 : 0;
 
 $updateData = array_merge($connect, $newConnect);
-C::t('common_setting')->update('connect', serialize($updateData));
+C::t('common_setting')->update_setting('connect', serialize($updateData));
 updatecache('setting');
 $finish = true;

@@ -20,6 +20,8 @@ function userlogin($username, $password, $questionid, $answer, $loginfield = 'us
 		$isuid = 2;
 	} elseif($loginfield == 'auto') {
 		$isuid = 3;
+	} elseif($loginfield == 'secmobile' && getglobal('setting/secmobilelogin')) {
+		$isuid = 4;
 	} else {
 		$isuid = 0;
 	}
@@ -29,14 +31,20 @@ function userlogin($username, $password, $questionid, $answer, $loginfield = 'us
 	}
 	if($isuid == 3) {
 		if(!strcmp(dintval($username), $username) && getglobal('setting/uidlogin')) {
-			$return['ucresult'] = uc_user_login($username, $password, 1, 1, $questionid, $answer, $ip);
+			$return['ucresult'] = uc_user_login($username, $password, 1, 1, $questionid, $answer, $ip, 1);
 		} elseif(isemail($username)) {
-			$return['ucresult'] = uc_user_login($username, $password, 2, 1, $questionid, $answer, $ip);
+			$return['ucresult'] = uc_user_login($username, $password, 2, 1, $questionid, $answer, $ip, 1);
+		} elseif(preg_match('/^(\d{1,12}|\d{1,3}-\d{1,12})$/', $username) && getglobal('setting/secmobilelogin')) {
+			$username = strpos($username, '-') === false ? (getglobal('setting/smsdefaultcc') . '-' . $username) : $username;
+			$return['ucresult'] = uc_user_login($username, $password, 4, 1, $questionid, $answer, $ip, 1);
 		}
 		if($return['ucresult'][0] <= 0 && $return['ucresult'][0] != -3) {
 			$return['ucresult'] = uc_user_login(addslashes($username), $password, 0, 1, $questionid, $answer, $ip);
 		}
 	} else {
+		if($isuid == 4) {
+			$username = strpos($username, '-') === false ? (getglobal('setting/smsdefaultcc') . '-' . $username) : $username;
+		}
 		$return['ucresult'] = uc_user_login(addslashes($username), $password, $isuid, 1, $questionid, $answer, $ip);
 	}
 	$tmp = array();
@@ -142,16 +150,12 @@ function failedipcheck($numiptry, $timeiptry) {
 	if(!$numiptry) {
 		return false;
 	}
-	list($ip1, $ip2) = explode('.', $_G['clientip']);
-	$ip = $ip1.'.'.$ip2;
-	return $numiptry <= C::t('common_failedip')->get_ip_count($ip, TIMESTAMP - $timeiptry);
+	return $numiptry <= C::t('common_failedip')->get_ip_count($_G['clientip'], TIMESTAMP - $timeiptry);
 }
 
 function failedip() {
 	global $_G;
-	list($ip1, $ip2) = explode('.', $_G['clientip']);
-	$ip = $ip1.'.'.$ip2;
-	C::t('common_failedip')->insert_ip($ip);
+	C::t('common_failedip')->insert_ip($_G['clientip']);
 }
 
 function getinvite() {
@@ -175,15 +179,13 @@ function getinvite() {
 			if($invite['code'] == $code && empty($invite['fuid']) && (empty($invite['endtime']) || $_G['timestamp'] < $invite['endtime'])) {
 				$result['uid'] = $invite['uid'];
 				$result['id'] = $invite['id'];
-				$result['appid'] = $invite['appid'];
 			}
 		}
 	} elseif($cookiecount == 3) {
 		$uid = intval($cookies[0]);
 		$code = trim($cookies[1]);
-		$appid = intval($cookies[2]);
 
-		$invite_code = space_key($uid, $appid);
+		$invite_code = space_key($uid);
 		if($code === $invite_code) {
 			$member = getuserbyuid($uid);
 			if($member) {
@@ -193,7 +195,6 @@ function getinvite() {
 				return array();
 			}
 			$result['uid'] = $uid;
-			$result['appid'] = $appid;
 		}
 	}
 
@@ -286,7 +287,7 @@ function checkemail($email) {
 	global $_G;
 
 	$email = strtolower(trim($email));
-	if(strlen($email) > 32) {
+	if(strlen($email) > 255) {
 		showmessage('profile_email_illegal', '', array(), array('handle' => false));
 	}
 	if($_G['setting']['regmaildomain']) {

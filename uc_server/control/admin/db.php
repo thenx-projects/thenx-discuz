@@ -33,14 +33,14 @@ class control extends adminbase {
 		$status = 0;
 		$operate = getgpc('o');
 		if($operate == 'list') {
-			if($delete = $_POST['delete']) {
+			if($delete = (isset($_POST['delete']) ? $_POST['delete'] : array())) {
 				if(is_array($delete)) {
 					foreach($delete AS $filename) {
 						@unlink('./data/backup/'.str_replace(array('/', '\\'), '', $filename));
 					}
 				}
 				$status = 2;
-				$this->writelog('db_delete', "delete=".implode(',', $_POST['delete']));
+				$this->writelog('db_delete', "delete=".implode(',', $delete));
 			}
 
 			$baklist = array();
@@ -118,7 +118,7 @@ class control extends adminbase {
 				}
 				$code = $this->authcode('&method='.$type.'&sqlpath='.$backupdir.'&time='.time(), 'ENCODE', $app['authkey']);
 			} else {
-				$url = (is_https() ? 'https' : 'http').'://'.$_SERVER['HTTP_HOST'].str_replace('admin.php', 'api/dbbak.php', $_SERVER['PHP_SELF']).'?apptype=UCENTER';
+				$url = (is_https() ? 'https' : 'http').'://'.$_SERVER['HTTP_HOST'].str_replace(UC_ADMINSCRIPT, 'api/dbbak.php', $_SERVER['PHP_SELF']).'?apptype=UCENTER';
 				$code = $this->authcode('&method='.$type.'&sqlpath='.$backupdir.'&time='.time(), 'ENCODE', UC_KEY);
 			}
 			$url .= '&code='.urlencode($code);
@@ -137,7 +137,7 @@ class control extends adminbase {
 		} elseif($arr['error']['errorcode']) {
 			$this->message($this->_parent_js($appid, 'dbback_error_code_'.$arr['error']['errorcode']));
 		} elseif($arr['nexturl']) {
-			$this->message($this->_parent_js($appid, 'db_'.$type.'_multivol_redirect', array('$volume' => $arr['fileinfo']['file_num'])), 'admin.php?m=db&a=operate&t='.$type.'&appid='.$appid.'&nexturl='.urlencode($arr['nexturl']));
+			$this->message($this->_parent_js($appid, 'db_'.$type.'_multivol_redirect', array('$volume' => $arr['fileinfo']['file_num'])), UC_ADMINSCRIPT.'?m=db&a=operate&t='.$type.'&appid='.$appid.'&nexturl='.urlencode($arr['nexturl']));
 		} elseif(empty($arr['nexturl'])) {
 			$this->message($this->_parent_js($appid, 'db_'.$type.'_multivol_succeed'));
 		} else {
@@ -153,7 +153,7 @@ class control extends adminbase {
 		$app = $this->cache['apps'][$appid];
 		if(empty($appid)) {
 			$app['ip'] = defined('UC_IP') ? UC_IP : '';
-			$url = (is_https() ? 'https' : 'http').'://'.$_SERVER['HTTP_HOST'].str_replace('admin.php', 'api/dbbak.php', $_SERVER['PHP_SELF']).'?apptype=UCENTER';
+			$url = (is_https() ? 'https' : 'http').'://'.$_SERVER['HTTP_HOST'].str_replace(UC_ADMINSCRIPT, 'api/dbbak.php', $_SERVER['PHP_SELF']).'?apptype=UCENTER';
 			$code = $this->authcode('&method=delete&sqlpath='.$backupdir.'&time='.time(), 'ENCODE', UC_KEY);
 			$appname = 'UCenter';
 		} else {
@@ -168,7 +168,7 @@ class control extends adminbase {
 		$res = $_ENV['misc']->dfopen2($url, 0, '', '', 1, $app['ip'], 20, TRUE);
 		$next_appid = $this->_next_appid($appid);
 		if($next_appid != $appid) {
-			$this->message($this->_parent_js($backupdir, 'delete_dumpfile_redirect', array('$appname' => $appname)), 'admin.php?m=db&a=delete&appid='.$next_appid.'&backupdir='.$backupdir.'&sid='.$this->sid);
+			$this->message($this->_parent_js($backupdir, 'delete_dumpfile_redirect', array('$appname' => $appname)), UC_ADMINSCRIPT.'?m=db&a=delete&appid='.$next_appid.'&backupdir='.$backupdir.'&sid='.$this->sid);
 		} else {
 			$this->message($this->_parent_js($backupdir, 'delete_dumpfile_success'));
 		}
@@ -227,7 +227,7 @@ class control extends adminbase {
 			$tabledump .= $create[1];
 
 			$tablestatus = $this->db->fetch_first("SHOW TABLE STATUS LIKE '$table'");
-			$tabledump .= ($tablestatus['Auto_increment'] && strpos($create[1], 'AUTO_INCREMENT') === FALSE ? " AUTO_INCREMENT=$tablestatus[Auto_increment]" : '').";\n\n";
+			$tabledump .= ($tablestatus['Auto_increment'] && strpos($create[1], 'AUTO_INCREMENT') === FALSE ? " AUTO_INCREMENT={$tablestatus['Auto_increment']}" : '').";\n\n";
 		}
 
 		$tabledumped = 0;
@@ -236,7 +236,7 @@ class control extends adminbase {
 
 		while($currsize + strlen($tabledump) + 500 < $this->sizelimit * 1000 && $numrows == $offset) {
 			if($firstfield['Extra'] == 'auto_increment') {
-				$selectsql = "SELECT * FROM $table WHERE $firstfield[Field] > $startfrom LIMIT $offset";
+				$selectsql = "SELECT * FROM $table WHERE {$firstfield['Field']} > $startfrom LIMIT $offset";
 			} else {
 				$selectsql = "SELECT * FROM $table LIMIT $startfrom, $offset";
 			}

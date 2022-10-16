@@ -27,6 +27,10 @@ define('CURMODULE', $mod);
 
 runhooks();
 
+if(!$_G['setting']['groupstatus']) {
+	showmessage('group_module_status_off');
+}
+
 $navtitle = str_replace('{bbname}', $_G['setting']['bbname'], $_G['setting']['seotitle']['group']);
 
 require DISCUZ_ROOT.'./source/module/group/group_'.$mod.'.php';

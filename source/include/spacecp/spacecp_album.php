@@ -11,16 +11,20 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['albumstatus']) {
+	showmessage('album_status_off');
+}
+
 $albumid = empty($_GET['albumid'])?0:intval($_GET['albumid']);
 $picid = empty($_GET['picid'])?0:intval($_GET['picid']);
 
 if($_GET['op'] == 'edit') {
 
 	if($albumid < 1) {
-		showmessage('photos_do_not_support_the_default_settings', "home.php?mod=spacecp&ac=album&uid=$_G[uid]&op=editpic&quickforward=1");
+		showmessage('photos_do_not_support_the_default_settings', "home.php?mod=spacecp&ac=album&uid={$_G['uid']}&op=editpic&quickforward=1");
 	}
 
-	if(!$album = C::t('home_album')->fetch($albumid)) {
+	if(!$album = C::t('home_album')->fetch_album($albumid)) {
 		showmessage('album_does_not_exist');
 	}
 
@@ -104,17 +108,17 @@ if($_GET['op'] == 'edit') {
 			foreach ($category as $value) {
 				if($value['level'] == 0) {
 					$selected = $album['catid'] == $value['catid']?' selected':'';
-					$categoryselect .= "<option value=\"$value[catid]\"{$selected}>$value[catname]</option>";
+					$categoryselect .= "<option value=\"{$value['catid']}\"{$selected}>{$value['catname']}</option>";
 					if(!$value['children']) {
 						continue;
 					}
 					foreach ($value['children'] as $catid) {
 						$selected = $album['catid'] == $catid?' selected':'';
-						$categoryselect .= "<option value=\"{$category[$catid][catid]}\"{$selected}>-- {$category[$catid][catname]}</option>";
+						$categoryselect .= "<option value=\"{$category[$catid]['catid']}\"{$selected}>-- {$category[$catid]['catname']}</option>";
 						if($category[$catid]['children']) {
 							foreach ($category[$catid]['children'] as $catid2) {
 								$selected = $album['catid'] == $catid2?' selected':'';
-								$categoryselect .= "<option value=\"{$category[$catid2][catid]}\"{$selected}>---- {$category[$catid2][catname]}</option>";
+								$categoryselect .= "<option value=\"{$category[$catid2]['catid']}\"{$selected}>---- {$category[$catid2]['catname']}</option>";
 							}
 						}
 					}
@@ -126,7 +130,7 @@ if($_GET['op'] == 'edit') {
 
 } elseif($_GET['op'] == 'delete') {
 
-	if(!$album = C::t('home_album')->fetch($albumid)) {
+	if(!$album = C::t('home_album')->fetch_album($albumid)) {
 		showmessage('album_does_not_exist');
 	}
 
@@ -153,7 +157,7 @@ if($_GET['op'] == 'edit') {
 			}
 			C::t('home_album')->delete($albumid);
 		}
-		showmessage('do_success', "home.php?mod=space&uid=$_GET[uid]&do=album&view=me");
+		showmessage('do_success', "home.php?mod=space&uid={$_GET['uid']}&do=album&view=me");
 	}
 } elseif($_GET['op'] == 'editpic') {
 
@@ -162,7 +166,7 @@ if($_GET['op'] == 'edit') {
 	require_once libfile('class/bbcode');
 
 	if($albumid > 0) {
-		if(!$album = C::t('home_album')->fetch($albumid)) {
+		if(!$album = C::t('home_album')->fetch_album($albumid)) {
 			showmessage('album_does_not_exist', 'home.php?mod=space&uid='.$_G['uid'].'&do=album&view=me', array(), array('return' => true));
 		}
 
@@ -206,7 +210,7 @@ if($_GET['op'] == 'edit') {
 				$sqluid = $managealbum ? '' : $_G['uid'];
 				$_POST['newalbumid'] = intval($_POST['newalbumid']);
 				if($_POST['newalbumid']) {
-					if(!$album = C::t('home_album')->fetch($_POST['newalbumid'], $sqluid)) {
+					if(!$album = C::t('home_album')->fetch_album($_POST['newalbumid'], $sqluid)) {
 						$_POST['newalbumid'] = 0;
 					}
 				}
@@ -229,7 +233,7 @@ if($_GET['op'] == 'edit') {
 
 		}
 
-		$url = $return ? "home.php?mod=spacecp&ac=album&op=editpic&albumid=$albumid&page=$_POST[page]" : 'home.php?mod=space&uid='.$_G['uid'].'&do=album&view=me';
+		$url = $return ? "home.php?mod=spacecp&ac=album&op=editpic&albumid=$albumid&page={$_POST['page']}" : 'home.php?mod=space&uid='.$_G['uid'].'&do=album&view=me';
 		if($_G['inajax']) {
 			showmessage('do_success', $url, array('title' => $title),  array('showdialog' => 3, 'showmsg' => true, 'closetime' => true));
 		} else {
@@ -302,7 +306,7 @@ if($_GET['op'] == 'edit') {
 			require_once libfile('function/feed');
 			feed_publish($picid, 'picid');
 		} else {
-			C::t('home_feed')->update($picid, array('hot'=>$_POST['hot']), 'picid');
+			C::t('home_feed')->update_feed($picid, array('hot'=>$_POST['hot']), 'picid');
 		}
 		showmessage('do_success', dreferer());
 	}
@@ -313,12 +317,12 @@ if($_GET['op'] == 'edit') {
 		if(!$aid) {
 			showmessage('parameters_error');
 		}
-		$attach = C::t('forum_attachment_n')->fetch('aid:'.$aid, $aid);
+		$attach = C::t('forum_attachment_n')->fetch_attachment('aid:'.$aid, $aid);
 		if(empty($attach) || $attach['uid'] != $_G['uid'] || !$attach['isimage']) {
 			showmessage('parameters_error');
 		}
 		if($albumid) {
-			$album = C::t('home_album')->fetch($albumid, $_G['uid']);
+			$album = C::t('home_album')->fetch_album($albumid, $_G['uid']);
 			if(empty($album)) {
 				showmessage('album_does_not_exist');
 			}

@@ -61,7 +61,7 @@ if ($_GET['view'] == 'credit') {
 	$orderby = $_GET['orderby'];
 	$list = getranklistdata($type, $view, $orderby);
 
-} elseif ($_GET['view'] == 'friendnum') {
+} elseif ($_GET['view'] == 'friendnum' && helper_access::check_module('friend')) {
 
 	$gettype = 'friend';
 	if($_G['uid']) {
@@ -105,7 +105,7 @@ if ($_GET['view'] == 'credit') {
 	$orderby = $_GET['orderby'];
 	$list = getranklistdata($type, $view, $orderby);
 
-} elseif($_GET['view'] == 'blog') {
+} elseif($_GET['view'] == 'blog' && helper_access::check_module('blog')) {
 
 	$gettype = 'blog';
 	$now_pos = -1;
@@ -129,7 +129,7 @@ if ($_GET['view'] == 'credit') {
 	$orderby = $_GET['orderby'];
 	$list = getranklistdata($type, $view, $orderby);
 
-} elseif($_GET['view'] == 'post') {
+} elseif($_GET['view'] == 'post' && helper_access::check_module('forum')) {
 
 	$gettype = 'post';
 	$postsrank_change = 1;
@@ -150,7 +150,7 @@ if ($_GET['view'] == 'credit') {
 	$orderby = $_GET['orderby'];
 	$list = getranklistdata($type, $view, $orderby);
 
-} elseif($_GET['view'] == 'onlinetime') {
+} elseif($_GET['view'] == 'onlinetime' && !$_G['setting']['sessionclose']) {
 
 	$gettype = 'onlinetime';
 	$onlinetimerank_change = 1;
@@ -195,10 +195,10 @@ if ($_GET['view'] == 'credit') {
 		space_merge($space, 'count');
 		$space['credit'] = empty($creditkey) ? 0 : $space[$creditkey];
 
-		$myshowinfo = C::t('home_show')->fetch_by_uid_credit($space['uid']); //DB::fetch_first("SELECT unitprice, credit FROM ".DB::table('home_show')." WHERE uid='$space[uid]' AND credit>0");
+		$myshowinfo = C::t('home_show')->fetch_by_uid_credit($space['uid']); //DB::fetch_first("SELECT unitprice, credit FROM ".DB::table('home_show')." WHERE uid='{$space['uid']}' AND credit>0");
 		$myallcredit = intval($myshowinfo['credit']);
 		$space['unitprice'] = intval($myshowinfo['unitprice']);
-		$now_pos = C::t('home_show')->count_by_credit($space['unitprice']);//DB::result_first("SELECT COUNT(*) FROM ".DB::table('home_show')." WHERE unitprice>='$space[unitprice]' AND credit>0");
+		$now_pos = C::t('home_show')->count_by_credit($space['unitprice']);//DB::result_first("SELECT COUNT(*) FROM ".DB::table('home_show')." WHERE unitprice>='{$space['unitprice']}' AND credit>0");
 
 		$deluser = false;
 		$query = C::t('home_show')->fetch_all_by_unitprice($start, $perpage);
@@ -212,7 +212,7 @@ if ($_GET['view'] == 'credit') {
 		if($deluser) {
 			C::t('home_show')->delete_by_credit(1);
 		}
-		$multi = multi($count, $perpage, $page, "misc.php?mod=ranklist&type=member&view=$_GET[view]");
+		$multi = multi($count, $perpage, $page, "misc.php?mod=ranklist&type=member&view={$_GET['view']}");
 	}
 }
 

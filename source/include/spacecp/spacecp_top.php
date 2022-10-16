@@ -11,6 +11,9 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if (!$_G['setting']['friendstatus']) {
+	showmessage('friend_status_off');
+}
 if(!$_G['setting']['ranklist']['membershow']) {
 	exit('Access Denied');
 }
@@ -56,7 +59,7 @@ if(submitcheck('friendsubmit')) {
 	if(ckprivacy('show', 'feed')) {
 		require_once libfile('function/feed');
 		feed_add('show', 'feed_showcredit', array(
-		'fusername' => "<a href=\"home.php?mod=space&uid=$fuid\">{$friend[fusername]}</a>",
+		'fusername' => "<a href=\"home.php?mod=space&uid=$fuid\">{$friend['fusername']}</a>",
 		'credit' => $showcredit));
 	}
 

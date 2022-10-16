@@ -67,7 +67,7 @@ function get_upload_content($attachs, $dotype='') {
 				$html .= '<span class="pipe">|</span><span class="cur1 xi2" onclick="deleteAttach(\''.$attach['attachid'].'\', \'portal.php?mod=attachment&id='.$attach['attachid'].'&aid='.$aid.'&op=delete\');">'.lang('portalcp', 'delete').'</span>';
 			}
 		} else {
-			$html .= '<img src="static/image/editor/editor_file_thumb.png" class="cur1" onclick="insertFile(\''.$attach['filename'].'\', \'portal.php?mod=attachment&id='.$attach['attachid'].'\');" tip="'.$attach['filename'].'" onmouseover="showTip(this);" /><br/>';
+			$html .= '<img src="'.STATICURL.'image/editor/editor_file_thumb.png" class="cur1" onclick="insertFile(\''.$attach['filename'].'\', \'portal.php?mod=attachment&id='.$attach['attachid'].'\');" tip="'.$attach['filename'].'" onmouseover="showTip(this);" /><br/>';
 			$html .= '<span onclick="deleteAttach(\''.$attach['attachid'].'\', \'portal.php?mod=attachment&id='.$attach['attachid'].'&op=delete\');" class="cur1 xi2">'.lang('portalcp', 'delete').'</span>';
 		}
 		$html .= '</td>';
@@ -261,10 +261,11 @@ function getdiytplnames($tpls) {
 }
 
 function getdiytplname($targettplname, $tpldirectory) {
-	$diydata = C::t('common_diy_data')->fetch($targettplname, $tpldirectory);
+	$diydata = C::t('common_diy_data')->fetch_diy($targettplname, $tpldirectory);
 	$diytplname = $diydata ? $diydata['name'] : '';
 	if(empty($diytplname) && ($data = getdiytplnames(array($targettplname)))) {
-		$diytplname = array_shift(array_shift($data));
+		$diytplname = array_shift($data);
+		$diytplname = array_shift($diytplname);
 	}
 	return $diytplname;
 }
@@ -516,8 +517,8 @@ function block_import($data) {
 		$newid = C::t('common_block')->insert($block, true);
 		$blockmapping[$oid] = $newid;
 	}
-	include_once libfile('function/cache');
-	updatecache('blockclass');
+	require_once libfile('function/block');
+	blockclass_cache();
 	return $blockmapping;
 }
 
@@ -592,6 +593,7 @@ function import_diy($file) {
 	}
 	$content = preg_replace("/\<\!\-\-\[name\](.+?)\[\/name\]\-\-\>\s+/i", '', $content);
 	$diycontent = xml2array($content);
+	$diycontent = is_array($diycontent) ? $diycontent : array();
 
 	if ($diycontent) {
 
@@ -636,6 +638,7 @@ function import_diy($file) {
 	if (!empty($html)) {
 		$xml = array2xml($html, true);
 		require_once libfile('function/block');
+		$mapping = is_array($mapping) ? $mapping : array($mapping);
 		block_get_batch(implode(',', $mapping));
 		foreach ($mapping as $bid) {
 			$blocktag[] = '<!--{block/'.$bid.'}-->';
@@ -722,24 +725,24 @@ function category_showselect($type, $name='catid', $shownull=true, $current='') 
 	loadcache($type.'category');
 	$category = $_G['cache'][$type.'category'];
 
-	$select = "<select id=\"$name\" name=\"$name\" class=\"ps vm\">";
+	$select = defined('IN_MOBILE') ? "<select id=\"$name\" name=\"$name\" class=\"sort_sel\">" : "<select id=\"$name\" name=\"$name\" class=\"ps vm\">";
 	if($shownull) {
 		$select .= '<option value="">'.lang('portalcp', 'select_category').'</option>';
 	}
 	foreach ($category as $value) {
 		if($value['level'] == 0) {
 			$selected = ($current && $current==$value['catid']) ? 'selected="selected"' : '';
-			$select .= "<option value=\"$value[catid]\"$selected>$value[catname]</option>";
+			$select .= "<option value=\"{$value['catid']}\"$selected>{$value['catname']}</option>";
 			if(!$value['children']) {
 				continue;
 			}
 			foreach ($value['children'] as $catid) {
 				$selected = ($current && $current==$catid) ? 'selected="selected"' : '';
-				$select .= "<option value=\"{$category[$catid][catid]}\"$selected>-- {$category[$catid][catname]}</option>";
+				$select .= "<option value=\"{$category[$catid]['catid']}\"$selected>-- {$category[$catid]['catname']}</option>";
 				if($category[$catid]['children']) {
 					foreach ($category[$catid]['children'] as $catid2) {
 						$selected = ($current && $current==$catid2) ? 'selected="selected"' : '';
-						$select .= "<option value=\"{$category[$catid2][catid]}\"$selected>---- {$category[$catid2][catname]}</option>";
+						$select .= "<option value=\"{$category[$catid2]['catid']}\"$selected>---- {$category[$catid2]['catname']}</option>";
 					}
 				}
 			}
@@ -832,10 +835,10 @@ function updatetopic($topic = ''){
 		'domain' => $_POST['domain'],
 		'summary' => getstr($_POST['summary']),
 		'keyword' => getstr($_POST['keyword']),
-		'useheader' => $_POST['useheader'] ? '1' : '0',
-		'usefooter' => $_POST['usefooter'] ? '1' : '0',
-		'allowcomment' => $_POST['allowcomment'] ? 1 : 0,
-		'closed' => $_POST['closed'] ? 0 : 1,
+		'useheader' => !empty($_POST['useheader']) ? '1' : '0',
+		'usefooter' => !empty($_POST['usefooter']) ? '1' : '0',
+		'allowcomment' => !empty($_POST['allowcomment']) ? 1 : 0,
+		'closed' => !empty($_POST['closed']) ? 0 : 1,
 	);
 
 	if($_POST['deletecover'] && $topic['cover']) {
@@ -874,7 +877,7 @@ function updatetopic($topic = ''){
 
 	if($topicid) {
 		C::t('portal_topic')->update($topicid, $setarr);
-		C::t('common_diy_data')->update('portal/portal_topic_content_'.$topicid, getdiydirectory($topic['primaltplname']), array('name'=>$setarr['title']));
+		C::t('common_diy_data')->update_diy('portal/portal_topic_content_'.$topicid, getdiydirectory($topic['primaltplname']), array('name'=>$setarr['title']));
 	} else {
 		$setarr['uid'] = $_G['uid'];
 		$setarr['username'] = $_G['username'];
@@ -892,12 +895,12 @@ function updatetopic($topic = ''){
 	}
 
 	$tpldirectory = '';
-	if($primaltplname && $topic['primaltplname'] != $primaltplname) {
+	if($primaltplname && (empty($topic['primaltplname']) || $topic['primaltplname'] != $primaltplname)) {
 		$targettplname = 'portal/portal_topic_content_'.$topicid;
 		if(strpos($primaltplname, ':') !== false) {
 			list($tpldirectory, $primaltplname) = explode(':', $primaltplname);
 		}
-		C::t('common_diy_data')->update($targettplname, getdiydirectory($topic['primaltplname']), array('primaltplname'=>$primaltplname, 'tpldirectory'=>$tpldirectory));
+		C::t('common_diy_data')->update_diy($targettplname, getdiydirectory(isset($topic['primaltplname']) ? $topic['primaltplname'] : ''), array('primaltplname'=>$primaltplname, 'tpldirectory'=>$tpldirectory));
 		updatediytemplate($targettplname);
 	}
 
@@ -1028,7 +1031,7 @@ function addportalarticlecomment($id, $message, $idtype = 'aid') {
 	}
 
 	$message = censor($message, NULL, FALSE, FALSE);
-	if(censormod($message)) {
+	if(censormod($message) || $_G['group']['allowcommentarticlemod']) {
 		$comment_status = 1;
 	} else {
 		$comment_status = 0;

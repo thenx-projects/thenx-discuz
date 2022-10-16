@@ -13,7 +13,7 @@ if(!defined('IN_DISCUZ')) {
 
 class logging_ctl {
 
-	function logging_ctl() {
+	function __construct() {
 		require_once libfile('function/misc');
 		loaducenter();
 	}
@@ -37,7 +37,7 @@ class logging_ctl {
 			showmessage('login_succeed', $referer ? $referer : './', $param, array('showdialog' => 1, 'locationtime' => true, 'extrajs' => $ucsynlogin));
 		}
 
-		list($seccodecheck) = seccheck('login');
+		list($seccodecheck, $secqaacheck) = seccheck('login');
 		if(!empty($_GET['auth'])) {
 			$dauth = authcode($_GET['auth'], 'DECODE', $_G['config']['security']['authkey']);
 			list(,,,$secchecklogin2) = explode("\t", $dauth);
@@ -46,9 +46,10 @@ class logging_ctl {
 			}
 		}
 		$seccodestatus = !empty($_GET['lssubmit']) ? false : $seccodecheck;
+		$secqaastatus = !empty($_GET['lssubmit']) ? false : $secqaacheck;
 		$invite = getinvite();
 
-		if(!submitcheck('loginsubmit', 1, $seccodestatus)) {
+		if(!submitcheck('loginsubmit', 1, $seccodestatus, $secqaastatus)) {
 
 			$auth = '';
 			$username = !empty($_G['cookie']['loginuser']) ? dhtmlspecialchars($_G['cookie']['loginuser']) : '';
@@ -94,7 +95,7 @@ class logging_ctl {
 			$result = userlogin($_GET['username'], $_GET['password'], $_GET['questionid'], $_GET['answer'], $this->setting['autoidselect'] ? 'auto' : $_GET['loginfield'], $_G['clientip']);
 			$uid = $result['ucresult']['uid'];
 
-			if(!empty($_GET['lssubmit']) && ($result['ucresult']['uid'] == -3 || $seccodecheck)) {
+			if(!empty($_GET['lssubmit']) && ($result['ucresult']['uid'] == -3 || $seccodecheck || $secqaacheck)) {
 				$_GET['username'] = $result['ucresult']['username'];
 				$this->logging_more($result['ucresult']['uid'] == -3);
 			}
@@ -107,7 +108,7 @@ class logging_ctl {
 					$init_arr = explode(',', $this->setting['initcredits']);
 					$groupid = $this->setting['regverify'] ? 8 : $this->setting['newusergroupid'];
 
-					C::t('common_member')->insert($uid, $result['ucresult']['username'], md5(random(10)), $result['ucresult']['email'], $_G['clientip'], $groupid, $init_arr);
+					C::t('common_member')->insert_user($uid, $result['ucresult']['username'], md5(random(10)), $result['ucresult']['email'], $_G['clientip'], $groupid, $init_arr);
 					$_G['member']['lastvisit'] = TIMESTAMP;
 					$result['member'] = getuserbyuid($uid);
 					$result['status'] = 1;
@@ -139,7 +140,7 @@ class logging_ctl {
 				$ucsynlogin = $this->setting['allowsynlogin'] ? uc_user_synlogin($_G['uid']) : '';
 
 				$pwold = false;
-				if($this->setting['strongpw'] && !$this->setting['pwdsafety']) {
+				if($this->setting['strongpw']) {
 					if(in_array(1, $this->setting['strongpw']) && !preg_match("/\d+/", $_GET['password'])) {
 						$pwold = true;
 					}
@@ -216,9 +217,6 @@ class logging_ctl {
 					require_once libfile('function/friend');
 					friend_make($invite['uid'], $invite['username'], false);
 					dsetcookie('invite_auth', '');
-					if($invite['appid']) {
-						updatestat('appinvite');
-					}
 				}
 
 				$param = array(
@@ -325,7 +323,7 @@ class register_ctl {
 
 	var $showregisterform = 1;
 
-	function register_ctl() {
+	function __construct() {
 		global $_G;
 		if($_G['setting']['bbclosed']) {
 			if(($_GET['action'] != 'activation' && !$_GET['activationauth']) || !$_G['setting']['closedallowactivation'] ) {
@@ -539,15 +537,18 @@ class register_ctl {
 			}
 			if($sendurl) {
 				$mobile = $this->setting['mobile']['mobileregister'] ? '' : ($this->setting['mobile']['allowmobile'] ? '&amp;mobile=no' : '');
-				$hashstr = urlencode(authcode("$email\t$_G[timestamp]", 'ENCODE', $_G['config']['security']['authkey']));
+				$hashstr = urlencode(authcode("{$email}\t{$_G['timestamp']}", 'ENCODE', $_G['config']['security']['authkey']));
 				$registerurl = $_G['setting']['securesiteurl']."member.php?mod=".$this->setting['regname']."&amp;hash={$hashstr}&amp;email={$email}{$mobile}";
-				$email_register_message = lang('email', 'email_register_message', array(
-					'bbname' => $this->setting['bbname'],
-					'siteurl' => $_G['setting']['securesiteurl'],
-					'url' => $registerurl
-				));
-				if(!sendmail("$email <$email>", lang('email', 'email_register_subject'), $email_register_message)) {
-					runlog('sendmail', "$email sendmail failed.");
+				$email_register_message = array(
+					'tpl' => 'email_register',
+					'var' => array(
+						'bbname' => $this->setting['bbname'],
+						'siteurl' => $_G['setting']['securesiteurl'],
+						'url' => $registerurl
+					)
+				);
+				if(!sendmail("{$email} <{$email}>", $email_register_message)) {
+					runlog('sendmail', "{$email} sendmail failed.");
 				}
 				showmessage('register_email_send_succeed', dreferer(), array('bbname' => $this->setting['bbname']), array('showdialog' => false, 'msgtype' => 3, 'closetime' => 10));
 			}
@@ -780,7 +781,7 @@ class register_ctl {
 
 			$init_arr = array('credits' => explode(',', $this->setting['initcredits']), 'profile'=>$profile, 'emailstatus' => $emailstatus);
 
-			C::t('common_member')->insert($uid, $username, $password, $email, $_G['clientip'], $groupinfo['groupid'], $init_arr);
+			C::t('common_member')->insert_user($uid, $username, $password, $email, $_G['clientip'], $groupinfo['groupid'], $init_arr, 0, $_G['remoteport']);
 			if($emailstatus) {
 				updatecreditbyaction('realemail', $uid);
 			}
@@ -860,9 +861,6 @@ class register_ctl {
 					$tite_data = array('username' => '<a href="home.php?mod=space&uid='.$_G['uid'].'">'.$_G['username'].'</a>');
 					feed_add('friend', 'feed_invite', $tite_data, '', array(), '', array(), array(), '', '', '', 0, 0, '', $invite['uid'], $invite['username']);
 				}
-				if($invite['appid']) {
-					updatestat('appinvite');
-				}
 			}
 
 			if($welcomemsg && !empty($welcomemsgtxt)) {
@@ -934,9 +932,9 @@ class crime_action_ctl {
 
 	static $actions = array('all', 'crime_delpost', 'crime_warnpost', 'crime_banpost', 'crime_banspeak', 'crime_banvisit', 'crime_banstatus', 'crime_avatar', 'crime_sightml', 'crime_customstatus');
 
-	function crime_action_ctl() {}
+	function __construct() {}
 
-	function &instance() {
+	public static function &instance() {
 		static $object;
 		if(empty($object)) {
 			$object = new crime_action_ctl();

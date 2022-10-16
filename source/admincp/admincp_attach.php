@@ -34,7 +34,7 @@ if(!submitcheck('deletesubmit')) {
 	if($operation != 'group') {
 		showsetting('attach_forum', '', '', '<select name="inforum"><option value="all">&nbsp;&nbsp;>'.cplang('all').'</option><option value="">&nbsp;</option>'.forumselect(FALSE, 0, 0, TRUE).'</select>');
 	}
-	showsetting('attach_search_perpage', '', $_GET['perpage'], "<select name='perpage'><option value='20'>$lang[perpage_20]</option><option value='50'>$lang[perpage_50]</option><option value='100'>$lang[perpage_100]</option></select>");
+	showsetting('attach_search_perpage', '', $_GET['perpage'], "<select name='perpage'><option value='20'>{$lang['perpage_20']}</option><option value='50'>{$lang['perpage_50']}</option><option value='100'>{$lang['perpage_100']}</option></select>");
 	showsetting('attach_sizerange', array('sizeless', 'sizemore'), array('', ''), 'range');
 	showsetting('attach_dlcountrange', array('dlcountless', 'dlcountmore'), array('', ''), 'range');
 	showsetting('attach_daysold', 'daysold', '', 'text');
@@ -85,13 +85,13 @@ if(!submitcheck('deletesubmit')) {
 				if(!$_GET['nomatched'] || ($_GET['nomatched'] && $matched)) {
 					$attachment['url'] = trim($attachment['url'], '/');
 					$attachments .= showtablerow('', array('class="td25"', 'title="'.$attachment['description'].'" class="td21"'), array(
-						"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"$attachment[aid]\" />",
-						$attachment['remote'] ? "<span class=\"diffcolor3\">$attachment[filename]" : $attachment['filename'],
+						"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[]\" value=\"{$attachment['aid']}\" />",
+						$attachment['remote'] ? "<span class=\"diffcolor3\">{$attachment['filename']}" : $attachment['filename'],
 						$attachusers[$attachment['uid']]['username'],
-						"<a href=\"forum.php?mod=viewthread&tid=$attachment[tid]\" target=\"_blank\">".cutstr($attachment['subject'], 20)."</a>",
+						"<a href=\"forum.php?mod=viewthread&tid={$attachment['tid']}\" target=\"_blank\">".cutstr($attachment['subject'], 20)."</a>",
 						$attachsize,
 						$attachment['downloads'],
-						$matched ? "<em class=\"error\">$matched<em>" : "<a href=\"forum.php?mod=attachment&aid=".aidencode($attachment['aid'])."&noupdate=yes\" target=\"_blank\" class=\"act nomargin\">$lang[download]</a>"
+						$matched ? "<em class=\"error\">$matched<em>" : "<a href=\"forum.php?mod=attachment&aid=".aidencode($attachment['aid'])."&noupdate=yes\" target=\"_blank\" class=\"act nomargin\">{$lang['download']}</a>"
 					), TRUE);
 				}
 			}
@@ -130,11 +130,13 @@ EOT;
 		showformfooter();
 
 		showformheader('attach&frame=no'.($operation ? '&operation='.$operation : ''), 'target="attachmentframe"');
+		showboxheader();
 		showtableheader();
 		showsubtitle(array('', 'filename', 'author', 'attach_thread', 'size', 'attach_downloadnums', ''));
 		echo $attachments;
 		showsubmit('deletesubmit', 'submit', 'del', '<a href="###" onclick="$(\'admin\').style.display=\'none\';$(\'search\').style.display=\'\';$(\'attachmentforum\').pp.value=\'\';$(\'attachmentforum\').page.value=\'\';" class="act lightlink normal">'.cplang('research').'</a>', $multipage);
 		showtablefooter();
+		showboxfooter();
 		showformfooter();
 		echo '<iframe name="attachmentframe" style="display:none"></iframe>';
 		showtagfooter('div');
@@ -147,12 +149,12 @@ EOT;
 
 		$tids = $pids = array();
 		for($attachi = 0;$attachi < 10;$attachi++) {
-			foreach(C::t('forum_attachment_n')->fetch_all($attachi, $_GET['delete']) as $attach) {
+			foreach(C::t('forum_attachment_n')->fetch_all_attachment($attachi, $_GET['delete']) as $attach) {
 				dunlink($attach);
 				$tids[$attach['tid']] = $attach['tid'];
 				$pids[$attach['pid']] = $attach['pid'];
 			}
-			C::t('forum_attachment_n')->delete($attachi, $_GET['delete']);
+			C::t('forum_attachment_n')->delete_attachment($attachi, $_GET['delete']);
 
 			$attachtids = array();
 			foreach(C::t('forum_attachment_n')->fetch_all_by_id($attachi, 'tid', $tids) as $attach) {
@@ -174,7 +176,7 @@ EOT;
 		loadcache('posttableids');
 		$posttableids = $_G['cache']['posttableids'] ? $_G['cache']['posttableids'] : array('0');
 		foreach($posttableids as $id) {
-			C::t('forum_post')->update($id, $pids, array('attachment' => '0'));
+			C::t('forum_post')->update_post($id, $pids, array('attachment' => '0'));
 		}
 
 		$cpmsg = cplang('attach_edit_succeed');

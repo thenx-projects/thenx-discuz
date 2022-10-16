@@ -13,12 +13,12 @@ if(!defined('IN_DISCUZ')) {
 
 class ultrax_cache {
 
-	function ultrax_cache($conf) {
+	function __construct($conf) {
 		$this->conf = $conf;
 	}
 
 	function get_cache($key) {
-		static $data = null;
+		static $data = array();
 		if(!isset($data[$key])) {
 			$cache = C::t('common_cache')->fetch($key);
 			if(!$cache) {

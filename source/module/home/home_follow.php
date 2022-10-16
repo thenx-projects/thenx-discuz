@@ -10,6 +10,10 @@ if(!defined('IN_DISCUZ')) {
 	exit('Access Denied');
 }
 
+if(!$_G['setting']['followstatus']) {
+	showmessage('follow_status_off');
+}
+
 if(!$_G['uid']) {
 	showmessage('login_before_enter_home', null, array(), array('showmsg' => true, 'login' => 1));
 }
@@ -56,7 +60,7 @@ if($do == 'feed') {
 
 	$vuid = $view == 'other' ? 0 : $_G['uid'];
 	$list = getfollowfeed($vuid, $view, false, $start, $perpage);
-	if((empty($list['feed']) || count($list['feed']) < 20) && (!empty($list['user']) || $view == 'other')) {
+	if((empty($list['feed']) || !is_array($list['feed']) || count($list['feed']) < 20) && (!empty($list['user']) || $view == 'other')) {
 		$primary = 0;
 		$alist = getfollowfeed($vuid, $view, true, $start, $perpage);
 		if(empty($list['feed']) && empty($alist['feed'])) {
@@ -122,7 +126,7 @@ if($do == 'feed') {
 		}
 		if(!empty($users)) {
 			if(count($recommend) < 10) {
-				$randkeys = array_rand($users, 11 - count($recommend));
+				$randkeys = array_rand($users, min(count($users), 11 - count($recommend)));
 				foreach($randkeys as $ruid) {
 					if($ruid != $_G['uid']) {
 						$recommend[$ruid] = $users[$ruid];

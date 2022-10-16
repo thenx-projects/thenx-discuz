@@ -64,7 +64,7 @@ if ($op == 'start') {
 
 		$count = $albumlist[$albumid]['picnum'];
 	} else {
-		$wheresql = "albumid='0' AND uid='$space[uid]'";
+		$wheresql = "albumid='0' AND uid='{$space['uid']}'";
 	}
 
 	$list = array();
@@ -164,8 +164,6 @@ if (submitcheck('blocksubmit')) {
 
 		if($blockname == 'blog') {
 			$blockdata['parameters'][$blockname]['showmessage'] = min(100000, abs(intval($_GET['showmessage'])));
-		} elseif($blockname == 'myapp') {
-			$blockdata['parameters'][$blockname]['logotype'] = in_array($_GET['logotype'], array('logo', 'icon')) ? $_GET['logotype'] : 'logo';
 		}
 
 		$setarr = array();
@@ -212,9 +210,6 @@ if (submitcheck('musicsubmit')) {
 				'autorun' => $_POST['autorun'],
 				'shuffle' => $_POST['shuffle'],
 				'crontabcolor' => $_POST['crontabcolor'],
-				'buttoncolor' => $_POST['buttoncolor'],
-				'fontcolor' => $_POST['fontcolor'],
-				'crontabbj' => $_POST['crontabbj'],
 				'height' => min(9999,abs(intval($_POST['height']))),
 			  );
 		$blockdata['parameters']['music']['config'] = $config;
@@ -298,7 +293,7 @@ if (submitcheck('diysubmit')) {
 	$setarr['blockposition'] = serialize($blockdata);
 	$setarr['theme'] = $style;
 	C::t('common_member_field_home')->update($space['uid'], $setarr);
-	showmessage('do_success','home.php?mod=space'.($_G['adminid'] == 1 && $_G['setting']['allowquickviewprofile'] ? '&view=admin' : ''));
+	showmessage('do_success','home.php?mod=space&uid='.$space['uid'].($_G['adminid'] == 1 && $_G['setting']['allowquickviewprofile'] ? '&view=admin' : ''));
 }
 
 if (submitcheck('uploadsubmit')) {

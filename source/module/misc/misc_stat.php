@@ -13,7 +13,7 @@ if(!defined('IN_DISCUZ')) {
 
 define('CACHE_TIME', 18000);
 
-$op = $_GET['op'];
+$op = getgpc('op');
 if(!in_array($op, array('basic', 'trade', 'team', 'trend', 'modworks', 'memberlist', 'forumstat', 'trend'))) {
 	$op = 'basic';
 }
@@ -93,7 +93,7 @@ function getstatvars($type) {
 		case 'modworks':
 		case 'memberlist':
 		case 'forumstat':
-			$statvars = call_user_func('getstatvars_'.$type, ($type == 'forumstat' ? $_GET['fid'] : ''));//getstatvars_forumstat($_GET['fid']);
+			$statvars = call_user_func('getstatvars_'.$type, ($type == 'forumstat' ? getgpc('fid') : ''));//getstatvars_forumstat($_GET['fid']);
 			break;
 	}
 	return $statvars;
@@ -105,7 +105,7 @@ function getstatvars_basic() {
 	$statvars = array();
 	$statvars['members'] = C::t('common_member')->count();
 	$members_runtime = C::t('common_member')->fetch_runtime();
-	@$statvars['membersaddavg'] = round($statvars['members'] / $members_runtime);
+	$statvars['membersaddavg'] = $members_runtime > 0.00001 ? (round($statvars['members'] / $members_runtime)) : 0;
 	$statvars['memnonpost'] = C::t('common_member_count')->count_by_posts(0);
 	$statvars['mempost'] = $statvars['members'] - $statvars['memnonpost'];
 	$statvars['admins'] = C::t('common_member')->count_admins();
@@ -113,17 +113,17 @@ function getstatvars_basic() {
 	$statvars['mempostpercent'] = number_format((double)$statvars['mempost'] / $statvars['members'] * 100, 2);
 
 	$bestmember = C::t('forum_post')->fetch_all_top_post_author(0, $_G['timestamp']-86400, 1);
-	$bestmember = $bestmember[0];
+	$bestmember = isset($bestmember[0]) ? $bestmember[0] : array('username' => '');
 	$bestmember['author'] = $bestmember['username'];
-	$statvars['bestmem'] = $bestmember['author'];
-	$statvars['bestmemposts'] = $bestmember['posts'];
+	$statvars['bestmem'] = isset($bestmember['author']) ? $bestmember['author'] : null;
+	$statvars['bestmemposts'] = isset($bestmember['posts']) ? $bestmember['posts'] : null;
 	$postsinfo = C::t('forum_post')->fetch_posts(0);
 	$statvars['posts'] = $postsinfo['posts'];
 	$runtime= $postsinfo['runtime'];
 
-	@$statvars['postsaddavg'] = round($statvars['posts'] / $runtime);
+	$statvars['postsaddavg'] = $runtime > 0.00001 ? round($statvars['posts'] / $runtime) : 0;
 
-	@$statvars['mempostavg'] = sprintf ("%01.2f", $statvars['posts'] / $statvars['members']);
+	$statvars['mempostavg'] = sprintf ("%01.2f", $statvars['members'] ? ($statvars['posts'] / $statvars['members']) : 0);
 
 	$statvars['forums'] = C::t('forum_forum')->fetch_all_fids(0, 'forum', 0, 0, 0, 1);
 
@@ -134,10 +134,10 @@ function getstatvars_basic() {
 
 	$statvars['postsaddtoday'] = C::t('forum_post')->count_by_dateline(0, TIMESTAMP - 86400);
 
-	@$statvars['threadreplyavg'] = sprintf ("%01.2f", ($statvars['posts'] - $statvars['threads']) / $statvars['threads']);
+	$statvars['threadreplyavg'] = sprintf ("%01.2f", $statvars['threads'] ? (($statvars['posts'] - $statvars['threads']) / $statvars['threads']) : 0);
 
 	$statvars['membersaddtoday'] = $statvars['lastmember'];
-	@$statvars['activeindex'] = round(($statvars['membersaddavg'] / $statvars['members'] + $statvars['postsaddavg'] / $statvars['posts']) * 1500 + $statvars['threadreplyavg'] * 10 + $statvars['mempostavg'] * 1 + $statvars['mempostpercent'] / 10);
+	$statvars['activeindex'] = round((($statvars['members'] ? ($statvars['membersaddavg'] / $statvars['members']) : 0) + ($statvars['posts'] ? ($statvars['postsaddavg'] / $statvars['posts']) : 0)) * 1500 + $statvars['threadreplyavg'] * 10 + $statvars['mempostavg'] * 1 + $statvars['mempostpercent'] / 10);
 
 	$statvars['lastupdate'] = dgmdate(TIMESTAMP);
 	$statvars['nextupdate'] = dgmdate(TIMESTAMP + CACHE_TIME);
@@ -238,6 +238,7 @@ function getstatvars_team() {
 	$query = C::t('forum_forum')->fetch_all_by_status(1, 1);
 	foreach($query as $val) {
 		$forum = array('fid' => $val['fid'], 'fup' => $val['fup'], 'type' => $val['type'], 'name' => $val['name'], 'inheritedmod' => $val['inheritedmod']);
+		$moderators[$forum['fid']] = (isset($moderators[$forum['fid']]) && is_array($moderators[$forum['fid']])) ? $moderators[$forum['fid']] : array();
 		$forum['moderators'] = count($moderators[$forum['fid']]);
 		switch($forum['type']) {
 			case 'group':
@@ -272,25 +273,25 @@ function getstatvars_team() {
 		'admins' => $admins,
 		'moderators' => $moderators,
 		'members' => $members,
-		'avgoffdays' => @($totaloffdays / count($members)),
-		'avgthismonthposts' => @($totalthismonthposts / count($members)),
-		'avgtotalol' => @($totalol / count($members)),
-		'avgthismonthol' => @($totalthismonthol / count($members)),
-		'avgmodactions' => @($totalmodactions / count($members)),
+		'avgoffdays' => count($members) ? ($totaloffdays / count($members)) : 0,
+		'avgthismonthposts' => count($members) ? ($totalthismonthposts / count($members)) : 0,
+		'avgtotalol' => count($members) ? ($totalol / count($members)) : 0,
+		'avgthismonthol' => count($members) ? ($totalthismonthol / count($members)) : 0,
+		'avgmodactions' => count($members) ? ($totalmodactions / count($members)) : 0,
 	);
 
 	loadcache('usergroups');
 	if(is_array($team)) {
 		foreach($team['members'] as $uid => $member) {
-			@$member['thismonthposts'] = intval($member['thismonthposts']);
-			@$team['members'][$uid]['offdays'] = $member['offdays'] > $team['avgoffdays'] ? '<b><i>'.$member['offdays'].'</i></b>' : $member['offdays'];
-			@$team['members'][$uid]['thismonthposts'] = $member['thismonthposts'] < $team['avgthismonthposts'] / 2 ? '<b><i>'.$member['thismonthposts'].'</i></b>' : $member['thismonthposts'];
-			@$team['members'][$uid]['lastactivity'] = dgmdate($member['lastactivity'] + $timeoffset * 3600, 'd');
-			@$team['members'][$uid]['thismonthol'] = $member['thismonthol'] < $team['avgthismonthol'] / 2 ? '<b><i>'.$member['thismonthol'].'</i></b>' : $member['thismonthol'];
-			@$team['members'][$uid]['totalol'] = $member['totalol'] < $team['avgtotalol'] / 2 ? '<b><i>'.$member['totalol'].'</i></b>' : $member['totalol'];
-			@$team['members'][$uid]['modposts'] = $member['modposts'] < $team['avgmodposts'] / 2 ? '<b><i>'.intval($member['modposts']).'</i></b>' : intval($member['modposts']);
-			@$team['members'][$uid]['modactions'] = $member['modactions'] < $team['avgmodactions'] / 2 ? '<b><i>'.intval($member['modactions']).'</i></b>' : intval($member['modactions']);
-			@$team['members'][$uid]['grouptitle'] = $_G['cache']['usergroups'][$member['adminid']]['grouptitle'];
+			$member['thismonthposts'] = intval($member['thismonthposts']);
+			$team['members'][$uid]['offdays'] = $member['offdays'] > $team['avgoffdays'] ? '<b><i>'.$member['offdays'].'</i></b>' : $member['offdays'];
+			$team['members'][$uid]['thismonthposts'] = $member['thismonthposts'] < $team['avgthismonthposts'] / 2 ? '<b><i>'.$member['thismonthposts'].'</i></b>' : $member['thismonthposts'];
+			$team['members'][$uid]['lastactivity'] = dgmdate($member['lastactivity'] + $_G['setting']['timeoffset'] * 3600, 'd');
+			$team['members'][$uid]['thismonthol'] = $member['thismonthol'] < $team['avgthismonthol'] / 2 ? '<b><i>'.$member['thismonthol'].'</i></b>' : $member['thismonthol'];
+			$team['members'][$uid]['totalol'] = $member['totalol'] < $team['avgtotalol'] / 2 ? '<b><i>'.$member['totalol'].'</i></b>' : $member['totalol'];
+			$team['members'][$uid]['modposts'] = $member['modposts'] < $team['avgmodposts'] / 2 ? '<b><i>'.intval($member['modposts']).'</i></b>' : intval($member['modposts']);
+			$team['members'][$uid]['modactions'] = $member['modactions'] < $team['avgmodactions'] / 2 ? '<b><i>'.intval($member['modactions']).'</i></b>' : intval($member['modactions']);
+			$team['members'][$uid]['grouptitle'] = $_G['cache']['usergroups'][$member['adminid']]['grouptitle'];
 		}
 	}
 
@@ -400,7 +401,7 @@ function getstatvars_modworks() {
 
 		}
 
-		$avgmodactioncount = @($totalmodactioncount / count($members));
+		$avgmodactioncount = count($members) ? ($totalmodactioncount / count($members)) : 0;
 		foreach($members as $id => $member) {
 			$members[$id]['totalactions'] = intval($members[$id]['totalactions']);
 			$members[$id]['username'] = ($members[$id]['total'] < $avgmodactioncount / 2) ? ('<b><i>'.$members[$id]['username'].'</i></b>') : ($members[$id]['username']);
@@ -528,7 +529,7 @@ function getstatvars_forumstat($fid) {
 		}
 		$statvars['monthposts'] = $monthposts;
 	}
-	$statvars['statuspara'] = "misc.php?mod=stat&op=forumstat&fid=$fid&month={$_GET['month']}&xml=1";
+	$statvars['statuspara'] = "misc.php?mod=stat&op=forumstat&fid=$fid&month={getgpc('month')}&xml=1";
 	return $statvars;
 }
 

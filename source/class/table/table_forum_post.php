@@ -23,7 +23,7 @@ class table_forum_post extends discuz_table
 	}
 
 	public static function get_tablename($tableid, $primary = 0) {
-		list($type, $tid) = explode(':', $tableid);
+		list($type, $tid) = explode(':', $tableid.':');
 		if(!isset(self::$_tableid_tablename[$tableid])) {
 			if($type == 'tid') {
 				self::$_tableid_tablename[$tableid] = self::getposttablebytid($tid, $primary);
@@ -128,7 +128,16 @@ class table_forum_post extends discuz_table
 		return DB::result_first('SELECT COUNT(*) FROM %t WHERE dateline>=%d AND invisible=0', array(self::get_tablename($tableid), $dateline));
 	}
 
-	public function fetch($tableid, $pid, $outmsg = true) {
+	public function fetch($id, $force_from_db = false, $null = true) {
+		// $null 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->fetch_post($id, $force_from_db, $null);
+		}
+	}
+
+	public function fetch_post($tableid, $pid, $outmsg = true) {
 		$post = DB::fetch_first('SELECT * FROM %t WHERE pid=%d', array(self::get_tablename($tableid), $pid));
 		if(!$outmsg) {
 			unset($post['message']);
@@ -171,8 +180,16 @@ class table_forum_post extends discuz_table
 			array($fields, self::get_tablename($tableid), $pid, $addcondiction));
 	}
 
+	public function fetch_all($ids, $force_from_db = false, $null = true) {
+		// $null 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->fetch_all_post($ids, $force_from_db, $null);
+		}
+	}
 
-	public function fetch_all($tableid, $pids, $outmsg = true) {
+	public function fetch_all_post($tableid, $pids, $outmsg = true) {
 		$postlist = array();
 		if($pids) {
 			$query = DB::query('SELECT * FROM %t WHERE %i', array(self::get_tablename($tableid), DB::field($this->_pk, $pids)));
@@ -441,7 +458,16 @@ class table_forum_post extends discuz_table
 			WHERE dateline>=%d AND %i AND invisible=0 GROUP BY authorid', array(self::get_tablename($tableid), $dateline, DB::field('authorid', $authorid)));
 	}
 
-	public function update($tableid, $pid, $data, $unbuffered = false, $low_priority = false, $first = null, $invisible = null, $fid = null, $status = null) {
+	public function update($val, $data, $unbuffered = false, $low_priority = false, $null1 = false, $null2 = null, $null3 = null, $null4 = null, $null5 = null) {
+		// $null 1~n 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->update_post($val, $data, $unbuffered, $low_priority, $null1, $null2, $null3, $null4, $null5);
+		}
+	}
+
+	public function update_post($tableid, $pid, $data, $unbuffered = false, $low_priority = false, $first = null, $invisible = null, $fid = null, $status = null) {
 		$where = array();
 		$where[] = DB::field('pid', $pid);
 		if($first !== null) {
@@ -494,7 +520,16 @@ class table_forum_post extends discuz_table
 		return $return;
 	}
 
-	public function update_cache($tableid, $id, $idtype, $data, $condition = array(), $glue = 'merge') {
+	public function update_cache($val, $data, $unbuffered = false, $low_priority = false, $null1 = array(), $null2 = 'merge') {
+		// $null 1~n 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->update_cache_post($val, $data, $unbuffered, $low_priority, $null1, $null2);
+		}
+	}
+
+	public function update_cache_post($tableid, $id, $idtype, $data, $condition = array(), $glue = 'merge') {
 		if(!$this->_allowmem) return;
 
 		if($idtype == 'tid') {
@@ -606,11 +641,99 @@ class table_forum_post extends discuz_table
 		return $return;
 	}
 
-	public function insert($tableid, $data, $return_insert_id = false, $replace = false, $silent = false) {
-		return DB::insert(self::get_tablename($tableid), $data, $return_insert_id, $replace, $silent);
+
+	// 不使用事务，如果position冲突，则插入失败，重试五次
+	private function _insert_use_db($tableid, $data, $return_insert_id = false, $replace = false, $silent = false) {
+		$tablename = self::get_tablename($tableid);
+		foreach (range(1, 5) as $try_count) {
+			try {
+				$data['position'] = $this->_next_pos_from_db($tablename, $data['tid']);
+				$ret = DB::insert($tablename, $data, $return_insert_id, $replace, $silent);
+				return $ret;
+			} catch (Exception $e) {
+				if ($try_count >= 2) usleep(mt_rand(2, 6) * 10000); // 如果第二次还不行，停几十毫秒再试
+				if ($try_count >= 3 && $try_count <= 4) usleep(mt_rand(4, 6) * 10000); // 第三次以后再加延时
+				if ($try_count === 5) throw $e; // 如果第五次不行，抛异常
+			}
+		}
 	}
 
-	public function delete($tableid, $pid, $unbuffered = false) {
+	// 从数据库中读取最大position + 1
+	private function _next_pos_from_db($tablename, $tid) {
+		return DB::result_first("SELECT IFNULL(MAX(position), 0) + 1 FROM " . DB::table($tablename) . " WHERE tid = " . $tid);
+	}
+
+	// 用缓存获取下一个position
+	private function _next_pos_from_memory($key) {
+		return memory('incex', $key, 1, 0, "");
+	}
+
+	public function insert($data, $return_insert_id = false, $replace = false, $silent = false, $null = false) {
+		// $null 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->insert_post($data, $return_insert_id, $replace, $silent, $null);
+		}
+	}
+
+	/*
+	 * 在InnoDB的情况下，要保证每个tid下，position是从1开始，并且每次加1，这样与MyISAM的语义相同
+	 * 在非InnoDB的时候(MyISAM)，直接插入
+	 */
+	public function insert_post($tableid, $data, $return_insert_id = false, $replace = false, $silent = false) {
+		if (strtolower(getglobal("config/db/common/engine")) !== 'innodb') { // 如果不是innodb，则是原来myisam，position是按tid自增的
+			return DB::insert(self::get_tablename($tableid), $data, $return_insert_id, $replace, $silent);
+		}
+		$tablename = self::get_tablename($tableid);
+
+		// 是否使用内存处理position, redis和memcache都可以
+		$mc = strtolower(memory('check'));
+		if ($mc !== 'memcache' && $mc !== 'redis' && $mc !== 'memcached') { // 如果不是memcache或redis，则使用数据库插入
+			return $this->_insert_use_db($tableid, $data, $return_insert_id, $replace, $silent);
+		}
+
+		$memory_position_key = "forum_post_position_" . $data['tid']; // 为每一个tid维护一个key
+		$next_pos = $this->_next_pos_from_memory($memory_position_key);
+
+		if (!$next_pos) { // 如果这个key不存在，则从数据库中加载，并设置到缓存中
+			$next_pos = $this->_next_pos_from_db($tablename, $data['tid']);
+			if (!memory('add', $memory_position_key, $next_pos, 259200 /* 3天 */)) { // 用add添加到缓存中
+				$next_pos = $this->_next_pos_from_memory($memory_position_key); // 如果add不成功(key已存在，在上面SQL的过程中，被其它进程设置)，则直接incr
+				// 如果还是拿不到next_pos，删除key，fallback到数据库
+				if (!$next_pos) {
+					memory('rm', $memory_position_key);
+					return $this->_insert_use_db($tableid, $data, $return_insert_id, $replace, $silent);
+				}
+			}
+		}
+		foreach (range(1, 3) as $try_count) {
+			// 更新数据的position字段
+			$data['position'] = $next_pos;
+			try {
+				$ret = DB::insert($tablename, $data, $return_insert_id, $replace, $silent);
+				return $ret;
+			} catch (Exception $e) {
+				// 插入失败，可能是position冲突，再生成一个position试一下
+				$next_pos = $this->_next_pos_from_memory($memory_position_key);
+				if (!$next_pos || $try_count === 3) { // 如果还是拿不到next_pos，或者已经重试过三次, 删除key，fallback到数据库
+					memory('rm', $memory_position_key);
+					return $this->_insert_use_db($tableid, $data, $return_insert_id, $replace, $silent);
+				}
+			}
+		}
+	}
+
+	public function delete($val, $unbuffered = false, $null = false) {
+		// $null 需要在取消兼容层后删除
+		if (defined('DISCUZ_DEPRECATED')) {
+			throw new Exception("UnsupportedOperationException");
+		} else {
+			return $this->delete_post($val, $unbuffered, $null);
+		}
+	}
+
+	public function delete_post($tableid, $pid, $unbuffered = false) {
 		$return = DB::delete(self::get_tablename($tableid), DB::field($this->_pk, $pid), 0, $unbuffered);
 		if($return && $this->_allowmem) {
 			$delpid = $this->fetch_cache('delpid');
@@ -837,7 +960,7 @@ class table_forum_post extends discuz_table
 			$threadtable = $tableid ? "forum_thread_$tableid" : 'forum_thread';
 			$query = DB::query("SELECT tid, posttableid FROM ".DB::table($threadtable)." WHERE tid IN(".dimplode(array_keys($tids)).")");
 			while ($value = DB::fetch($query)) {
-				$posttable = 'forum_post'.($value['posttableid'] ? "_$value[posttableid]" : '');
+				$posttable = 'forum_post'.($value['posttableid'] ? "_{$value['posttableid']}" : '');
 				$tables[$posttable][$value['tid']] = $value['tid'];
 				unset($tids[$value['tid']]);
 			}
@@ -854,11 +977,7 @@ class table_forum_post extends discuz_table
 	public function show_table_columns($table) {
 		$data = array();
 		$db = &DB::object();
-		if($db->version() > '4.1') {
-			$query = $db->query("SHOW FULL COLUMNS FROM ".DB::table($table), 'SILENT');
-		} else {
-			$query = $db->query("SHOW COLUMNS FROM ".DB::table($table), 'SILENT');
-		}
+		$query = $db->query("SHOW FULL COLUMNS FROM ".DB::table($table), 'SILENT');
 		while($field = @DB::fetch($query)) {
 			$data[$field['Field']] = $field;
 		}
