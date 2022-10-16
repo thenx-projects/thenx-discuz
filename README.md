@@ -1,46 +1,21 @@
-# Discuz X3.5+ 每月构建【破坏性变更警告】
-
+# 【破坏性变更警告】
 ## 2月27日合并的代码中需要跟进数据库修改，否则会造成用户首次可以登录，第二次无法登录！
-
 存量 X3.5 网站更新代码后，需要执行 `ALTER TABLE uc_members MODIFY COLUMN password varchar(255) NOT NULL DEFAULT '', MODIFY COLUMN salt varchar(20) NOT NULL DEFAULT ''`; 进行数据库升级（ uc_ 可能为 pre_ucenter_ ，具体参照贵站设置 ），否则将导致网站无法登录，请知悉！
 
+
 ## 暂时不建议普通用户下载本分支代码
-
 ## 强烈建议没有技术能力的用户不要在非测试环境使用3.5！！！
-
 #### 在生产环境盲目使用及更新Discuz! X3.5(开发中版本)可能造成
-
 #### - 数据库结构错误造成数据丢失
-
 #### - 部分功能故障导致网站无法运行
-
 #### - 漏洞造成服务器遭到入侵
-
 #### 包括但不限于以上一系列严重后果，请务必确认自己的技术能力足以驾驭3.5以后再进行使用！
 
 ## 3.5的数据库结构会随时更新，已有用户每次更新代码时请务必同步安装目录下sql文件的所有变更！
 
-------
-
-### 基于 Docker 的使用
-
-**镜像拉取**：`$ docker pull tencentci/discuz`
-
-**镜像运行**：DiscuzX v3.5 的项目代码位于容器中 `/var/www/html` ，可将此目录中的代码 Copy 到宿主机后再映射至容器中完成容器的持久化挂载，如下代码所示：
-
-```shell
-# 1. 首先运行一个临时容器，待 copy 代码出来后只需要执行 docker stop discuz/[容器ID] 即可销毁
-$ docker run --rm --name discuz -it -p 80:80 -d tencentci/discuz
 
 
-# 2. copy 容器中的 discuz 代码到宿主机，其中 $PWD 表示当前目录。随后可根据上述步骤销毁临时容器
-$ docker cp discuz:/var/www/html/ $PWD/
-
-# 3. 运行并使用容器
-$ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ -d tencentci/discuz
-```
-
-### **3.5版本说明**
+### **3.5版本说明** 
 
 相对于3.4版本，做了以下修改：
 
@@ -51,19 +26,17 @@ $ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ 
 ##### 1.1 数据库表结构的变更：
 
 参考 [scheme-change-without-data-loss.sql](https://gitee.com/oldhuhu/DiscuzX34235/blob/master/scheme/scheme-change-without-data-loss.sql)
-
-* 修改了所有的IP地址，改为varchar(45)类型;
-* 在所有记录IP地址的地方，增加了端口号的记录;
-* 在pre_common_banned表中，增加了upperip和lowerip两个VARBINARY(16)类型的字段，用于记录IP地址的封禁范围最大值和最小
-* 将部分字段改”大“，比如INT改为BIGINT, TEXT改为MEDIUMTEXT等
-* 为支持IPv6，去掉了所有IP1/IP2/IP3/IP4的字段定义，参考[scheme-change-drop-columns.sql](https://gitee.com/oldhuhu/DiscuzX34235/blob/master/scheme/scheme-change-drop-columns.sql)
+  * 修改了所有的IP地址，改为varchar(45)类型;
+  * 在所有记录IP地址的地方，增加了端口号的记录;
+  * 在pre_common_banned表中，增加了upperip和lowerip两个VARBINARY(16)类型的字段，用于记录IP地址的封禁范围最大值和最小
+  * 将部分字段改”大“，比如INT改为BIGINT, TEXT改为MEDIUMTEXT等
+  * 为支持IPv6，去掉了所有IP1/IP2/IP3/IP4的字段定义，参考[scheme-change-drop-columns.sql](https://gitee.com/oldhuhu/DiscuzX34235/blob/master/scheme/scheme-change-drop-columns.sql)
 
 ##### 1.2 为支持InnoDB相关的变更
 
 对于InnoDB数据库引擎，还会做如下变更，参考 [scheme-change-innodb.sql](https://gitee.com/oldhuhu/DiscuzX34235/blob/master/scheme/scheme-change-innodb.sql)
-
-* 为支持InnoDB，在表pre_common_member_grouppm中增加了一个索引
-* 为支持InnoDB，在表pre_forum_post中，取消了position的auto_increment属性
+  * 为支持InnoDB，在表pre_common_member_grouppm中增加了一个索引
+  * 为支持InnoDB，在表pre_forum_post中，取消了position的auto_increment属性
 
 在配置文件中，引入了一个新的相关配置项，这个配置项要正确设置。尤其对于升级用户，否则会导致发帖功能不正常。
 
@@ -75,11 +48,13 @@ $ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ 
 $_config['db']['common']['engine'] = 'innodb';
 ```
 
+
 ##### 1.3 为支持utf8mb4相关的变更
 
 对于MyISAM引擎，由于1000个字节的索引长度限制，因此要对一些索引做重新定义，参考 [scheme-change-myisam-utf8mb4.sql](https://gitee.com/oldhuhu/DiscuzX34235/blob/master/scheme/scheme-change-myisam-utf8mb4.sql)
 
 无论是InnoDB还是MyISAM，所有的表都使用utf8mb4编码与utf8mb4_unicode_ci，参考 [scheme-change-charset.sql](https://gitee.com/oldhuhu/DiscuzX34235/blob/master/scheme/scheme-change-charset.sql)
+
 
 #### 2. IP相关变更
 
@@ -90,9 +65,9 @@ $_config['db']['common']['engine'] = 'innodb';
 系统现在支持多个地址库，通过配置文件中的以下配置项进行选择：
 
 ```
-$_config['ipdb']['setting']['fullstack'] = '';    // 系统使用的全栈IP库，优先级最高
-$_config['ipdb']['setting']['default'] = '';    // 系统使用的默认IP库，优先级最低
-$_config['ipdb']['setting']['ipv4'] = 'tiny';    // 系统使用的默认IPv4库，留空为使用默认库
+$_config['ipdb']['setting']['fullstack'] = '';	// 系统使用的全栈IP库，优先级最高
+$_config['ipdb']['setting']['default'] = '';	// 系统使用的默认IP库，优先级最低
+$_config['ipdb']['setting']['ipv4'] = 'tiny';	// 系统使用的默认IPv4库，留空为使用默认库
 $_config['ipdb']['setting']['ipv6'] = 'v6wry'; // 系统使用的默认IPv6库，留空为使用默认库
 ```
 
@@ -101,9 +76,9 @@ $_config['ipdb']['setting']['ipv6'] = 'v6wry'; // 系统使用的默认IPv6库�
 ```
  * $_config['ipdb']下除setting外均可用作自定义扩展IP库设置选项，也欢迎大家PR自己的扩展IP库。
  * 扩展IP库的设置，请使用格式：
- *         $_config['ipdb']['扩展ip库名称']['设置项名称'] = '值';
+ * 		$_config['ipdb']['扩展ip库名称']['设置项名称'] = '值';
  * 比如：
- *         $_config['ipdb']['redis_ip']['server'] = '172.16.1.8';
+ * 		$_config['ipdb']['redis_ip']['server'] = '172.16.1.8';
 ```
 
 系统现在内置一个IPv4库，一个IPv6库
@@ -133,9 +108,9 @@ IP地址获取，现在默认只信任REMOTE_ADDR，其它的因为太容易仿�
  * 安全提示：由于UCenter、UC_Client独立性及扩展性原因，您需要单独修改相关文件的相关业务逻辑，从而实现此类功能。
  * $_config['ipgetter']下除setting外均可用作自定义IP获取模型设置选项，也欢迎大家PR自己的扩展IP获取模型。
  * 扩展IP获取模型的设置，请使用格式：
- *         $_config['ipgetter']['IP获取扩展名称']['设置项名称'] = '值';
+ * 		$_config['ipgetter']['IP获取扩展名称']['设置项名称'] = '值';
  * 比如：
- *         $_config['ipgetter']['onlinechk']['server'] = '100.64.10.24';
+ * 		$_config['ipgetter']['onlinechk']['server'] = '100.64.10.24';
  */
 $_config['ipgetter']['setting'] = '';
 $_config['ipgetter']['header']['header'] = 'HTTP_X_FORWARDED_FOR';
@@ -163,6 +138,7 @@ $_config['ipgetter']['dnslist']['list']['0'] = 'comsenz.com';
 
 3.5现在支持几乎所有功能的开关，管理员甚至可以关闭论坛，只使用门户。相关的修改请点击 [PR291](https://gitee.com/Discuz/DiscuzX/pulls/291)
 
+
 #### 5. 其它改动
 
 * 增加了一个测试框架，可在后台运行，代码位于 `upload/tests` 下，测试用例可在 `upload/tests/class` 下添加。欢迎大家通过Pull Request提交测试用例
@@ -175,19 +151,74 @@ $_config['ipgetter']['dnslist']['list']['0'] = 'comsenz.com';
 **安全提示：我们强烈建议您使用仍在开发团队支持期内的操作系统、Web服务器、PHP、数据库、内存缓存等软件，超出支持期的软件可能会对您的站点带来未知的安全隐患。**
 **性能提示：当 MySQL < 5.7 或 MariaDB < 10.2 时， InnoDB 性能下降较为严重，因此在生产系统上运行的站点应升级版本至 MySQL >= 5.7 或 MariaDB >= 10.2 以避免此问题。**
 
-| 软件名称  | 最低要求     | 推荐版本      | 其他事项                                                   |
-| ----- | -------- | --------- | ------------------------------------------------------ |
-| PHP   | >= 5.6.0 | 7.3 - 8.1 | 依赖 XML 扩展、 JSON 扩展、 GD 扩展 >= 1.0 ，PHP 8.0 - 8.1 为测试性支持 |
-| MySQL | >= 5.5.3 | 5.7 - 8.0 | 如使用 MariaDB ，推荐版本为 >= 10.2                             |
+| 软件名称 | 最低要求   | 推荐版本     | 其他事项                                                             |
+| ------- | ---------- | ----------- | ------------------------------------------------------------------ |
+| PHP     | >= 5.6.0   | 7.3 - 8.1   | 依赖 XML 扩展、 JSON 扩展、 GD 扩展 >= 1.0 ，PHP 8.0 - 8.1 为测试性支持 |
+| MySQL   | >= 5.5.3   | 5.7 - 8.0   | 如使用 MariaDB ，推荐版本为 >= 10.2                                   |
+
+### **简介** 
+
+Discuz! X 官方 Git (https://gitee.com/Discuz/DiscuzX) ，简体中文 UTF8 版本
 
 ### **声明**
-
 您可以 Fork 本站代码，但未经许可 **禁止** 在本产品的整体或任何部分基础上以发展任何派生版本、修改版本或第三方版本用于 **重新分发** 
 
-### **友情提示**
+### **DxGit Forker 交流群**
+参与本项目 PR 的小伙伴，可以私信 [@zoewho](https://gitee.com/zoewho) 、[@DiscuzX](https://gitee.com/3dming) 并提供 QQ 号码进行审核，在审核通过后加入 DxGit Forker QQ 群与开发者团队共同交流。
 
+[点击查看如何提交代码到本项目](https://gitee.com/Discuz/DiscuzX/wikis/%E6%8F%90%E4%BA%A4%E4%BB%A3%E7%A0%81%E5%88%B0%E6%9C%AC%E9%A1%B9%E7%9B%AE?sort_id=3466289)
+
+### **发布版下载**
+[点击下载发布版](https://gitee.com/Discuz/DiscuzX/attach_files) 
+|
+[备用下载地址](https://www.dismall.com/thread-73-1-1.html)
+
+*感谢 [DiscuzFans](https://gitee.com/3dming/DiscuzL/attach_files) 提供简体GBK、简体UTF8、繁体UTF8的打包版*
+
+### **免费协助安装** 
+
+为方便站长基于 Discuz! X 搭建网站，[Discuz! 应用中心](https://addon.dismall.com/) 为站长提供免费安装 Discuz! X  的服务，详情咨询QQ  1453650
+
+
+### **安装、升级教程**
+使用发布版的用户，查阅安装包中的 readme.html 文件，使用码云原版的用户，查看：[安装教程](https://gitee.com/Discuz/DiscuzX/wikis/%E5%AE%89%E8%A3%85%E6%95%99%E7%A8%8B?sort_id=3466132)、[升级教程](https://gitee.com/Discuz/DiscuzX/wikis/%E5%8D%87%E7%BA%A7%E6%96%B9%E6%B3%95?sort_id=9978)
+
+
+### **相关网站**
+ 
+[Discuz! X 官方论坛](https://www.discuz.net/) 
+|
+[Discuz! 应用中心](https://addon.dismall.com/) 
+|
+[Discuz! 开放平台](https://open.dismall.com/) 
+|
+[Discuz! 开发文档](https://open.dismall.com/?ac=document&page=dev) 
+
+ 
+[Discuz! Q 官方网站](https://discuz.com/) 
+|
+[Discuz! Q 官方论坛](https://discuz.chat/)
+|
+[DNSPod](https://www.dnspod.cn/)
+|
+[商标注册](https://tm.cloud.tencent.com/)
+|
+[域名注册](https://dnspod.cloud.tencent.com/)
+
+### **感谢 Fans**
+
+[DiscuzFans](https://gitee.com/sinlody/DiscuzFans)  [DiscuzLite](https://gitee.com/3dming/DiscuzL)
+
+### **每日构建下载**
+
+Discuz! X提供3.4(稳定版)和正在开发中的3.5(不稳定版本)的每日构建，在有提交的第二天早上，可以下载到简体GBK、简体UTF8、繁体BIG5、繁体UTF8的打包版本。
+
+[点击打开](https://www.discuz.net/daily/)
+
+### **友情提示**
 - 本站不再发布其他编码的版本，请下载后自行通过[转码工具](https://gitee.com/Discuz/DiscuzX/attach_files)转码，或者下载本站授权的[打包版](https://gitee.com/3dming/DiscuzL/attach_files)
 - Git 版的 Release 版本号不再更新，但 DiscuzFans 的打包版会更新
 - 由于 X3.2、X3.3 已停更，X3.4 漏洞和相关修补同样适用于 X3.2、X3.3 版本，请随时关注[更新列表](https://gitee.com/Discuz/DiscuzX/commits/master)，您可进行手动修补，让自己的站点时刻保持最安全的状态!
 
-# 
+### 截图
+![系统信息](./readme/screenshot.png "系统信息截图")
