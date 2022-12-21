@@ -1330,11 +1330,12 @@ function set_pluginsetting($pluginvars) {
 }
 
 function checkformulaperm($formula) {
-	$formula = preg_replace('/(\{([\d\.\-]+?)\})/', "'\\1'", $formula);
+	$formula = preg_replace('/(\{([0-9a-fA-F\.\-\:\/]+?)\})/', "'\\1'", $formula);
 	return checkformulasyntax(
 		$formula,
-		array('+', '-', '*', '/', '(', ')', '<', '=', '>', '!', 'and', 'or', ' ', '{', '}', "'"),
-		array('regdate', 'regday', 'regip', 'lastip', 'buyercredit', 'sellercredit', 'digestposts', 'posts', 'threads', 'oltime', 'extcredits[1-8]', 'field[\d]+')
+		array('+', '-', '*', '/', '<', '<=', '==', '>=', '>', '!=', 'and', 'or'),
+		array('regdate', 'regday', 'regip', 'lastip', 'buyercredit', 'sellercredit', 'digestposts', 'posts', 'threads', 'oltime', 'extcredits[1-8]', 'field[\d]+'),
+		'\'\{[0-9a-fA-F\.\-\:\/]+\}\''
 	);
 }
 
