@@ -444,7 +444,10 @@ if(submitcheck('profilesubmit')) {
 	// 如果保存时未输入验证码就把用户切换至未验证状态, 下次提交验证通过后才能切回正常状态
 	$setarr['secmobicc'] = $secmobiccnew == 0 ? '' : $secmobiccnew;
 	$setarr['secmobile'] = $secmobilenew == 0 ? '' : $secmobilenew;
-	$setarr['secmobilestatus'] = sms::verify($_G['uid'], 1, $secmobiccnew, $secmobilenew, $secmobseccode);
+	// 修改了手机号才涉及到手机号认证状态变更
+	if(strcmp($secmobiccnew, $_G['member']['secmobicc']) != 0 || strcmp($secmobilenew, $_G['member']['secmobile']) != 0) {
+		$setarr['secmobilestatus'] = sms::verify($_G['uid'], 1, $secmobiccnew, $secmobilenew, $secmobseccode);
+	}
 	if($setarr) {
 		if($_G['member']['freeze'] == 1) {
 			$setarr['freeze'] = 0;
@@ -473,6 +476,49 @@ if(submitcheck('profilesubmit')) {
 			), false, true);
 		}
 		manage_addnotify('verifyuser');
+	}
+
+	// 给邮箱发送重置或修改密码的邮件
+	if(!empty($_GET['newpassword'])) {
+		if(!function_exists('sendmail')) {
+			include libfile('function/mail');
+		}
+
+		$reset_password_subject = array(
+			'tpl' => 'password_reset',
+			'var' => array(
+				'username' => $_G['member']['username'],
+				'bbname' => $_G['setting']['bbname'],
+				'siteurl' => $_G['setting']['securesiteurl'],
+				'datetime' => dgmdate(time(), 'Y-m-d H:i:s'),
+				'clientip' => $_G['clientip']
+			)
+		);
+		if(!sendmail("{$_G['member']['username']} <{$_G['member']['email']}>", $reset_password_subject)) {
+			runlog('sendmail', "{$_G['member']['email']} sendmail failed.");
+		}
+	}
+
+	// 给邮箱发送修改安全手机号的邮件
+	if((strcmp($secmobiccnew, $_G['member']['secmobicc']) != 0 || strcmp($secmobilenew, $_G['member']['secmobile']) != 0) && (!$_G['setting']['smsstatus'] || $setarr['secmobilestatus'])) {
+		if(!function_exists('sendmail')) {
+			include libfile('function/mail');
+		}
+
+		$reset_secmobile_subject = array(
+			'tpl' => 'secmobile_reset',
+			'var' => array(
+				'username' => $_G['member']['username'],
+				'bbname' => $_G['setting']['bbname'],
+				'siteurl' => $_G['setting']['securesiteurl'],
+				'datetime' => dgmdate(time(), 'Y-m-d H:i:s'),
+				'secmobile' => $_G['member']['secmobicc'].'-'.$_G['member']['secmobile'],
+				'clientip' => $_G['clientip']
+			)
+		);
+		if(!sendmail("{$_G['member']['username']} <{$_G['member']['email']}>", $reset_secmobile_subject)) {
+			runlog('sendmail', "{$_G['member']['email']} sendmail failed.");
+		}
 	}
 
 	if($authstr) {
