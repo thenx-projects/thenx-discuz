@@ -701,6 +701,9 @@ var rowtypedata = [
 		/*search*/
 	} else {
 		$default_perm = array('allowstickthread' => 0, 'allowbumpthread' => 0, 'allowhighlightthread' => 0, 'allowlivethread' => 0, 'allowstampthread' => 0, 'allowclosethread' => 0, 'allowmergethread' => 0, 'allowsplitthread' => 0, 'allowrepairthread' => 0, 'allowrefund' => 0, 'alloweditpoll' => 0, 'allowremovereward' => 0, 'alloweditactivity' => 0, 'allowedittrade' => 0, 'allowdigestthread' => 0, 'alloweditpost' => 0, 'allowwarnpost' => 0, 'allowbanpost' => 0, 'allowdelpost' => 0, 'allowupbanner' => 0, 'disablepostctrl' => 0, 'allowviewip' => 0);
+		if(empty($_GET['newgroup_userperm']) || !is_array($_GET['newgroup_userperm'])) {
+			$_GET['newgroup_userperm'] = array();
+		}
 		$_GET['newgroup_userperm'] = array_merge($default_perm, $_GET['newgroup_userperm']);
 		if(serialize($_GET['newgroup_userperm']) != serialize($group_userperm)) {
 			C::t('common_setting')->update_setting('group_userperm', $_GET['newgroup_userperm']);
@@ -717,8 +720,8 @@ var rowtypedata = [
 			foreach($query as $level) {
 				$grouplevels .= showtablerow('', array('class="td25"', '', 'class="td28"', 'class=td28'), array(
 					"<input class=\"checkbox\" type=\"checkbox\" name=\"delete[{$level['levelid']}]\" value=\"{$level['levelid']}\">",
-					"<input type=\"text\" class=\"txt\" size=\"12\" name=\"levelnew[{$level['levelid']}]['leveltitle']}\" value=\"{$level['leveltitle']}\">",
-					"<input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[{$level['levelid']}]['creditshigher']}\" value=\"{$level['creditshigher']}\" /> ~ <input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[{$level['levelid']}]['creditslower']}\" value=\"{$level['creditslower']}\" disabled />",
+					"<input type=\"text\" class=\"txt\" size=\"12\" name=\"levelnew[{$level['levelid']}][leveltitle]}\" value=\"{$level['leveltitle']}\">",
+					"<input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[{$level['levelid']}][creditshigher]}\" value=\"{$level['creditshigher']}\" /> ~ <input type=\"text\" class=\"txt\" size=\"6\" name=\"levelnew[{$level['levelid']}][creditslower]}\" value=\"{$level['creditslower']}\" disabled />",
 					"<a href=\"".ADMINSCRIPT."?action=group&operation=level&levelid={$level['levelid']}\" class=\"act\">{$lang['detail']}</a>"
 				), TRUE);
 			}
@@ -775,7 +778,7 @@ EOT;
 			}
 			if(is_array($_GET['levelnew'])) {
 				foreach($_GET['levelnew'] as $id => $level) {
-					if((is_array($_GET['delete']) && in_array($id, $_GET['delete'])) || ($id == 0 && (!$level['grouptitle'] || $level['creditshigher'] == ''))) {
+					if((is_array($_GET['delete']) && in_array($id, $_GET['delete'])) || ($id == 0 && (!$level['leveltitle'] || $level['creditshigher'] == ''))) {
 						unset($_GET['levelnew'][$id]);
 					} else {
 						$orderarray[$level['creditshigher']] = $id;
