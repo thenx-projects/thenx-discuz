@@ -80,7 +80,6 @@ var rowtypedata = [
 		));
 
 		showformheader("threadtypes&", 'enctype', 'threadtypeform');
-		showboxheader();
 		showtableheader('');
 		showsubtitle(array('', 'display_order', cplang('name').' '.cplang('tiny_bbcode_support'), 'description', 'forums_relation', '', ''), 'header', array('', 'width="100"', 'width="200"', 'width="300"', '', 'width="100"', 'width="60"'));
 		echo $threadtypes;
@@ -88,7 +87,6 @@ var rowtypedata = [
 
 		showsubmit('typesubmit', 'submit', 'del');
 		showtablefooter();
-		showboxfooter();
 		showformfooter();
 
 	} else {
@@ -248,7 +246,6 @@ EOT;
 		));
 		showformheader("threadtypes&operation=typeoption&typeid={$_GET['typeid']}");
 		showhiddenfields(array('classid' => $_GET['classid']));
-		showboxheader();
 		showtableheader();
 
 		showsubtitle(array('', 'display_order', 'name', 'threadtype_variable', 'threadtype_type', ''));
@@ -257,7 +254,6 @@ EOT;
 		showsubmit('typeoptionsubmit', 'submit', 'del');
 
 		showtablefooter();
-		showboxfooter();
 		showformfooter();
 
 	} else {
@@ -975,7 +971,7 @@ EOT;
 						}
 					} elseif(in_array($option['type'], array('number', 'text', 'email', 'calendar', 'image', 'url', 'textarea', 'upload', 'range'))) {
 						if ($option['type'] == 'calendar') {
-							$optionshow .= '<script type="text/javascript" src="'.$_G['setting']['jspath'].'calendar.js?'.VERHASH.'"></script><input type="text" name="searchoption['.$optionid.'][value]" class="txt" value="'.$_GET['searchoption'][$optionid]['value'].'" onclick="showcalendar(event, this, false)" />';
+							$optionshow .= '<script type="text/javascript" src="'.$_G['setting']['jspath'].'calendar.js?'.$_G['style']['verhash'].'"></script><input type="text" name="searchoption['.$optionid.'][value]" class="txt" value="'.$_GET['searchoption'][$optionid]['value'].'" onclick="showcalendar(event, this, false)" />';
 						} elseif($option['type'] == 'number') {
 							$optionshow .= '<select name="searchoption['.$optionid.'][condition]">
 								<option value="0" '.($_GET['searchoption'][$optionid]['condition'] == 0 ? 'selected="selected"' : '').'>'.cplang('equal_to').'</option>
