@@ -395,7 +395,7 @@ class image {
 					$im->thumbnailImage($this->param['thumbwidth'], $this->param['thumbheight']);
 					$im->resizeImage($this->param['thumbwidth'], $this->param['thumbheight']);
 					$im->setGravity(imagick::GRAVITY_CENTER );
-					$im->extentImage($this->param['thumbwidth'], $this->param['thumbheight']);
+					$im->extentImage($this->param['thumbwidth'], $this->param['thumbheight'], 0, 0);
 
 					if(!$im->writeImage($this->target)) {
 						$im->destroy();
@@ -419,7 +419,7 @@ class image {
 					$im->setImageCompressionQuality($this->param['thumbquality']);
 					$im->thumbnailImage($this->param['thumbwidth'], $this->param['thumbheight']);
 					$im->setGravity(imagick::GRAVITY_CENTER );
-					$im->extentImage($this->param['thumbwidth'], $this->param['thumbheight']);
+					$im->extentImage($this->param['thumbwidth'], $this->param['thumbheight'], 0, 0);
 					if(!$im->writeImage($this->target)) {
 						$im->destroy();
 						return -3;
@@ -485,7 +485,7 @@ class image {
 			}
 
 			$watermarktextcvt = pack("H*", $this->param['watermarktext']['text'][$type]);
-			$box = imagettfbbox($this->param['watermarktext']['size'][$type], $this->param['watermarktext']['angle'][$type], $this->param['watermarktext']['fontpath'][$type], $watermarktextcvt);
+			$box = imagettfbbox(floatval($this->param['watermarktext']['size'][$type]), floatval($this->param['watermarktext']['angle'][$type]), $this->param['watermarktext']['fontpath'][$type], $watermarktextcvt);
 			$logo_h = max($box[1], $box[3]) - min($box[5], $box[7]);
 			$logo_w = max($box[2], $box[4]) - min($box[0], $box[6]);
 			$ax = min($box[0], $box[6]) * -1;

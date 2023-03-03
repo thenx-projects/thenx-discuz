@@ -171,7 +171,7 @@
 						<td>{lang setting_passwordoptions_comment}</td>
 					</tr>
 				</table>
-				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" tabindex="3" /></div>
+				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" /></div>
 			</form>
 		</div>
 	<!--{elseif $a == 'register'}-->
@@ -210,7 +210,7 @@
 						<td valign="top">{lang setting_ceonsor_comment}</td>
 					</tr>
 				</table>
-				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" tabindex="3" /></div>
+				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" /></div>
 			</form>
 		</div>
 	<!--{else}-->
@@ -252,6 +252,15 @@
 							<input name="mailport" value="{$mailport}" type="text">
 						</td>
 						<td valign="top">{lang settings_mail_settings_port_comment}</td>
+					</tr>
+					<tr>
+						<td colspan="2">{lang settings_mail_settings_timeout}:</td>
+					</tr>
+					<tr>
+						<td>
+							<input name="mailtimeout" value="{$mailtimeout}" type="text">
+						</td>
+						<td valign="top">{lang settings_mail_settings_timeout_comment}</td>
 					</tr>
 					</tbody>
 					<tbody id="hidden2"{if $mailsend == 1 || $mailsend == 3} style="display:none"{/if}>
@@ -327,7 +336,7 @@
 						<td valign="top">&nbsp;</td>
 					</tr>
 				</table>
-				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" tabindex="3" /></div>
+				<div class="opt"><input type="submit" name="submit" value=" {lang submit} " class="btn" /></div>
 			</form>
 		</div>
 	<!--{/if}-->
