@@ -1,20 +1,24 @@
 # thenx discuz
 ## 使用
-镜像拉取：$ docker pull tencentci/discuz
+镜像拉取：`$ docker pull tencentci/discuz`
 
 镜像运行：项目代码位于容器中 /var/www/html ，可将此目录中的代码 Copy 到宿主机后再映射至容器中完成容器的持久化挂载，如下代码所示：
 
 **1. 首先运行一个临时容器，待 copy 代码出来后只需要执行 docker stop discuz/[容器ID] 即可销毁**
+
 `$ docker run --rm --name discuz -it -p 80:80 -d tencentci/discuz`
 
 
 **2. copy 容器中的 discuz 代码到宿主机，其中 $PWD 表示当前目录。随后可根据上述步骤销毁临时容器**
+
 `$ docker cp discuz:/var/www/html/ $PWD/`
 
 **3. 运行并使用容器**
+
 `$ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ -d tencentci/discuz`
 
 ## 环境要求
+
 我们强烈建议您使用仍在开发团队支持期内的操作系统、Web服务器、PHP、数据库、内存缓存等软件，超出支持期的软件可能会对您的站点带来未知的安全隐患。 性能提示：当 MySQL < 5.7 或 MariaDB < 10.2 时， InnoDB 性能下降较为严重，因此在生产系统上运行的站点应升级版本至 MySQL >= 5.7 或 MariaDB >= 10.2 以避免此问题。
 
 - PHP	>= 5.6.0	7.3 - 8.1	依赖 XML 扩展、 JSON 扩展、 GD 扩展 >= 1.0 ，PHP 8.0 - 8.1 为测试性支持
@@ -22,6 +26,7 @@
 - MySQL	>= 5.5.3	5.7 - 8.0	如使用 MariaDB ，推荐版本为 >= 10.2
 
 ## IP地址获取
+
 IP地址获取，现在默认只信任REMOTE_ADDR，其它的因为太容易仿造，默认禁止。获取的方式也可以扩展，在配置文件中增加了以下配置项
 
 ```php
@@ -48,4 +53,5 @@ $_config['ipgetter']['dnslist']['list']['0'] = 'comsenz.com';
 ```
 
 ## License
+
 Thenx Discuz is Open Source software released under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0.html).
