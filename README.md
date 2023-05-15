@@ -47,3 +47,5 @@ $_config['ipgetter']['dnslist']['header'] = 'HTTP_X_FORWARDED_FOR';
 $_config['ipgetter']['dnslist']['list']['0'] = 'comsenz.com';
 ```
 
+## License
+Thenx Discuz is Open Source software released under the [Apache 2.0 license](https://www.apache.org/licenses/LICENSE-2.0.html).
