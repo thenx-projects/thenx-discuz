@@ -1,21 +1,28 @@
 # thenx discuz
+
 ## 使用
+
 镜像拉取：`$ docker pull tencentci/discuz`
 
 镜像运行：项目代码位于容器中 /var/www/html ，可将此目录中的代码 Copy 到宿主机后再映射至容器中完成容器的持久化挂载，如下代码所示：
 
 **1. 首先运行一个临时容器，待 copy 代码出来后只需要执行 docker stop discuz/[容器ID] 即可销毁**
 
-`$ docker run --rm --name discuz -it -p 80:80 -d tencentci/discuz`
-
+```shell
+$ docker run --rm --name discuz -it -p 80:80 -d tencentci/discuz
+```
 
 **2. copy 容器中的 discuz 代码到宿主机，其中 $PWD 表示当前目录。随后可根据上述步骤销毁临时容器**
 
-`$ docker cp discuz:/var/www/html/ $PWD/`
+```shell
+$ docker cp discuz:/var/www/html/ $PWD/
+```
 
 **3. 运行并使用容器**
 
-`$ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ -d tencentci/discuz`
+```shell
+$ docker run -it --name discuz -p 80:80 -p 443:443 -v /var/www/html/:$PWD/html/ -d tencentci/discuz
+```
 
 ## 环境要求
 
